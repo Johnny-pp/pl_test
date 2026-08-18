@@ -87,5 +87,5 @@
 ## 协作偏好
 - 用户使用中文沟通，回复优先使用中文。
 - 动手前先确认方向（设计数据模型 / 搭建项目骨架 / 抓取参考结构 等）。
-- **每完成一个功能后立即 git commit**（commit 消息用中文简述本次功能）。若目录还不是 git 仓库，先 `git init` 并加 `.gitignore`（忽略 node_modules、dist）；仅本地提交，未经许可不 push。
+- **每完成一个功能后立即 git commit**（commit 消息用中文简述本次功能），并在每次 commit 成功后立即执行 `git push`。若目录还不是 git 仓库，先 `git init` 并加 `.gitignore`（忽略 node_modules、dist）；若尚未配置远端或推送失败，应明确告知用户。
 - 提交前只暂存当前功能涉及的文件，不得顺带覆盖、删除或提交用户的无关改动。
