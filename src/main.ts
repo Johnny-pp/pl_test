@@ -7,8 +7,9 @@ import { BattleScene } from "./scenes/BattleScene";
 import { TeamScene } from "./scenes/TeamScene";
 import { WorldScene } from "./scenes/WorldScene";
 import { BaseScene } from "./scenes/BaseScene";
+import { BreedingScene } from "./scenes/BreedingScene";
 
-const defaultScenes = [DexScene, DetailScene, PassiveSkillsScene, SelectPalScene, BattleScene, TeamScene, WorldScene, BaseScene];
+const defaultScenes = [DexScene, DetailScene, PassiveSkillsScene, SelectPalScene, BattleScene, TeamScene, WorldScene, BaseScene, BreedingScene];
 const scenes = new URLSearchParams(window.location.search).get("start") === "world"
   ? [WorldScene, ...defaultScenes.filter((scene) => scene !== WorldScene)]
   : defaultScenes;

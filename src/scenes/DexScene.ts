@@ -80,6 +80,7 @@ export class DexScene extends Phaser.Scene {
     this.makeTeamButton();
     this.makeWorldButton();
     this.makeBaseButton();
+    this.makeBreedingButton();
 
     this.buildSearchInput();
     this.buildSortButtons();
@@ -494,5 +495,17 @@ export class DexScene extends Phaser.Scene {
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
     btn.on("pointerdown", () => this.scene.start("BaseScene"));
+  }
+
+  private makeBreedingButton() {
+    const btn = this.add
+      .text(710, 22, "配种孵化", {
+        fontFamily: "sans-serif",
+        fontSize: "18px",
+        color: "#f48fb1",
+      })
+      .setOrigin(0, 0.5)
+      .setInteractive({ useHandCursor: true });
+    btn.on("pointerdown", () => this.scene.start("BreedingScene"));
   }
 }

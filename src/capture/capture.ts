@@ -28,3 +28,17 @@ export function attemptCapture(
   const roll = Math.max(0, Math.min(0.999999, random())) * 100;
   return { success: roll < chance, chance, roll };
 }
+
+export function rollWildPassiveSkills(
+  passivePool: readonly string[],
+  random: () => number = Math.random
+): string[] {
+  if (passivePool.length === 0 || random() >= 0.35) return [];
+  const first = passivePool[Math.floor(random() * passivePool.length)];
+  const result = [first];
+  if (passivePool.length > 1 && random() < 0.08) {
+    const remaining = passivePool.filter((id) => id !== first);
+    result.push(remaining[Math.floor(random() * remaining.length)]);
+  }
+  return result;
+}

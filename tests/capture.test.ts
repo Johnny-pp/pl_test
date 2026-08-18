@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { attemptCapture, calculateCaptureChance } from "../src/capture/capture.ts";
+import { attemptCapture, calculateCaptureChance, rollWildPassiveSkills } from "../src/capture/capture.ts";
 
 test("目标生命值越低，捕获概率越高", () => {
   const full = calculateCaptureChance({ hp: 100, maxHp: 100, rarity: 2, catchRate: 30 });
@@ -17,4 +17,11 @@ test("捕获结果可通过随机源稳定复现", () => {
   const target = { hp: 50, maxHp: 100, rarity: 2, catchRate: 30 };
   assert.equal(attemptCapture(target, () => 0).success, true);
   assert.equal(attemptCapture(target, () => 0.99).success, false);
+});
+
+test("野生个体会按概率获得不重复被动", () => {
+  const rolls = [0, 0, 0, 0.99];
+  const result = rollWildPassiveSkills(["a", "b"], () => rolls.shift() ?? 0.99);
+  assert.deepEqual(result, ["a", "b"]);
+  assert.deepEqual(rollWildPassiveSkills(["a"], () => 0.99), []);
 });

@@ -11,7 +11,8 @@ import {
 } from "../battle/battleEngine";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import type { ActiveSkill } from "../types/activeSkill";
-import { attemptCapture, calculateCaptureChance } from "../capture/capture";
+import { attemptCapture, calculateCaptureChance, rollWildPassiveSkills } from "../capture/capture";
+import { passiveSkills } from "../data/loadPassiveSkills";
 import {
   addCapturedPal,
   createPalInstance,
@@ -254,7 +255,8 @@ export class BattleScene extends Phaser.Scene {
       catchRate: enemyPal.catchRate,
     });
     if (result.success) {
-      const next = addCapturedPal(consumed.save, createPalInstance(enemyPal));
+      const rolledPassives = rollWildPassiveSkills(passiveSkills.map((skill) => skill.id));
+      const next = addCapturedPal(consumed.save, createPalInstance(enemyPal, undefined, undefined, rolledPassives));
       const persisted = saveGame(localStorage, next);
       this.captureMessage = persisted ? "捕获成功！" : "捕获成功，但存档失败";
     } else {
