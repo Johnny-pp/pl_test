@@ -1,6 +1,6 @@
 import type { Pal } from "../types/pal";
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -19,11 +19,39 @@ export interface GameProgress {
   captures: number;
 }
 
+export type BaseJob = "planting" | "mining" | "lumbering" | "generating";
+export type FacilityId = "warehouse" | "farm" | "workshop";
+
+export interface BaseAssignment {
+  palUid: string;
+  job: BaseJob;
+}
+
+export interface BaseState {
+  resources: {
+    wood: number;
+    stone: number;
+    food: number;
+    fiber: number;
+    crystal: number;
+  };
+  assignments: BaseAssignment[];
+  facilities: Record<FacilityId, number>;
+  lastUpdatedAt: number;
+}
+
+export interface PlayerInventory {
+  captureOrbs: number;
+  healingTonics: number;
+}
+
 export interface GameSave {
   version: typeof SAVE_VERSION;
   ownedPals: PalInstance[];
   teamIds: string[];
   progress: GameProgress;
+  inventory: PlayerInventory;
+  base: BaseState;
 }
 
 export interface StorageLike {
@@ -38,12 +66,19 @@ function createInstanceId(): string {
   return `pal-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function createEmptySave(): GameSave {
+export function createEmptySave(now = Date.now()): GameSave {
   return {
     version: SAVE_VERSION,
     ownedPals: [],
     teamIds: [],
     progress: { battlesWon: 0, captures: 0 },
+    inventory: { captureOrbs: 3, healingTonics: 0 },
+    base: {
+      resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0 },
+      assignments: [],
+      facilities: { warehouse: 1, farm: 1, workshop: 1 },
+      lastUpdatedAt: now,
+    },
   };
 }
 
@@ -75,8 +110,12 @@ function isPalInstance(value: unknown): value is PalInstance {
     && typeof pal.capturedAt === "string";
 }
 
-function migrateSave(value: unknown): GameSave {
-  if (!value || typeof value !== "object") return createEmptySave();
+function finiteCount(value: unknown, fallback = 0): number {
+  return Number.isFinite(value) ? Math.max(0, Math.floor(value as number)) : fallback;
+}
+
+function migrateSave(value: unknown, now = Date.now()): GameSave {
+  if (!value || typeof value !== "object") return createEmptySave(now);
   const raw = value as Record<string, unknown>;
   const ownedPals = Array.isArray(raw.ownedPals)
     ? raw.ownedPals.filter(isPalInstance)
@@ -88,6 +127,27 @@ function migrateSave(value: unknown): GameSave {
   const progress = raw.progress && typeof raw.progress === "object"
     ? raw.progress as Partial<GameProgress>
     : {};
+  const inventory = raw.inventory && typeof raw.inventory === "object"
+    ? raw.inventory as Partial<PlayerInventory>
+    : {};
+  const rawBase = raw.base && typeof raw.base === "object"
+    ? raw.base as Partial<BaseState>
+    : {};
+  const rawResources = rawBase.resources && typeof rawBase.resources === "object"
+    ? rawBase.resources as Partial<BaseState["resources"]>
+    : {};
+  const rawFacilities = rawBase.facilities && typeof rawBase.facilities === "object"
+    ? rawBase.facilities as Partial<BaseState["facilities"]>
+    : {};
+  const validJobs = new Set<BaseJob>(["planting", "mining", "lumbering", "generating"]);
+  const assignments = Array.isArray(rawBase.assignments)
+    ? rawBase.assignments.filter((assignment): assignment is BaseAssignment => {
+      if (!assignment || typeof assignment !== "object") return false;
+      const item = assignment as Partial<BaseAssignment>;
+      return typeof item.palUid === "string" && ownedIds.has(item.palUid)
+        && typeof item.job === "string" && validJobs.has(item.job as BaseJob);
+    })
+    : [];
 
   return {
     version: SAVE_VERSION,
@@ -96,6 +156,26 @@ function migrateSave(value: unknown): GameSave {
     progress: {
       battlesWon: Number.isFinite(progress.battlesWon) ? Math.max(0, Math.floor(progress.battlesWon!)) : 0,
       captures: Number.isFinite(progress.captures) ? Math.max(0, Math.floor(progress.captures!)) : ownedPals.length,
+    },
+    inventory: {
+      captureOrbs: finiteCount(inventory.captureOrbs, 3),
+      healingTonics: finiteCount(inventory.healingTonics),
+    },
+    base: {
+      resources: {
+        wood: finiteCount(rawResources.wood, 20),
+        stone: finiteCount(rawResources.stone, 10),
+        food: finiteCount(rawResources.food, 20),
+        fiber: finiteCount(rawResources.fiber, 10),
+        crystal: finiteCount(rawResources.crystal),
+      },
+      assignments: assignments.filter((item, index) => assignments.findIndex((candidate) => candidate.palUid === item.palUid) === index),
+      facilities: {
+        warehouse: Math.max(1, finiteCount(rawFacilities.warehouse, 1)),
+        farm: Math.max(1, finiteCount(rawFacilities.farm, 1)),
+        workshop: Math.max(1, finiteCount(rawFacilities.workshop, 1)),
+      },
+      lastUpdatedAt: Number.isFinite(rawBase.lastUpdatedAt) ? rawBase.lastUpdatedAt! : now,
     },
   };
 }

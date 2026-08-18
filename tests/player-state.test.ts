@@ -53,7 +53,7 @@ test("损坏存档回退为空存档，旧字段会迁移并清理无效队伍�
   assert.equal(loadGame(memoryStorage("not-json")).ownedPals.length, 0);
   const old = JSON.stringify({ version: 0, ownedPals: [], teamIds: ["missing"] });
   const migrated = loadGame(memoryStorage(old));
-  assert.equal(migrated.version, 1);
+  assert.equal(migrated.version, 2);
   assert.deepEqual(migrated.teamIds, []);
 });
 
