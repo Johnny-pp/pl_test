@@ -1,6 +1,6 @@
 import type { Pal } from "../types/pal";
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -45,6 +45,18 @@ export interface PlayerInventory {
   healingTonics: number;
 }
 
+export type EggQuality = "common" | "fine" | "radiant";
+
+export interface BreedingEgg {
+  id: string;
+  parentUids: [string, string];
+  speciesId: number;
+  passiveSkillIds: string[];
+  quality: EggQuality;
+  createdAt: number;
+  hatchAt: number;
+}
+
 export interface GameSave {
   version: typeof SAVE_VERSION;
   ownedPals: PalInstance[];
@@ -52,6 +64,7 @@ export interface GameSave {
   progress: GameProgress;
   inventory: PlayerInventory;
   base: BaseState;
+  breedingEggs: BreedingEgg[];
 }
 
 export interface StorageLike {
@@ -79,13 +92,15 @@ export function createEmptySave(now = Date.now()): GameSave {
       facilities: { warehouse: 1, farm: 1, workshop: 1 },
       lastUpdatedAt: now,
     },
+    breedingEggs: [],
   };
 }
 
 export function createPalInstance(
   pal: Pal,
   idFactory: () => string = createInstanceId,
-  now: () => string = () => new Date().toISOString()
+  now: () => string = () => new Date().toISOString(),
+  passiveSkillIds: string[] = []
 ): PalInstance {
   return {
     uid: idFactory(),
@@ -93,7 +108,7 @@ export function createPalInstance(
     level: 1,
     experience: 0,
     currentHp: pal.stats.hp,
-    passiveSkillIds: [],
+    passiveSkillIds: [...passiveSkillIds],
     capturedAt: now(),
   };
 }
@@ -152,6 +167,19 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
         && typeof item.job === "string" && validJobs.has(item.job as BaseJob);
     })
     : [];
+  const breedingEggs = Array.isArray(raw.breedingEggs)
+    ? raw.breedingEggs.filter((egg): egg is BreedingEgg => {
+      if (!egg || typeof egg !== "object") return false;
+      const item = egg as Partial<BreedingEgg>;
+      return typeof item.id === "string"
+        && Array.isArray(item.parentUids) && item.parentUids.length === 2
+        && item.parentUids.every((uid) => typeof uid === "string" && ownedIds.has(uid))
+        && Number.isInteger(item.speciesId)
+        && Array.isArray(item.passiveSkillIds)
+        && ["common", "fine", "radiant"].includes(item.quality ?? "")
+        && Number.isFinite(item.createdAt) && Number.isFinite(item.hatchAt);
+    })
+    : [];
 
   return {
     version: SAVE_VERSION,
@@ -181,6 +209,7 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
       },
       lastUpdatedAt: Number.isFinite(rawBase.lastUpdatedAt) ? rawBase.lastUpdatedAt! : now,
     },
+    breedingEggs,
   };
 }
 
