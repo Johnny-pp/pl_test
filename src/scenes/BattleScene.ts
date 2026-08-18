@@ -22,6 +22,10 @@ import {
 interface BattleSceneData {
   playerId: number;
   enemyId: number;
+  returnTo?: {
+    scene: string;
+    data?: Record<string, unknown>;
+  };
 }
 
 export class BattleScene extends Phaser.Scene {
@@ -36,6 +40,7 @@ export class BattleScene extends Phaser.Scene {
   private busy = false;
   private captureAttempted = false;
   private captureMessage = "";
+  private returnTo?: BattleSceneData["returnTo"];
 
   constructor() {
     super("BattleScene");
@@ -44,11 +49,12 @@ export class BattleScene extends Phaser.Scene {
   create(data: BattleSceneData) {
     this.captureAttempted = false;
     this.captureMessage = "";
+    this.returnTo = data.returnTo;
     const player = pals.find((pal) => pal.id === data.playerId);
     const enemy = pals.find((pal) => pal.id === data.enemyId);
     if (!player || !enemy) {
       this.add.text(450, 300, "战斗数据无效", { fontSize: "24px", color: "#ffffff" }).setOrigin(0.5);
-      this.makeNavButton(450, 350, "返回图鉴", () => this.scene.start("DexScene"));
+      this.makeNavButton(450, 350, this.returnTo ? "返回地图" : "返回图鉴", () => this.leaveBattle());
       return;
     }
 
@@ -58,7 +64,7 @@ export class BattleScene extends Phaser.Scene {
       fontSize: "18px",
       color: "#4fc3f7",
     }).setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.scene.start("DexScene"));
+      .on("pointerdown", () => this.leaveBattle());
     this.add.text(450, 28, "幻兽对决", {
       fontFamily: "sans-serif",
       fontSize: "30px",
@@ -138,7 +144,12 @@ export class BattleScene extends Phaser.Scene {
         fontSize: "24px",
         color: this.state.phase === "victory" ? "#ffd54f" : "#ff8a80",
       }).setOrigin(0.5);
-      const again = this.makeNavButton(500, 602, "重新选角", () => this.scene.start("SelectPalScene"));
+      const again = this.makeNavButton(
+        500,
+        602,
+        this.returnTo ? "返回地图" : "重新选角",
+        () => this.returnTo ? this.leaveBattle() : this.scene.start("SelectPalScene")
+      );
       const dex = this.makeNavButton(665, 602, "返回图鉴", () => this.scene.start("DexScene"));
       this.actionLayer.add([title, again, dex]);
       if (this.state.phase === "victory") {
@@ -226,6 +237,14 @@ export class BattleScene extends Phaser.Scene {
       this.captureMessage = "捕获失败";
     }
     this.render();
+  }
+
+  private leaveBattle() {
+    if (this.returnTo) {
+      this.scene.start(this.returnTo.scene, this.returnTo.data);
+    } else {
+      this.scene.start("DexScene");
+    }
   }
 
   private makeNavButton(x: number, y: number, label: string, action: () => void) {

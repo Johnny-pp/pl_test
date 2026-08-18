@@ -5,6 +5,7 @@ import { PassiveSkillsScene } from "./scenes/PassiveSkillsScene";
 import { SelectPalScene } from "./scenes/SelectPalScene";
 import { BattleScene } from "./scenes/BattleScene";
 import { TeamScene } from "./scenes/TeamScene";
+import { WorldScene } from "./scenes/WorldScene";
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -12,6 +13,10 @@ new Phaser.Game({
   width: 900,
   height: 640,
   backgroundColor: "#1a1a2e",
+  physics: {
+    default: "arcade",
+    arcade: { debug: false },
+  },
   dom: { createContainer: true },
-  scene: [DexScene, DetailScene, PassiveSkillsScene, SelectPalScene, BattleScene, TeamScene],
+  scene: [DexScene, DetailScene, PassiveSkillsScene, SelectPalScene, BattleScene, TeamScene, WorldScene],
 });

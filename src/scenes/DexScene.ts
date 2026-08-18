@@ -78,6 +78,7 @@ export class DexScene extends Phaser.Scene {
     this.makePassiveButton(width);
     this.makeBattleButton();
     this.makeTeamButton();
+    this.makeWorldButton();
 
     this.buildSearchInput();
     this.buildSortButtons();
@@ -468,5 +469,17 @@ export class DexScene extends Phaser.Scene {
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
     btn.on("pointerdown", () => this.scene.start("TeamScene"));
+  }
+
+  private makeWorldButton() {
+    const btn = this.add
+      .text(226, 22, "探索地图", {
+        fontFamily: "sans-serif",
+        fontSize: "18px",
+        color: "#9ccc65",
+      })
+      .setOrigin(0, 0.5)
+      .setInteractive({ useHandCursor: true });
+    btn.on("pointerdown", () => this.scene.start("WorldScene"));
   }
 }
