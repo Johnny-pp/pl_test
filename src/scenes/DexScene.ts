@@ -1,15 +1,50 @@
 import Phaser from "phaser";
 import { pals } from "../data/loadPals";
-import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
-import type { Pal } from "../types/pal";
+import { ELEMENT_COLORS, ELEMENT_LABELS, WORK_LABELS } from "../types/elements";
+import type { ElementType, WorkType, Pal } from "../types/pal";
 
 const CARD_W = 200;
 const CARD_H = 96;
 const GAP = 16;
 const COLS = 4;
 
+const ELEMENTS = Object.keys(ELEMENT_LABELS) as ElementType[];
+const WORKS = Object.keys(WORK_LABELS) as WorkType[];
+
+interface SortOpt {
+  key: "id" | "name" | "rarity" | "hp" | "attack";
+  label: string;
+}
+
+const SORTS: SortOpt[] = [
+  { key: "id", label: "编号" },
+  { key: "name", label: "名称" },
+  { key: "rarity", label: "稀有" },
+  { key: "hp", label: "HP" },
+  { key: "attack", label: "攻击" },
+];
+
+interface Chip {
+  bg: Phaser.GameObjects.Rectangle;
+  txt: Phaser.GameObjects.Text;
+}
+
+const GRID_TOP = 170;
+
 export class DexScene extends Phaser.Scene {
   private grid!: Phaser.GameObjects.Container;
+  private countText!: Phaser.GameObjects.Text;
+  private emptyText!: Phaser.GameObjects.Text;
+  private searchInput?: HTMLInputElement;
+
+  private searchText = "";
+  private activeElements = new Set<ElementType>();
+  private activeWorks = new Set<WorkType>();
+  private sortKey: SortOpt["key"] = "id";
+
+  private elementChips = new Map<ElementType, Chip>();
+  private workChips = new Map<WorkType, Chip>();
+  private sortButtons = new Map<SortOpt["key"], Chip>();
 
   constructor() {
     super("DexScene");
@@ -17,36 +52,278 @@ export class DexScene extends Phaser.Scene {
 
   create() {
     const width = this.scale.width;
+    this.searchText = "";
+    this.activeElements.clear();
+    this.activeWorks.clear();
+    this.sortKey = "id";
+    this.elementChips.clear();
+    this.workChips.clear();
+    this.sortButtons.clear();
+
     this.add
-      .text(width / 2, 28, "帕鲁图鉴", {
+      .text(width / 2, 22, "帕鲁图鉴", {
         fontFamily: "sans-serif",
-        fontSize: "32px",
+        fontSize: "30px",
         color: "#ffffff",
       })
       .setOrigin(0.5);
 
-    this.grid = this.add.container(0, 0);
-    const totalW = COLS * (CARD_W + GAP) - GAP;
-    const startX = (width - totalW) / 2 + CARD_W / 2;
-    const startY = 80;
-
     this.makePassiveButton(width);
 
-    pals.forEach((pal, i) => {
-      const col = i % COLS;
-      const row = Math.floor(i / COLS);
-      const card = this.makeCard(pal);
-      card.setPosition(startX + col * (CARD_W + GAP), startY + row * (CARD_H + GAP));
-      this.grid.add(card);
-    });
+    this.buildSearchInput();
+    this.buildSortButtons();
+    this.buildChips(width);
+    this.buildClearButton(width);
+
+    this.countText = this.add.text(280, 60, "", {
+      fontFamily: "sans-serif",
+      fontSize: "15px",
+      color: "#9aa0c0",
+    }).setOrigin(0, 0.5);
+
+    this.emptyText = this.add
+      .text(width / 2, GRID_TOP + 80, "未找到匹配的帕鲁", {
+        fontFamily: "sans-serif",
+        fontSize: "22px",
+        color: "#9aa0c0",
+      })
+      .setOrigin(0.5)
+      .setVisible(false);
+
+    this.grid = this.add.container(0, 0);
+    this.renderGrid();
 
     this.input.on(
       "wheel",
       (_p: unknown, _o: unknown, _dx: number, dy: number) => {
-        const maxScroll = Math.min(0, this.scale.height - this.grid.height - startY);
-        this.grid.y = Phaser.Math.Clamp(this.grid.y - dy * 0.5, maxScroll, 0);
+        const maxScroll = Math.min(
+          0,
+          this.scale.height - this.grid.height - GRID_TOP
+        );
+        this.grid.y = Phaser.Math.Clamp(
+          this.grid.y - dy * 0.5,
+          maxScroll,
+          0
+        );
       }
     );
+  }
+
+  // ---- 搜索框（DOM，支持中文输入法） ----
+  private buildSearchInput() {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "搜索 名称/编号/属性/工作/地点";
+    Object.assign(input.style, {
+      width: "240px",
+      height: "30px",
+      padding: "0 8px",
+      fontSize: "14px",
+      color: "#ffffff",
+      backgroundColor: "#0f1830",
+      border: "1px solid #0f3460",
+      borderRadius: "6px",
+      outline: "none",
+      fontFamily: "sans-serif",
+      pointerEvents: "auto",
+    });
+    this.add.dom(16, 60, input).setOrigin(0, 0.5);
+    input.addEventListener("input", () => {
+      this.searchText = input.value;
+      this.renderGrid();
+    });
+    this.searchInput = input;
+  }
+
+  // ---- 排序按钮 ----
+  private buildSortButtons() {
+    const startX = 420;
+    const y = 60;
+    const w = 60;
+    const gap = 6;
+    let x = startX;
+    SORTS.forEach((s) => {
+      const chip = this.makeChip(x, y, w, 28, s.label, () => {
+        this.sortKey = s.key;
+        this.sortButtons.forEach((c, key) =>
+          this.refreshChip(c, key === s.key, 0x4fc3f7)
+        );
+        this.renderGrid();
+      });
+      this.sortButtons.set(s.key, chip);
+      x += w + gap;
+    });
+    this.refreshChip(this.sortButtons.get("id")!, true, 0x4fc3f7);
+  }
+
+  // ---- 元素 / 工作 筛选标签 ----
+  private buildChips(width: number) {
+    const eTotal = ELEMENTS.length * (64 + 6) - 6;
+    let ex = (width - eTotal) / 2 + 32;
+    ELEMENTS.forEach((e) => {
+      const chip = this.makeChip(ex, 102, 64, 26, ELEMENT_LABELS[e], () => {
+        if (this.activeElements.has(e)) this.activeElements.delete(e);
+        else this.activeElements.add(e);
+        this.refreshChip(
+          this.elementChips.get(e)!,
+          this.activeElements.has(e),
+          ELEMENT_COLORS[e]
+        );
+        this.renderGrid();
+      });
+      this.elementChips.set(e, chip);
+      ex += 70;
+    });
+
+    const wTotal = WORKS.length * (54 + 6) - 6;
+    let wx = (width - wTotal) / 2 + 27;
+    WORKS.forEach((w) => {
+      const chip = this.makeChip(wx, 138, 54, 24, WORK_LABELS[w], () => {
+        if (this.activeWorks.has(w)) this.activeWorks.delete(w);
+        else this.activeWorks.add(w);
+        this.refreshChip(
+          this.workChips.get(w)!,
+          this.activeWorks.has(w),
+          0x4fc3f7
+        );
+        this.renderGrid();
+      });
+      this.workChips.set(w, chip);
+      wx += 60;
+    });
+  }
+
+  private buildClearButton(width: number) {
+    const btn = this.add
+      .text(width - 16, 60, "清除", {
+        fontFamily: "sans-serif",
+        fontSize: "16px",
+        color: "#9aa0c0",
+      })
+      .setOrigin(1, 0.5)
+      .setInteractive({ useHandCursor: true });
+    btn.on("pointerdown", () => this.clearFilters());
+  }
+
+  private clearFilters() {
+    this.searchText = "";
+    if (this.searchInput) this.searchInput.value = "";
+    this.activeElements.clear();
+    this.activeWorks.clear();
+    this.elementChips.forEach((c) => this.refreshChip(c, false, 0));
+    this.workChips.forEach((c) => this.refreshChip(c, false, 0));
+    this.sortKey = "id";
+    this.sortButtons.forEach((c, key) =>
+      this.refreshChip(c, key === "id", 0x4fc3f7)
+    );
+    this.renderGrid();
+  }
+
+  private makeChip(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    label: string,
+    onClick: () => void
+  ): Chip {
+    const bg = this.add
+      .rectangle(x, y, w, h, 0x16213e)
+      .setStrokeStyle(1, 0x0f3460)
+      .setInteractive({ useHandCursor: true });
+    const txt = this.add
+      .text(x, y, label, {
+        fontFamily: "sans-serif",
+        fontSize: "13px",
+        color: "#9aa0c0",
+      })
+      .setOrigin(0.5);
+    bg.on("pointerdown", onClick);
+    return { bg, txt };
+  }
+
+  private refreshChip(chip: Chip, active: boolean, color: number) {
+    if (active) {
+      chip.bg.setFillStyle(color, 0.85);
+      chip.bg.setStrokeStyle(1, color);
+      chip.txt.setColor("#ffffff");
+    } else {
+      chip.bg.setFillStyle(0x16213e, 1);
+      chip.bg.setStrokeStyle(1, 0x0f3460);
+      chip.txt.setColor("#9aa0c0");
+    }
+  }
+
+  // ---- 过滤 + 排序 ----
+  private getFilteredPals(): Pal[] {
+    const q = this.searchText.trim().toLowerCase();
+    let list = pals.filter((p) => {
+      if (q) {
+        const hay = [
+          String(p.id),
+          p.name.zh,
+          p.name.en,
+          ...p.elements.map((e) => ELEMENT_LABELS[e]),
+          ...p.workSuitability.map((w) => WORK_LABELS[w.type]),
+          ...(p.spawnLocations ?? []),
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (
+        this.activeElements.size > 0 &&
+        !p.elements.some((e) => this.activeElements.has(e))
+      )
+        return false;
+      if (
+        this.activeWorks.size > 0 &&
+        !p.workSuitability.some((w) => this.activeWorks.has(w.type))
+      )
+        return false;
+      return true;
+    });
+
+    const k = this.sortKey;
+    list = [...list].sort((a, b) => {
+      switch (k) {
+        case "id":
+          return a.id - b.id;
+        case "name":
+          return a.name.zh.localeCompare(b.name.zh, "zh");
+        case "rarity":
+          return b.rarity - a.rarity;
+        case "hp":
+          return b.stats.hp - a.stats.hp;
+        case "attack":
+          return b.stats.attack - a.stats.attack;
+      }
+    });
+    return list;
+  }
+
+  // ---- 渲染网格 ----
+  private renderGrid() {
+    this.grid.removeAll(true);
+    const list = this.getFilteredPals();
+    this.countText.setText(`共 ${list.length} 只`);
+    this.emptyText.setVisible(list.length === 0);
+
+    const width = this.scale.width;
+    const totalW = COLS * (CARD_W + GAP) - GAP;
+    const startX = (width - totalW) / 2 + CARD_W / 2;
+
+    list.forEach((pal, i) => {
+      const col = i % COLS;
+      const row = Math.floor(i / COLS);
+      const card = this.makeCard(pal);
+      card.setPosition(
+        startX + col * (CARD_W + GAP),
+        GRID_TOP + row * (CARD_H + GAP)
+      );
+      this.grid.add(card);
+    });
+    this.grid.y = 0;
   }
 
   private makeCard(pal: Pal): Phaser.GameObjects.Container {
@@ -87,7 +364,7 @@ export class DexScene extends Phaser.Scene {
 
   private makePassiveButton(width: number) {
     const btn = this.add
-      .text(width - 16, 28, "被动技能", {
+      .text(width - 16, 22, "被动技能", {
         fontFamily: "sans-serif",
         fontSize: "18px",
         color: "#9aa0c0",

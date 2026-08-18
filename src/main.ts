@@ -9,5 +9,6 @@ new Phaser.Game({
   width: 900,
   height: 640,
   backgroundColor: "#1a1a2e",
+  dom: { createContainer: true },
   scene: [DexScene, DetailScene, PassiveSkillsScene],
 });
