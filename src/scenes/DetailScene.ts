@@ -81,9 +81,16 @@ export class DetailScene extends Phaser.Scene {
 
     y = this.section(x, y, "技能");
     this.content.add(this.line(x, y, `主动：${(pal.activeSkills ?? []).join("、") || "—"}`, 0x80deea));
-    y += 24;
-    this.content.add(this.line(x, y, `被动：${(pal.passiveSkills ?? []).join("、") || "—"}`, 0x80deea));
-    y += 30;
+    y += 26;
+    this.content.add(
+      this.line(x, y, "被动（全局特性）：任意帕鲁均可随机携带，捕获/孵化时概率获得。", 0x80deea, 15, 760)
+    );
+    y += 26;
+    const link = this.line(x, y, "→ 查看全部被动技能", 0xffd54f, 15, 0);
+    link.setInteractive({ useHandCursor: true });
+    link.on("pointerdown", () => this.scene.start("PassiveSkillsScene"));
+    this.content.add(link);
+    y += 34;
 
     y = this.section(x, y, "掉落物");
     for (const d of pal.drops ?? []) {
