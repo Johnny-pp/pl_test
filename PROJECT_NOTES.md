@@ -53,27 +53,10 @@
 - 新增帕鲁数据时应符合该 Schema；字段结构参考 paldb.cn / Palpedia / PokeAPI，数值自行设计。
 - 示例数据：`data/pals.json`（2 个原创示例帕鲁）；校验脚本：`scripts/validate-pals.mjs`（`node scripts/validate-pals.mjs`，依赖 ajv）。
 
-## 部署 / 访问（含内网穿透）
-> 让其他设备访问本项目的 dev server 或正式版本。已配置 `vite.config.mjs` 的 `server.host: true`，dev 启动会打印 `Network` 地址。
+## 局域网访问（仅本机 + 同 WiFi/路由器的其他设备）
+> 已配置 `vite.config.mjs` 的 `server.host: true`，dev 启动会打印 `Network` 地址，同局域网设备直接用该地址访问即可，无需公网/内网穿透。
 
-### 1. 同一局域网（同 WiFi/路由器）
-- 启动：`npm run dev`，用日志里的 `Network: http://<本机IP>:5173/` 访问。
+- 启动：`npm run dev`，日志里的 `Network: http://<本机IP>:5173/` 即局域网地址。
 - 查本机 IP：`hostname -I`(Linux) / `ipconfig`(Win) / `ifconfig`(Mac)。
 - 访问不了多为防火墙挡了 5173 端口，放行即可。
-
-### 2. 内网穿透（跨网络/外网访问，最省事）
-dev server 只解决局域网，跨网络需穿透工具，任选其一：
-- **ngrok**：`npx ngrok http 5173` → 生成公网 URL（免费版随机域名，会过期）。
-- **cloudflared**：`cloudflared tunnel --url http://localhost:5173` → 生成稳定公网 URL。
-- **frp / 自建**：有服务器时自建 frp 服务端做长期穿透。
-
-### 3. 正式部署（给别人长期玩，推荐）
-dev server 不压缩、不校验来源，**勿长期公网暴露**。正式方案：
-- 构建：`npm run build` → 产出自包含 `dist/`。
-- 托管：`dist/` 传到 Vercel / Netlify / GitHub Pages / 任意静态服务器即可公网访问。
-- 注意：`build` 的产物是静态文件，无后端则数据写死在 `data/pals.json` 即可。
-
-### 安全提醒
-- dev server 仅用于开发/演示，不要绑定公网 IP 长期运行。
-- 穿透工具的公网 URL 任何人可访问，演示完及时关闭。
-- 含后端/敏感逻辑时，穿透前务必加鉴权。
+- 当前阶段只需局域网演示，不做外网暴露。
