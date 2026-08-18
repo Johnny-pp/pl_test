@@ -31,6 +31,13 @@ export interface StorageLike {
   setItem(key: string, value: string): void;
 }
 
+function createInstanceId(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return `pal-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function createEmptySave(): GameSave {
   return {
     version: SAVE_VERSION,
@@ -42,7 +49,7 @@ export function createEmptySave(): GameSave {
 
 export function createPalInstance(
   pal: Pal,
-  idFactory: () => string = () => crypto.randomUUID(),
+  idFactory: () => string = createInstanceId,
   now: () => string = () => new Date().toISOString()
 ): PalInstance {
   return {

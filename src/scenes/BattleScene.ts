@@ -10,6 +10,14 @@ import {
 } from "../battle/battleEngine";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import type { ActiveSkill } from "../types/activeSkill";
+import { attemptCapture, calculateCaptureChance } from "../capture/capture";
+import {
+  addCapturedPal,
+  createPalInstance,
+  loadGame,
+  recordBattleWin,
+  saveGame,
+} from "../player/playerState";
 
 interface BattleSceneData {
   playerId: number;
@@ -26,12 +34,16 @@ export class BattleScene extends Phaser.Scene {
   private logText!: Phaser.GameObjects.Text;
   private actionLayer!: Phaser.GameObjects.Container;
   private busy = false;
+  private captureAttempted = false;
+  private captureMessage = "";
 
   constructor() {
     super("BattleScene");
   }
 
   create(data: BattleSceneData) {
+    this.captureAttempted = false;
+    this.captureMessage = "";
     const player = pals.find((pal) => pal.id === data.playerId);
     const enemy = pals.find((pal) => pal.id === data.enemyId);
     if (!player || !enemy) {
@@ -126,9 +138,29 @@ export class BattleScene extends Phaser.Scene {
         fontSize: "24px",
         color: this.state.phase === "victory" ? "#ffd54f" : "#ff8a80",
       }).setOrigin(0.5);
-      const again = this.makeNavButton(370, 602, "重新选角", () => this.scene.start("SelectPalScene"));
-      const dex = this.makeNavButton(535, 602, "返回图鉴", () => this.scene.start("DexScene"));
+      const again = this.makeNavButton(500, 602, "重新选角", () => this.scene.start("SelectPalScene"));
+      const dex = this.makeNavButton(665, 602, "返回图鉴", () => this.scene.start("DexScene"));
       this.actionLayer.add([title, again, dex]);
+      if (this.state.phase === "victory") {
+        const enemyPal = pals.find((pal) => pal.id === this.state?.enemy.id);
+        if (enemyPal && !this.captureAttempted) {
+          const chance = calculateCaptureChance({
+            hp: this.state.enemy.hp,
+            maxHp: this.state.enemy.maxHp,
+            rarity: enemyPal.rarity,
+            catchRate: enemyPal.catchRate,
+          });
+          const capture = this.makeNavButton(170, 602, `捕获 ${chance}%`, () => this.captureEnemy(enemyPal));
+          this.actionLayer.add(capture);
+        } else if (this.captureMessage) {
+          const message = this.add.text(170, 602, this.captureMessage, {
+            fontFamily: "sans-serif",
+            fontSize: "16px",
+            color: this.captureMessage.startsWith("捕获成功") ? "#9ccc65" : "#ff8a80",
+          }).setOrigin(0.5);
+          this.actionLayer.add(message);
+        }
+      }
       return;
     }
 
@@ -168,8 +200,32 @@ export class BattleScene extends Phaser.Scene {
     if (!enemySkill) return;
     this.busy = true;
     this.state = resolveTurn(this.state, playerSkill, enemySkill);
+    if (this.state.phase === "victory") {
+      const save = recordBattleWin(loadGame(localStorage));
+      saveGame(localStorage, save);
+    }
     this.render();
     this.busy = false;
+  }
+
+  private captureEnemy(enemyPal: (typeof pals)[number]) {
+    if (!this.state || this.captureAttempted) return;
+    this.captureAttempted = true;
+    const result = attemptCapture({
+      hp: this.state.enemy.hp,
+      maxHp: this.state.enemy.maxHp,
+      rarity: enemyPal.rarity,
+      catchRate: enemyPal.catchRate,
+    });
+    if (result.success) {
+      const current = loadGame(localStorage);
+      const next = addCapturedPal(current, createPalInstance(enemyPal));
+      const persisted = saveGame(localStorage, next);
+      this.captureMessage = persisted ? "捕获成功！" : "捕获成功，但存档失败";
+    } else {
+      this.captureMessage = "捕获失败";
+    }
+    this.render();
   }
 
   private makeNavButton(x: number, y: number, label: string, action: () => void) {

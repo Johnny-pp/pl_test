@@ -77,6 +77,7 @@ export class DexScene extends Phaser.Scene {
 
     this.makePassiveButton(width);
     this.makeBattleButton();
+    this.makeTeamButton();
 
     this.buildSearchInput();
     this.buildSortButtons();
@@ -455,5 +456,17 @@ export class DexScene extends Phaser.Scene {
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
     btn.on("pointerdown", () => this.scene.start("SelectPalScene"));
+  }
+
+  private makeTeamButton() {
+    const btn = this.add
+      .text(128, 22, "我的队伍", {
+        fontFamily: "sans-serif",
+        fontSize: "18px",
+        color: "#80deea",
+      })
+      .setOrigin(0, 0.5)
+      .setInteractive({ useHandCursor: true });
+    btn.on("pointerdown", () => this.scene.start("TeamScene"));
   }
 }
