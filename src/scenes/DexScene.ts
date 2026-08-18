@@ -37,6 +37,7 @@ interface SavedState {
   sortKey: SortOpt["key"];
   elements: ElementType[];
   works: WorkType[];
+  scrollY: number;
 }
 
 export class DexScene extends Phaser.Scene {
@@ -49,6 +50,7 @@ export class DexScene extends Phaser.Scene {
   private activeElements = new Set<ElementType>();
   private activeWorks = new Set<WorkType>();
   private sortKey: SortOpt["key"] = "id";
+  private scrollY = 0;
 
   private elementChips = new Map<ElementType, Chip>();
   private workChips = new Map<WorkType, Chip>();
@@ -107,11 +109,13 @@ export class DexScene extends Phaser.Scene {
           0,
           this.scale.height - this.grid.height - GRID_TOP
         );
-        this.grid.y = Phaser.Math.Clamp(
+        this.scrollY = Phaser.Math.Clamp(
           this.grid.y - dy * 0.5,
           maxScroll,
           0
         );
+        this.grid.y = this.scrollY;
+        this.saveState();
       }
     );
   }
@@ -266,6 +270,7 @@ export class DexScene extends Phaser.Scene {
     this.activeElements.clear();
     this.activeWorks.clear();
     this.sortKey = "id";
+    this.scrollY = 0;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
@@ -279,6 +284,8 @@ export class DexScene extends Phaser.Scene {
       (saved.works ?? []).forEach((w) => {
         if (WORKS.includes(w)) this.activeWorks.add(w);
       });
+      if (typeof saved.scrollY === "number" && Number.isFinite(saved.scrollY))
+        this.scrollY = saved.scrollY;
     } catch {
       // 忽略损坏/不可用的本地存储，回退到默认状态
     }
@@ -290,6 +297,7 @@ export class DexScene extends Phaser.Scene {
       sortKey: this.sortKey,
       elements: [...this.activeElements],
       works: [...this.activeWorks],
+      scrollY: this.scrollY,
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -370,7 +378,7 @@ export class DexScene extends Phaser.Scene {
     const totalW = COLS * (CARD_W + GAP) - GAP;
     const startX = (width - totalW) / 2 + CARD_W / 2;
 
-    list.forEach((pal, i) => {
+      list.forEach((pal, i) => {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
       const card = this.makeCard(pal);
@@ -380,7 +388,11 @@ export class DexScene extends Phaser.Scene {
       );
       this.grid.add(card);
     });
-    this.grid.y = 0;
+    const maxScroll = Math.min(
+      0,
+      this.scale.height - this.grid.height - GRID_TOP
+    );
+    this.grid.y = Phaser.Math.Clamp(this.scrollY, maxScroll, 0);
     this.saveState();
   }
 
