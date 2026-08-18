@@ -1,8 +1,7 @@
 {
   "name": "pl_test",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "基于 Phaser 4 的原创网页幻兽养成游戏",
   "scripts": {
     "validate": "node scripts/validate-pals.mjs",
     "dev": "vite",
