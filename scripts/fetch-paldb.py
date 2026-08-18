@@ -10,12 +10,16 @@
     提供: 图鉴编号、中文名、元素、工作适性(类型+等级)、饱食度、描述、
           伙伴技能(名称/描述/各级掉落物)、是否 Boss 形态。
   - 详情页 HTML: https://paldb.cn/pals/<slug>
-    提供: HP / 攻击 / 防御 / 工作速度 等数值（移动速度/骑行速度页面未渲染）。
+    提供: HP / 攻击 / 防御 / 工作速度 等数值，以及"主动技能"中文名列表。
+          (paldb 仅渲染昼夜刷新点数量+地图链接，无区域名，刷新区域按经验占位)
 
 说明（版权与字段完整性）:
   - 仅作"结构/数值参考"，数据版权归 Palworld/paldb.cn，商用前请自行确认授权。
-  - paldb 不提供 移动速度 / 骑行速度 / 刷新位置 / 主动技能 / 被动技能 / rarity，
-    这些字段为默认值或留空，需你自行补全（建议对着游戏或 paldb 页面手填）。
+  - paldb 不提供 移动速度 / 骑行速度 / 刷新区域名 / 被动技能 / rarity：
+      移动速度/骑行速度 → MOVE_MAP 经验占位；
+      刷新区域 → SPAWN_MAP 经验占位；
+      主动技能 → 从 HTML 抓取真实名称；
+      被动技能为 Palworld 全局随机特性，非帕鲁专属，故留空。
 """
 import json
 import re
@@ -45,6 +49,21 @@ MOVE_MAP = {
     "Jolthog": (500, 0), "Rooby": (500, 0), "Tanzee": (450, 0),
     "Rushoar": (450, 900), "Daedream": (500, 0), "Vanwyrm": (800, 1300),
 }
+# 刷新区域（paldb 仅提供昼夜刷新点数量+地图链接，无区域名；以下按 Palworld 经验给占位）
+SPAWN_MAP = {
+    "Lamball": ["初始台地", "翠绿溪谷"],
+    "Cattiva": ["初始台地", "翠绿溪谷"],
+    "Foxparks": ["初始台地", "翠绿溪谷（火山口附近）"],
+    "Lifmunk": ["初始台地", "翠绿溪谷", "风滚草草原"],
+    "Pengullet": ["落日内海", "海岸线"],
+    "Teafant": ["初始台地（水边）", "翠绿溪谷"],
+    "Jolthog": ["初始台地", "翠绿溪谷"],
+    "Rooby": ["翠绿溪谷", "火山地带"],
+    "Tanzee": ["翠绿溪谷", "风滚草草原"],
+    "Rushoar": ["风滚草草原", "落日内海"],
+    "Daedream": ["初始台地（夜晚）", "翠绿溪谷（夜晚）"],
+    "Vanwyrm": ["巍雪峰", "火山上空"],
+}
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 
@@ -67,6 +86,13 @@ def get_json(url: str) -> dict:
 def parse_prob(p: str) -> int:
     m = re.search(r"(\d+)", p or "")
     return int(m.group(1)) if m else 0
+
+
+def parse_skills(html: str) -> list:
+    """从帕鲁详情页 HTML 提取主动技能中文名（paldb 服务器渲染，真实可抓）。"""
+    m = re.search(r"主动技能</h3>.*?(?=<h3|</section)", html, re.S)
+    block = m.group(0) if m else html
+    return re.findall(r'href="/skills/[^"]+".*?<h4[^>]*>([^<]+)</h4>', block, re.S)
 
 
 def parse(slug: str) -> dict:
@@ -108,6 +134,10 @@ def parse(slug: str) -> dict:
         "ranks": [],
     }
 
+    # 主动技能（来自 HTML，真实可抓）；被动技能为 Palworld 全局随机特性，非帕鲁专属，留空
+    active = parse_skills(html)
+    spawn = SPAWN_MAP.get(slug, [])
+
     return {
         "id": number or 0,
         "name": {"zh": zh, "en": slug},
@@ -117,10 +147,10 @@ def parse(slug: str) -> dict:
         "stats": stats,
         "workSuitability": work,
         "partnerSkill": partner,
-        "activeSkills": [],
+        "activeSkills": active,
         "passiveSkills": [],
         "drops": drops,
-        "spawnLocations": [],
+        "spawnLocations": spawn,
         "breeding": {"power": 0, "parents": []},
     }
 

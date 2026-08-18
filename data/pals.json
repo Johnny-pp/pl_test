@@ -37,10 +37,22 @@
       "description": "发动后，它会化身为装备在玩家身上的盾牌。将它分派到家畜牧场，它就有机会掉落羊毛。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "滚滚毛球",
+      "空气弹",
+      "能量射击",
+      "自爆",
+      "闪电球",
+      "元气弹",
+      "帕鲁光束",
+      "光击阵"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "初始台地",
+      "翠绿溪谷"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -88,10 +100,22 @@
       "description": "若它在队伍中，捣蛋猫就会帮忙载运行李，玩家的负重上限将提高(100~200)。（不可叠加）",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "喵喵拳",
+      "空气弹",
+      "泥浆投掷",
+      "能量射击",
+      "风刃",
+      "种子机关枪",
+      "帕鲁光束",
+      "光击阵"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "初始台地",
+      "翠绿溪谷"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -127,10 +151,22 @@
       "description": "发动后，它会化身为装备在玩家身上的火焰喷射器。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "烈焰射击",
+      "泥浆投掷",
+      "烈焰溅射",
+      "烈焰箭",
+      "烈焰放射",
+      "鬼火",
+      "烈焰球",
+      "龙彗星"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "初始台地",
+      "翠绿溪谷（火山口附近）"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -182,10 +218,23 @@
       "description": "发动后它会坐在玩家的头上，配合玩家的攻击用冲锋枪进行追击。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "风刃",
+      "空气弹",
+      "能量射击",
+      "种子机关枪",
+      "元气弹",
+      "缠绕地刺",
+      "太阳光束",
+      "翠耀罡风"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "初始台地",
+      "翠绿溪谷",
+      "风滚草草原"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -234,10 +283,22 @@
       "description": "发动后玩家将装备火箭发射器，并可将企丸丸当作炮弹射出。命中目标后企丸丸会爆炸，并陷入濒死状态。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "冰雪飞弹",
+      "水流射击",
+      "水枪",
+      "冰刃",
+      "冰刺",
+      "钻石星辰",
+      "高压水炮",
+      "潮涌迸发"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "落日内海",
+      "海岸线"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -273,10 +334,22 @@
       "description": "若它在队伍中，若玩家的生命值低于30%，恢复(20~40)%的生命值。（不可叠加）※发动后需120秒冷却方可再次触发",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "水枪",
+      "水流射击",
+      "泥浆投掷",
+      "泡泡射击",
+      "酸雨",
+      "爆裂水球",
+      "高压水炮",
+      "潮涌迸发"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "初始台地（水边）",
+      "翠绿溪谷"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -312,10 +385,22 @@
       "description": "发动后就能将电棘鼠装备在手上，若将它投向敌人且命中目标，便会引发雷属性爆炸。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "冲击波",
+      "能量射击",
+      "闪电球",
+      "元气弹",
+      "三重雷击",
+      "雷击",
+      "闪电伏特",
+      "并联雷光"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "初始台地",
+      "翠绿溪谷"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -355,10 +440,22 @@
       "description": "若它在队伍中，火属性帕鲁的防御力会提升(15~30)%。（不可叠加）将它分派到家畜牧场，它就有机会掉落喷火器官。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "烈焰射击",
+      "能量射击",
+      "烈焰溅射",
+      "烈焰箭",
+      "烈焰风暴",
+      "地狱火",
+      "烈焰球",
+      "翠耀罡风"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "翠绿溪谷",
+      "火山地带"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -410,10 +507,22 @@
       "description": "发动后，新叶猿会在一定时间内用突击步枪猛烈扫射附近的敌人。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "风刃",
+      "泥浆投掷",
+      "种子机关枪",
+      "种子地雷",
+      "投石",
+      "绿野飓风",
+      "太阳光束",
+      "翠耀罡风"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "翠绿溪谷",
+      "风滚草草原"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -449,10 +558,22 @@
       "description": "可骑在它的背上移动。骑乘期间破坏岩石的效率将提升(500~2000)%。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "猪突猛进",
+      "泥浆投掷",
+      "能量射击",
+      "碎石霰弹",
+      "元气弹",
+      "岩石锐矛",
+      "帕鲁光束",
+      "震岩"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "风滚草草原",
+      "落日内海"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -496,10 +617,22 @@
       "description": "若它在队伍中，就会出现于玩家身边。它会用暗属性的魔弹追击敌对个体。且该追击不会使猎物毙命。",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "暗黑球",
+      "剧毒射击",
+      "暗影波动",
+      "凛冬之息",
+      "鬼火",
+      "恶梦球",
+      "暗黑雷射",
+      "黑暗之拥"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "初始台地（夜晚）",
+      "翠绿溪谷（夜晚）"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
@@ -540,10 +673,23 @@
       "description": "可骑在它的背上在空中飞行。若它在队伍中，玩家攻击敌方弱点部位造成的伤害将提升(20~40)%。（不可叠加）",
       "ranks": []
     },
-    "activeSkills": [],
+    "activeSkills": [
+      "空气弹",
+      "烈焰射击",
+      "烈焰溅射",
+      "烈焰放射",
+      "炽焰掠空",
+      "恶梦球",
+      "烈焰球",
+      "暗黑雷射",
+      "黑暗之拥"
+    ],
     "passiveSkills": [],
     "drops": [],
-    "spawnLocations": [],
+    "spawnLocations": [
+      "巍雪峰",
+      "火山上空"
+    ],
     "breeding": {
       "power": 0,
       "parents": []
