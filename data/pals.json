@@ -15,7 +15,7 @@
       "attack": 70,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 300,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -62,7 +62,7 @@
       "attack": 70,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 350,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -113,7 +113,7 @@
       "attack": 75,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 400,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -152,7 +152,7 @@
       "attack": 70,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 400,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -208,7 +208,7 @@
       "attack": 75,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 400,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -259,7 +259,7 @@
       "attack": 60,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 350,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -298,7 +298,7 @@
       "attack": 75,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 500,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -337,7 +337,7 @@
       "attack": 70,
       "defense": 75,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 500,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -380,7 +380,7 @@
       "attack": 70,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 450,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -435,8 +435,8 @@
       "attack": 70,
       "defense": 70,
       "workSpeed": 100,
-      "moveSpeed": 100,
-      "rideSprintSpeed": 0
+      "moveSpeed": 450,
+      "rideSprintSpeed": 900
     },
     "workSuitability": [
       {
@@ -474,7 +474,7 @@
       "attack": 75,
       "defense": 60,
       "workSpeed": 100,
-      "moveSpeed": 100,
+      "moveSpeed": 500,
       "rideSprintSpeed": 0
     },
     "workSuitability": [
@@ -522,8 +522,8 @@
       "attack": 115,
       "defense": 90,
       "workSpeed": 100,
-      "moveSpeed": 100,
-      "rideSprintSpeed": 0
+      "moveSpeed": 800,
+      "rideSprintSpeed": 1300
     },
     "workSuitability": [
       {

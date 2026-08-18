@@ -37,6 +37,14 @@ WORK_MAP = {
 STAT_MAP = {
     "HP": "hp", "攻击": "attack", "防御": "defense", "工作速度": "workSpeed",
 }
+# 移动速度 / 骑乘冲刺速度（paldb 页面未渲染，按 Palworld 经验给的占位值，非精确数值）。
+# moveSpeed=地面奔跑速度；rideSprintSpeed=骑乘冲刺速度(0=不可骑乘)。
+MOVE_MAP = {
+    "Lamball": (300, 0), "Cattiva": (350, 0), "Foxparks": (400, 0),
+    "Lifmunk": (400, 0), "Pengullet": (400, 0), "Teafant": (350, 0),
+    "Jolthog": (500, 0), "Rooby": (500, 0), "Tanzee": (450, 0),
+    "Rushoar": (450, 900), "Daedream": (500, 0), "Vanwyrm": (800, 1300),
+}
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 
@@ -79,9 +87,8 @@ def parse(slug: str) -> dict:
                 stats[STAT_MAP[label]] = int(val)
             except ValueError:
                 pass
-    # 移动速度/骑行速度 paldb 页面未渲染，置默认占位
-    stats["moveSpeed"] = 100
-    stats["rideSprintSpeed"] = 0
+    # 移动速度/骑行速度 paldb 页面未渲染，按 Palworld 经验给占位值
+    stats["moveSpeed"], stats["rideSprintSpeed"] = MOVE_MAP.get(slug, (100, 0))
 
     # 工作适性（来自 API，含等级）
     work = []
