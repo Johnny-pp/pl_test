@@ -5,7 +5,7 @@
       "zh": "棉悠悠",
       "en": "Lamball"
     },
-    "description": "",
+    "description": "它只要走在坡道上就肯定会跌倒并滚动起来。  而且还会因为眼冒金星而无法动弹，  非常容易被当做是猎物，是食物链的底层。",
     "rarity": 2,
     "elements": [
       "neutral"
@@ -34,7 +34,8 @@
     ],
     "partnerSkill": {
       "name": "茸茸盾牌",
-      "description": ""
+      "description": "发动后，它会化身为装备在玩家身上的盾牌。将它分派到家畜牧场，它就有机会掉落羊毛。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -51,7 +52,7 @@
       "zh": "捣蛋猫",
       "en": "Cattiva"
     },
-    "description": "",
+    "description": "它装出一副威风凛凛的样子，其实胆小软弱。  如果被捣蛋猫看不起，  某种意义上可谓奇耻大辱。",
     "rarity": 2,
     "elements": [
       "neutral"
@@ -84,7 +85,8 @@
     ],
     "partnerSkill": {
       "name": "跟猫借手手",
-      "description": ""
+      "description": "若它在队伍中，捣蛋猫就会帮忙载运行李，玩家的负重上限将提高(100~200)。（不可叠加）",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -96,12 +98,12 @@
     }
   },
   {
-    "id": 3,
+    "id": 29,
     "name": {
       "zh": "火绒狐",
       "en": "Foxparks"
     },
-    "description": "",
+    "description": "它刚出生时无法很好地操纵火焰， 动不动就不小心喷出火焰，结果呛到自己。火绒狐的喷嚏会引起森林火灾。",
     "rarity": 2,
     "elements": [
       "fire"
@@ -122,7 +124,8 @@
     ],
     "partnerSkill": {
       "name": "抱抱火焰",
-      "description": ""
+      "description": "发动后，它会化身为装备在玩家身上的火焰喷射器。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -139,7 +142,7 @@
       "zh": "翠叶鼠",
       "en": "Lifmunk"
     },
-    "description": "",
+    "description": "拥有等同于5至7岁儿童的智力。 虽然很适合作为伙伴，但也有不少的记录显示， 有些个体在学会使用武器后杀害了自己的主人。",
     "rarity": 2,
     "elements": [
       "grass"
@@ -176,7 +179,8 @@
     ],
     "partnerSkill": {
       "name": "翠叶鼠出击",
-      "description": ""
+      "description": "发动后它会坐在玩家的头上，配合玩家的攻击用冲锋枪进行追击。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -188,15 +192,16 @@
     }
   },
   {
-    "id": 5,
+    "id": 17,
     "name": {
       "zh": "企丸丸",
       "en": "Pengullet"
     },
-    "description": "",
+    "description": "它的翅膀已完全退化，无法飞翔。 但基因中刻着对天空的向往。 因此它想尽办法，想要再一次飞翔。",
     "rarity": 2,
     "elements": [
-      "neutral"
+      "water",
+      "ice"
     ],
     "stats": {
       "hp": 70,
@@ -226,7 +231,8 @@
     ],
     "partnerSkill": {
       "name": "企丸丸发射",
-      "description": ""
+      "description": "发动后玩家将装备火箭发射器，并可将企丸丸当作炮弹射出。命中目标后企丸丸会爆炸，并陷入濒死状态。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -238,12 +244,12 @@
     }
   },
   {
-    "id": 6,
+    "id": 11,
     "name": {
       "zh": "壶小象",
       "en": "Teafant"
     },
-    "description": "",
+    "description": "它那被认为是鼻子的器官会喷出大量的水。  虽然也有人指出那只是鼻涕罢了，  但是研究者们仍然为此进行了热烈的讨论。",
     "rarity": 2,
     "elements": [
       "water"
@@ -264,7 +270,8 @@
     ],
     "partnerSkill": {
       "name": "疗伤之浴",
-      "description": ""
+      "description": "若它在队伍中，若玩家的生命值低于30%，恢复(20~40)%的生命值。（不可叠加）※发动后需120秒冷却方可再次触发",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -276,12 +283,12 @@
     }
   },
   {
-    "id": 7,
+    "id": 15,
     "name": {
       "zh": "电棘鼠",
       "en": "Jolthog"
     },
-    "description": "",
+    "description": "它在受到冲击后会释放储存的电力。 它的电压超过1000万伏特。 将它扔出去的话，威力比普通的重型炮弹危险得多。",
     "rarity": 2,
     "elements": [
       "neutral"
@@ -302,7 +309,8 @@
     ],
     "partnerSkill": {
       "name": "电击炸弹",
-      "description": ""
+      "description": "发动后就能将电棘鼠装备在手上，若将它投向敌人且命中目标，便会引发雷属性爆炸。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -314,12 +322,12 @@
     }
   },
   {
-    "id": 8,
+    "id": 26,
     "name": {
       "zh": "燎火鹿",
       "en": "Rooby"
     },
-    "description": "",
+    "description": "野生的燎火鹿从不生病，让人相当惊讶。 据说这种帕鲁永保健康的秘诀， 就是每天吃掉一根用树枝烧成的木炭。",
     "rarity": 2,
     "elements": [
       "fire"
@@ -344,7 +352,8 @@
     ],
     "partnerSkill": {
       "name": "微小火种",
-      "description": ""
+      "description": "若它在队伍中，火属性帕鲁的防御力会提升(15~30)%。（不可叠加）将它分派到家畜牧场，它就有机会掉落喷火器官。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -356,12 +365,12 @@
     }
   },
   {
-    "id": 9,
+    "id": 23,
     "name": {
       "zh": "新叶猿",
       "en": "Tanzee"
     },
-    "description": "",
+    "description": "在古时这种帕鲁会使用树枝等细长状的物品作为武器。 但在它们与人类频繁接触后，便不再使用这些物品。 因为它们发现了同样细长，却更为高效的「枪械」。",
     "rarity": 2,
     "elements": [
       "grass"
@@ -398,7 +407,8 @@
     ],
     "partnerSkill": {
       "name": "猴急步枪",
-      "description": ""
+      "description": "发动后，新叶猿会在一定时间内用突击步枪猛烈扫射附近的敌人。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -410,12 +420,12 @@
     }
   },
   {
-    "id": 10,
+    "id": 28,
     "name": {
       "zh": "草莽猪",
       "en": "Rushoar"
     },
-    "description": "",
+    "description": "它十分好战，会在弄清双方力量差距前挑事。  虽然身材娇小，但拥有惊人的冲锋威力，  甚至能弹飞巨大岩石。",
     "rarity": 2,
     "elements": [
       "ground"
@@ -436,7 +446,8 @@
     ],
     "partnerSkill": {
       "name": "坚硬头壳",
-      "description": ""
+      "description": "可骑在它的背上移动。骑乘期间破坏岩石的效率将提升(500~2000)%。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -448,12 +459,12 @@
     }
   },
   {
-    "id": 11,
+    "id": 22,
     "name": {
       "zh": "寐魔",
       "en": "Daedream"
     },
-    "description": "",
+    "description": "它可以使心仪的对象陷入熟睡当中，  并使对方永远做着幸福的美梦。  直到死亡来临之前都不会醒来。",
     "rarity": 2,
     "elements": [
       "dark"
@@ -482,7 +493,8 @@
     ],
     "partnerSkill": {
       "name": "逐梦者",
-      "description": ""
+      "description": "若它在队伍中，就会出现于玩家身边。它会用暗属性的魔弹追击敌对个体。且该追击不会使猎物毙命。",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
@@ -494,15 +506,16 @@
     }
   },
   {
-    "id": 12,
+    "id": 30,
     "name": {
       "zh": "烽歌龙",
       "en": "Vanwyrm"
     },
-    "description": "",
+    "description": "据说用烽歌龙的外骨骼制成的笛子，  所奏的笛声可越遍千山万水，  因此在古代战事中通常会被用来发出攻击信号。",
     "rarity": 2,
     "elements": [
-      "neutral"
+      "fire",
+      "dark"
     ],
     "stats": {
       "hp": 90,
@@ -524,7 +537,8 @@
     ],
     "partnerSkill": {
       "name": "大空袭击者",
-      "description": ""
+      "description": "可骑在它的背上在空中飞行。若它在队伍中，玩家攻击敌方弱点部位造成的伤害将提升(20~40)%。（不可叠加）",
+      "ranks": []
     },
     "activeSkills": [],
     "passiveSkills": [],
