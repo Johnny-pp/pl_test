@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { DexScene } from "./scenes/DexScene";
 import { DetailScene } from "./scenes/DetailScene";
+import { PassiveSkillsScene } from "./scenes/PassiveSkillsScene";
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -8,5 +9,5 @@ new Phaser.Game({
   width: 900,
   height: 640,
   backgroundColor: "#1a1a2e",
-  scene: [DexScene, DetailScene],
+  scene: [DexScene, DetailScene, PassiveSkillsScene],
 });

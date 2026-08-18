@@ -21,7 +21,7 @@ export interface PalStats {
   workSpeed: number;
   moveSpeed: number;
   rideSprintSpeed: number;
-  price: number;
+  price?: number;
 }
 
 export interface WorkSuitability {

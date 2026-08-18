@@ -30,6 +30,8 @@ export class DexScene extends Phaser.Scene {
     const startX = (width - totalW) / 2 + CARD_W / 2;
     const startY = 80;
 
+    this.makePassiveButton(width);
+
     pals.forEach((pal, i) => {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
@@ -81,5 +83,17 @@ export class DexScene extends Phaser.Scene {
     bg.setInteractive({ useHandCursor: true });
     bg.on("pointerdown", () => this.scene.start("DetailScene", { palId: pal.id }));
     return c;
+  }
+
+  private makePassiveButton(width: number) {
+    const btn = this.add
+      .text(width - 16, 28, "被动技能", {
+        fontFamily: "sans-serif",
+        fontSize: "18px",
+        color: "#9aa0c0",
+      })
+      .setOrigin(1, 0.5)
+      .setInteractive({ useHandCursor: true });
+    btn.on("pointerdown", () => this.scene.start("PassiveSkillsScene"));
   }
 }

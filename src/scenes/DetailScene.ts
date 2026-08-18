@@ -150,7 +150,7 @@ export class DetailScene extends Phaser.Scene {
       ["工作速度", s.workSpeed],
       ["移动速度", s.moveSpeed],
       ["骑行速度", s.rideSprintSpeed],
-      ["售价", s.price],
+      ["售价", s.price ?? 0],
     ];
     const maxVal = Math.max(...rows.map((r) => r[1]), 1);
     const barW = 320;
