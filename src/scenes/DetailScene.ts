@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { pals } from "../data/loadPals";
+import { activeSkillsById } from "../data/loadActiveSkills";
 import { ELEMENT_COLORS, ELEMENT_LABELS, WORK_LABELS } from "../types/elements";
 import type { Pal } from "../types/pal";
 
@@ -80,7 +81,10 @@ export class DetailScene extends Phaser.Scene {
     }
 
     y = this.section(x, y, "技能");
-    this.content.add(this.line(x, y, `主动：${(pal.activeSkills ?? []).join("、") || "—"}`, 0x80deea));
+    const skillNames = (pal.activeSkills ?? []).map(
+      (id) => activeSkillsById.get(id)?.name.zh ?? id
+    );
+    this.content.add(this.line(x, y, `主动：${skillNames.join("、") || "—"}`, 0x80deea));
     y += 26;
     this.content.add(
       this.line(x, y, "被动（全局特性）：任意帕鲁均可随机携带，捕获/孵化时概率获得。", 0x80deea, 15, 760)

@@ -57,6 +57,7 @@ export interface Pal {
   stats: PalStats;
   workSuitability: WorkSuitability[];
   partnerSkill?: PartnerSkill;
+  /** References data/active-skills.json by id. */
   activeSkills?: string[];
   passiveSkills?: string[];
   drops?: Drop[];

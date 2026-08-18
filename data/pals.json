@@ -38,14 +38,8 @@
       "ranks": []
     },
     "activeSkills": [
-      "滚滚毛球",
-      "空气弹",
-      "能量射击",
-      "自爆",
-      "闪电球",
-      "元气弹",
-      "帕鲁光束",
-      "光击阵"
+      "quick-strike",
+      "pulse-shot"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -101,14 +95,8 @@
       "ranks": []
     },
     "activeSkills": [
-      "喵喵拳",
-      "空气弹",
-      "泥浆投掷",
-      "能量射击",
-      "风刃",
-      "种子机关枪",
-      "帕鲁光束",
-      "光击阵"
+      "quick-strike",
+      "pulse-shot"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -152,14 +140,9 @@
       "ranks": []
     },
     "activeSkills": [
-      "烈焰射击",
-      "泥浆投掷",
-      "烈焰溅射",
-      "烈焰箭",
-      "烈焰放射",
-      "鬼火",
-      "烈焰球",
-      "龙彗星"
+      "quick-strike",
+      "ember-dart",
+      "flame-burst"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -219,14 +202,8 @@
       "ranks": []
     },
     "activeSkills": [
-      "风刃",
-      "空气弹",
-      "能量射击",
-      "种子机关枪",
-      "元气弹",
-      "缠绕地刺",
-      "太阳光束",
-      "翠耀罡风"
+      "quick-strike",
+      "leaf-cutter"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -284,14 +261,9 @@
       "ranks": []
     },
     "activeSkills": [
-      "冰雪飞弹",
-      "水流射击",
-      "水枪",
-      "冰刃",
-      "冰刺",
-      "钻石星辰",
-      "高压水炮",
-      "潮涌迸发"
+      "quick-strike",
+      "water-jet",
+      "frost-shard"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -335,14 +307,8 @@
       "ranks": []
     },
     "activeSkills": [
-      "水枪",
-      "水流射击",
-      "泥浆投掷",
-      "泡泡射击",
-      "酸雨",
-      "爆裂水球",
-      "高压水炮",
-      "潮涌迸发"
+      "quick-strike",
+      "water-jet"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -386,14 +352,8 @@
       "ranks": []
     },
     "activeSkills": [
-      "冲击波",
-      "能量射击",
-      "闪电球",
-      "元气弹",
-      "三重雷击",
-      "雷击",
-      "闪电伏特",
-      "并联雷光"
+      "quick-strike",
+      "spark-arc"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -441,14 +401,9 @@
       "ranks": []
     },
     "activeSkills": [
-      "烈焰射击",
-      "能量射击",
-      "烈焰溅射",
-      "烈焰箭",
-      "烈焰风暴",
-      "地狱火",
-      "烈焰球",
-      "翠耀罡风"
+      "quick-strike",
+      "ember-dart",
+      "flame-burst"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -508,14 +463,8 @@
       "ranks": []
     },
     "activeSkills": [
-      "风刃",
-      "泥浆投掷",
-      "种子机关枪",
-      "种子地雷",
-      "投石",
-      "绿野飓风",
-      "太阳光束",
-      "翠耀罡风"
+      "quick-strike",
+      "leaf-cutter"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -559,14 +508,9 @@
       "ranks": []
     },
     "activeSkills": [
-      "猪突猛进",
-      "泥浆投掷",
-      "能量射击",
-      "碎石霰弹",
-      "元气弹",
-      "岩石锐矛",
-      "帕鲁光束",
-      "震岩"
+      "quick-strike",
+      "earth-hammer",
+      "stone-shard"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -618,14 +562,8 @@
       "ranks": []
     },
     "activeSkills": [
-      "暗黑球",
-      "剧毒射击",
-      "暗影波动",
-      "凛冬之息",
-      "鬼火",
-      "恶梦球",
-      "暗黑雷射",
-      "黑暗之拥"
+      "quick-strike",
+      "night-orb"
     ],
     "passiveSkills": [],
     "drops": [],
@@ -674,15 +612,10 @@
       "ranks": []
     },
     "activeSkills": [
-      "空气弹",
-      "烈焰射击",
-      "烈焰溅射",
-      "烈焰放射",
-      "炽焰掠空",
-      "恶梦球",
-      "烈焰球",
-      "暗黑雷射",
-      "黑暗之拥"
+      "quick-strike",
+      "ember-dart",
+      "night-orb",
+      "dragon-comet"
     ],
     "passiveSkills": [],
     "drops": [],

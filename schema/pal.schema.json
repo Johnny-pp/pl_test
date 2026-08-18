@@ -120,8 +120,10 @@
     },
     "activeSkills": {
       "type": "array",
-      "description": "可学习的主动技能名称列表",
-      "items": { "type": "string" }
+      "description": "可学习的主动技能 ID 列表，对应 active-skills.json",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
     },
     "passiveSkills": {
       "type": "array",

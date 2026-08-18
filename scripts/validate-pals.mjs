@@ -25,5 +25,17 @@ function check(file, schemaFile, label, idKey) {
 let ok = true;
 ok = check("data/pals.json", "schema/pal.schema.json", "帕鲁", "id") && ok;
 ok = check("data/passive-skills.json", "schema/passive-skill.schema.json", "被动技能", "id") && ok;
-process.exit(ok ? 0 : 1);
+ok = check("data/active-skills.json", "schema/active-skill.schema.json", "主动技能", "id") && ok;
 
+const pals = JSON.parse(readFileSync("data/pals.json", "utf-8"));
+const activeSkills = JSON.parse(readFileSync("data/active-skills.json", "utf-8"));
+const skillIds = new Set(activeSkills.map((skill) => skill.id));
+for (const pal of pals) {
+  for (const skillId of pal.activeSkills ?? []) {
+    if (!skillIds.has(skillId)) {
+      ok = false;
+      console.error(`✗ 帕鲁 ${pal.id} 引用了不存在的主动技能: ${skillId}`);
+    }
+  }
+}
+process.exit(ok ? 0 : 1);
