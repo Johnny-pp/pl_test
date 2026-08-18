@@ -1,0 +1,68 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  calculateDamage,
+  createBattle,
+  createCombatant,
+  getEffectiveness,
+  resolveTurn,
+} from "../src/battle/battleEngine.ts";
+import type { ActiveSkill } from "../src/types/activeSkill.ts";
+import type { Pal } from "../src/types/pal.ts";
+
+function pal(id: number, name: string, element: Pal["elements"][number], speed = 100): Pal {
+  return {
+    id,
+    name: { zh: name, en: name },
+    rarity: 1,
+    elements: [element],
+    stats: { hp: 100, attack: 80, defense: 80, workSpeed: 10, moveSpeed: speed, rideSprintSpeed: 0 },
+    workSuitability: [],
+    activeSkills: ["test-skill"],
+  };
+}
+
+const skill: ActiveSkill = {
+  id: "test-skill",
+  name: { zh: "测试技能", en: "Test Skill" },
+  description: "test",
+  element: "fire",
+  power: 50,
+  accuracy: 100,
+  energyCost: 20,
+  priority: 0,
+};
+
+test("元素克制同时支持优势与抗性", () => {
+  assert.equal(getEffectiveness("fire", ["grass"]), 2);
+  assert.equal(getEffectiveness("grass", ["fire"]), 0.5);
+  assert.equal(getEffectiveness("neutral", ["fire"]), 1);
+});
+
+test("伤害不会为负且会受元素克制影响", () => {
+  const attacker = createCombatant(pal(1, "攻击方", "fire"));
+  const weak = createCombatant(pal(2, "弱点方", "grass"));
+  const resistant = createCombatant(pal(3, "抗性方", "water"));
+  const weakDamage = calculateDamage(attacker, weak, skill, () => 0).damage;
+  const resistedDamage = calculateDamage(attacker, resistant, skill, () => 0).damage;
+  assert.ok(weakDamage > resistedDamage);
+  assert.ok(resistedDamage >= 1);
+});
+
+test("速度较快者先行动且击倒后不会重复攻击", () => {
+  const player = pal(1, "玩家", "fire", 200);
+  const enemy = pal(2, "敌人", "grass", 100);
+  enemy.stats.hp = 1;
+  const state = resolveTurn(createBattle(player, enemy), skill, skill, () => 0);
+  assert.equal(state.phase, "victory");
+  assert.equal(state.enemy.hp, 0);
+  assert.equal(state.player.hp, state.player.maxHp);
+});
+
+test("回合结算不会修改传入状态", () => {
+  const initial = createBattle(pal(1, "玩家", "fire"), pal(2, "敌人", "grass"));
+  const next = resolveTurn(initial, skill, skill, () => 0);
+  assert.equal(initial.round, 1);
+  assert.equal(initial.player.hp, 100);
+  assert.notEqual(next, initial);
+});
