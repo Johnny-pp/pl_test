@@ -10,6 +10,7 @@ import {
   type CraftableItem,
 } from "../base/baseSystem";
 import { loadGame, saveGame, type BaseJob, type FacilityId, type GameSave } from "../player/playerState";
+import { startScene } from "./sceneLoader";
 
 const speciesById = new Map(pals.map((pal) => [pal.id, pal]));
 const JOB_LABELS: Record<BaseJob, string> = {
@@ -46,7 +47,7 @@ export class BaseScene extends Phaser.Scene {
         color: "#4fc3f7",
       })
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.scene.start("DexScene"));
+      .on("pointerdown", () => void startScene(this, "DexScene"));
     this.add
       .text(450, 28, "远征基地", {
         fontFamily: "sans-serif",

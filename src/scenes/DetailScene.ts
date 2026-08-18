@@ -6,6 +6,7 @@ import type { Pal } from "../types/pal";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { getEffectiveness, getStatusLabel } from "../battle/battleEngine";
 import type { ElementType } from "../types/pal";
+import { startScene } from "./sceneLoader";
 
 const ALL_ELEMENTS = Object.keys(ELEMENT_LABELS) as ElementType[];
 
@@ -31,7 +32,7 @@ export class DetailScene extends Phaser.Scene {
         color: "#4fc3f7",
       })
       .setInteractive({ useHandCursor: true });
-    back.on("pointerdown", () => this.scene.start("DexScene"));
+    back.on("pointerdown", () => void startScene(this, "DexScene"));
 
     if (!pal) {
       this.add.text(width / 2, 200, "未找到该幻兽", { fontSize: "24px", color: "#fff" }).setOrigin(0.5);
@@ -152,7 +153,7 @@ export class DetailScene extends Phaser.Scene {
     y += 26;
     const link = this.line(x, y, "→ 查看全部被动技能", 0xffd54f, 15, 0);
     link.setInteractive({ useHandCursor: true });
-    link.on("pointerdown", () => this.scene.start("PassiveSkillsScene"));
+    link.on("pointerdown", () => void startScene(this, "PassiveSkillsScene"));
     this.content.add(link);
     y += 34;
 

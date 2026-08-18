@@ -3,6 +3,7 @@ import { pals } from "../data/loadPals";
 import { ELEMENT_COLORS, ELEMENT_LABELS, WORK_LABELS } from "../types/elements";
 import type { ElementType, WorkType, Pal } from "../types/pal";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
+import { startScene } from "./sceneLoader";
 
 const CARD_W = 200;
 const CARD_H = 96;
@@ -239,7 +240,7 @@ export class DexScene extends Phaser.Scene {
       })
       .setOrigin(1, 0.5)
       .setInteractive({ useHandCursor: true });
-    compare.on("pointerdown", () => this.scene.start("CompareScene"));
+    compare.on("pointerdown", () => void startScene(this, "CompareScene"));
     const btn = this.add
       .text(width - 16, 60, "清除", {
         fontFamily: "sans-serif",
@@ -453,7 +454,7 @@ export class DexScene extends Phaser.Scene {
     c.add([bg, portrait, idText, nameText, enText, elemText]);
 
     bg.setInteractive({ useHandCursor: true });
-    bg.on("pointerdown", () => this.scene.start("DetailScene", { palId: pal.id }));
+    bg.on("pointerdown", () => void startScene(this, "DetailScene", { palId: pal.id }));
     return c;
   }
 
@@ -466,7 +467,7 @@ export class DexScene extends Phaser.Scene {
       })
       .setOrigin(1, 0.5)
       .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => this.scene.start("PassiveSkillsScene"));
+    btn.on("pointerdown", () => void startScene(this, "PassiveSkillsScene"));
   }
 
   private makeBattleButton() {
@@ -478,7 +479,7 @@ export class DexScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => this.scene.start("SelectPalScene"));
+    btn.on("pointerdown", () => void startScene(this, "SelectPalScene"));
   }
 
   private makeTeamButton() {
@@ -490,7 +491,7 @@ export class DexScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => this.scene.start("TeamScene"));
+    btn.on("pointerdown", () => void startScene(this, "TeamScene"));
   }
 
   private makeWorldButton() {
@@ -502,7 +503,7 @@ export class DexScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => this.scene.start("WorldScene"));
+    btn.on("pointerdown", () => void startScene(this, "WorldScene"));
   }
 
   private makeBaseButton() {
@@ -514,7 +515,7 @@ export class DexScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => this.scene.start("BaseScene"));
+    btn.on("pointerdown", () => void startScene(this, "BaseScene"));
   }
 
   private makeBreedingButton() {
@@ -526,6 +527,6 @@ export class DexScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => this.scene.start("BreedingScene"));
+    btn.on("pointerdown", () => void startScene(this, "BreedingScene"));
   }
 }

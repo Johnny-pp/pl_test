@@ -4,6 +4,7 @@ import { passiveSkills, passiveSkillsById } from "../data/loadPassiveSkills";
 import { BREEDING_FOOD_COST, breed, hatchEgg, previewOffspring } from "../breeding/breedingSystem";
 import { loadGame, saveGame, type EggQuality, type GameSave, type PalInstance } from "../player/playerState";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
+import { startScene } from "./sceneLoader";
 
 const QUALITY_LABELS: Record<EggQuality, string> = { common: "普通", fine: "优良", radiant: "辉光" };
 const QUALITY_COLORS: Record<EggQuality, number> = { common: 0x9aa0c0, fine: 0x4fc3f7, radiant: 0xffb300 };
@@ -32,7 +33,7 @@ export class BreedingScene extends Phaser.Scene {
         color: "#4fc3f7",
       })
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.scene.start("DexScene"));
+      .on("pointerdown", () => void startScene(this, "DexScene"));
     this.add
       .text(450, 28, "共鸣孵化所", {
         fontFamily: "sans-serif",

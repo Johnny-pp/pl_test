@@ -11,6 +11,7 @@ import {
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import { useHealingTonic } from "../base/baseSystem";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
+import { startScene } from "./sceneLoader";
 
 const GRID_TOP = 190;
 
@@ -35,7 +36,7 @@ export class TeamScene extends Phaser.Scene {
         color: "#4fc3f7",
       })
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.scene.start("DexScene"));
+      .on("pointerdown", () => void startScene(this, "DexScene"));
     this.add
       .text(450, 28, "我的幻兽队伍", {
         fontFamily: "sans-serif",

@@ -7,6 +7,7 @@ import {
   PASSIVE_TIER_LABELS,
   type PassiveCategory,
 } from "../types/passiveSkill";
+import { startScene } from "./sceneLoader";
 
 const CATEGORIES: (PassiveCategory | "all")[] = [
   "all",
@@ -60,7 +61,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
         color: "#9aa0c0",
       })
       .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => this.scene.start("DexScene"));
+    btn.on("pointerdown", () => void startScene(this, "DexScene"));
   }
 
   private makeChips() {

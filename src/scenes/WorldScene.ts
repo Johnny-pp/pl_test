@@ -11,6 +11,7 @@ import {
   createWorldMap,
 } from "../world/worldMap";
 import type { Pal } from "../types/pal";
+import { startScene } from "./sceneLoader";
 
 interface WorldSceneData {
   playerX?: number;
@@ -198,7 +199,7 @@ export class WorldScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(21)
       .setInteractive({ useHandCursor: true });
-    back.on("pointerdown", () => this.scene.start("DexScene"));
+    back.on("pointerdown", () => void startScene(this, "DexScene"));
     this.zoneText = this.add
       .text(450, 20, "", {
         fontFamily: "sans-serif",
@@ -342,7 +343,7 @@ export class WorldScene extends Phaser.Scene {
     if (!enemyId) return;
     this.encounterLocked = true;
     this.player.setVelocity(0, 0);
-    this.scene.start("BattleScene", {
+    void startScene(this, "BattleScene", {
       playerId: this.leader.id,
       playerUid: this.leaderUid,
       enemyId,

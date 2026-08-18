@@ -23,6 +23,7 @@ import {
 } from "../player/playerState";
 import { consumeCaptureOrb } from "../base/baseSystem";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
+import { startScene } from "./sceneLoader";
 
 interface BattleSceneData {
   playerId: number;
@@ -178,9 +179,9 @@ export class BattleScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
       const again = this.makeNavButton(500, 602, this.returnTo ? "返回地图" : "重新选角", () =>
-        this.returnTo ? this.leaveBattle() : this.scene.start("SelectPalScene")
+        this.returnTo ? this.leaveBattle() : void startScene(this, "SelectPalScene")
       );
-      const dex = this.makeNavButton(665, 602, "返回图鉴", () => this.scene.start("DexScene"));
+      const dex = this.makeNavButton(665, 602, "返回图鉴", () => void startScene(this, "DexScene"));
       this.actionLayer.add([title, again, dex]);
       if (this.state.phase === "victory") {
         const currentSave = loadGame(localStorage);
@@ -305,9 +306,9 @@ export class BattleScene extends Phaser.Scene {
 
   private leaveBattle() {
     if (this.returnTo) {
-      this.scene.start(this.returnTo.scene, this.returnTo.data);
+      void startScene(this, this.returnTo.scene, this.returnTo.data);
     } else {
-      this.scene.start("DexScene");
+      void startScene(this, "DexScene");
     }
   }
 

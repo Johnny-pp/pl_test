@@ -3,6 +3,7 @@ import { pals } from "../data/loadPals";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import type { Pal } from "../types/pal";
+import { startScene } from "./sceneLoader";
 
 const STAT_ROWS: Array<[string, (pal: Pal) => number]> = [
   ["HP", (pal) => pal.stats.hp],
@@ -39,7 +40,7 @@ export class CompareScene extends Phaser.Scene {
         color: "#4fc3f7",
       })
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.scene.start("DexScene"));
+      .on("pointerdown", () => void startScene(this, "DexScene"));
     this.add
       .text(450, 28, "幻兽属性对比", {
         fontFamily: "sans-serif",

@@ -3,6 +3,7 @@ import { pals } from "../data/loadPals";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import type { Pal } from "../types/pal";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
+import { startScene } from "./sceneLoader";
 
 const CARD_W = 190;
 const CARD_H = 105;
@@ -27,7 +28,7 @@ export class SelectPalScene extends Phaser.Scene {
         color: "#4fc3f7",
       })
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.scene.start("DexScene"));
+      .on("pointerdown", () => void startScene(this, "DexScene"));
 
     this.add
       .text(width / 2, 28, "选择出战幻兽", {
@@ -85,6 +86,6 @@ export class SelectPalScene extends Phaser.Scene {
     const candidates = pals.filter((pal) => pal.id !== player.id);
     const enemy = candidates[Math.floor(Math.random() * candidates.length)];
     if (!enemy) return;
-    this.scene.start("BattleScene", { playerId: player.id, enemyId: enemy.id });
+    void startScene(this, "BattleScene", { playerId: player.id, enemyId: enemy.id });
   }
 }
