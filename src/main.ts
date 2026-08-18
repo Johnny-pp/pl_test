@@ -7,6 +7,11 @@ import { BattleScene } from "./scenes/BattleScene";
 import { TeamScene } from "./scenes/TeamScene";
 import { WorldScene } from "./scenes/WorldScene";
 
+const defaultScenes = [DexScene, DetailScene, PassiveSkillsScene, SelectPalScene, BattleScene, TeamScene, WorldScene];
+const scenes = new URLSearchParams(window.location.search).get("start") === "world"
+  ? [WorldScene, ...defaultScenes.filter((scene) => scene !== WorldScene)]
+  : defaultScenes;
+
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: "game",
@@ -18,5 +23,5 @@ new Phaser.Game({
     arcade: { debug: false },
   },
   dom: { createContainer: true },
-  scene: [DexScene, DetailScene, PassiveSkillsScene, SelectPalScene, BattleScene, TeamScene, WorldScene],
+  scene: scenes,
 });
