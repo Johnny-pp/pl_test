@@ -30,6 +30,14 @@ interface Chip {
 }
 
 const GRID_TOP = 170;
+const STORAGE_KEY = "pl_test_filter_state";
+
+interface SavedState {
+  searchText: string;
+  sortKey: SortOpt["key"];
+  elements: ElementType[];
+  works: WorkType[];
+}
 
 export class DexScene extends Phaser.Scene {
   private grid!: Phaser.GameObjects.Container;
@@ -52,10 +60,7 @@ export class DexScene extends Phaser.Scene {
 
   create() {
     const width = this.scale.width;
-    this.searchText = "";
-    this.activeElements.clear();
-    this.activeWorks.clear();
-    this.sortKey = "id";
+    this.loadState();
     this.elementChips.clear();
     this.workChips.clear();
     this.sortButtons.clear();
@@ -74,6 +79,8 @@ export class DexScene extends Phaser.Scene {
     this.buildSortButtons();
     this.buildChips(width);
     this.buildClearButton(width);
+
+    this.applyStateToUI();
 
     this.countText = this.add.text(280, 60, "", {
       fontFamily: "sans-serif",
@@ -153,7 +160,6 @@ export class DexScene extends Phaser.Scene {
       this.sortButtons.set(s.key, chip);
       x += w + gap;
     });
-    this.refreshChip(this.sortButtons.get("id")!, true, 0x4fc3f7);
   }
 
   // ---- 元素 / 工作 筛选标签 ----
@@ -254,6 +260,57 @@ export class DexScene extends Phaser.Scene {
     }
   }
 
+  // ---- 本地存储（localStorage）持久化筛选状态 ----
+  private loadState() {
+    this.searchText = "";
+    this.activeElements.clear();
+    this.activeWorks.clear();
+    this.sortKey = "id";
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Partial<SavedState>;
+      if (typeof saved.searchText === "string") this.searchText = saved.searchText;
+      if (typeof saved.sortKey === "string" && SORTS.some((s) => s.key === saved.sortKey))
+        this.sortKey = saved.sortKey;
+      (saved.elements ?? []).forEach((e) => {
+        if (ELEMENTS.includes(e)) this.activeElements.add(e);
+      });
+      (saved.works ?? []).forEach((w) => {
+        if (WORKS.includes(w)) this.activeWorks.add(w);
+      });
+    } catch {
+      // 忽略损坏/不可用的本地存储，回退到默认状态
+    }
+  }
+
+  private saveState() {
+    const data: SavedState = {
+      searchText: this.searchText,
+      sortKey: this.sortKey,
+      elements: [...this.activeElements],
+      works: [...this.activeWorks],
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {
+      // 忽略写入失败（如隐私模式）
+    }
+  }
+
+  private applyStateToUI() {
+    if (this.searchInput) this.searchInput.value = this.searchText;
+    this.sortButtons.forEach((c, key) =>
+      this.refreshChip(c, key === this.sortKey, 0x4fc3f7)
+    );
+    this.elementChips.forEach((c, e) =>
+      this.refreshChip(c, this.activeElements.has(e), ELEMENT_COLORS[e])
+    );
+    this.workChips.forEach((c, w) =>
+      this.refreshChip(c, this.activeWorks.has(w), 0x4fc3f7)
+    );
+  }
+
   // ---- 过滤 + 排序 ----
   private getFilteredPals(): Pal[] {
     const q = this.searchText.trim().toLowerCase();
@@ -324,6 +381,7 @@ export class DexScene extends Phaser.Scene {
       this.grid.add(card);
     });
     this.grid.y = 0;
+    this.saveState();
   }
 
   private makeCard(pal: Pal): Phaser.GameObjects.Container {
