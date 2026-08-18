@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/passive-skill.schema.json",
   "title": "被动技能（全局池）数据模型",
-  "description": "类幻兽帕鲁网页游戏中被动技能（性格/特性）的全局数据表。被动技能在 Palworld 中为全局随机特性，任意帕鲁都可能携带，因此单独成表，而非挂在单个帕鲁下。字段参考 paldb.cn / Palpedia 的结构设计，数值为经验占位，需自行校准。",
+  "description": "原创幻兽养成网页游戏的全局被动特性数据表。",
   "type": "object",
-  "required": ["id", "name", "category", "description"],
+  "required": ["id", "name", "category", "description", "tier"],
   "additionalProperties": false,
   "properties": {
     "id": {

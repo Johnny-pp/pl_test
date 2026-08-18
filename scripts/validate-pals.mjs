@@ -22,6 +22,21 @@ function check(file, schemaFile, label, idKey) {
   return ok;
 }
 
+function checkUnique(items, key, label) {
+  let ok = true;
+  const seen = new Map();
+  for (const item of items) {
+    const value = key(item);
+    if (seen.has(value)) {
+      ok = false;
+      console.error(`✗ ${label}重复: ${value}`);
+    } else {
+      seen.set(value, item);
+    }
+  }
+  return ok;
+}
+
 let ok = true;
 ok = check("data/pals.json", "schema/pal.schema.json", "帕鲁", "id") && ok;
 ok = check("data/passive-skills.json", "schema/passive-skill.schema.json", "被动技能", "id") && ok;
@@ -29,13 +44,33 @@ ok = check("data/active-skills.json", "schema/active-skill.schema.json", "主动
 
 const pals = JSON.parse(readFileSync("data/pals.json", "utf-8"));
 const activeSkills = JSON.parse(readFileSync("data/active-skills.json", "utf-8"));
+const passiveSkills = JSON.parse(readFileSync("data/passive-skills.json", "utf-8"));
 const skillIds = new Set(activeSkills.map((skill) => skill.id));
+const passiveIds = new Set(passiveSkills.map((skill) => skill.id));
+ok = checkUnique(pals, (pal) => pal.id, "帕鲁 ID") && ok;
+ok = checkUnique(pals, (pal) => pal.name.zh, "帕鲁中文名") && ok;
+ok = checkUnique(pals, (pal) => pal.name.en.toLowerCase(), "帕鲁英文名") && ok;
+ok = checkUnique(activeSkills, (skill) => skill.id, "主动技能 ID") && ok;
+ok = checkUnique(activeSkills, (skill) => skill.name.zh, "主动技能中文名") && ok;
+ok = checkUnique(passiveSkills, (skill) => skill.id, "被动技能 ID") && ok;
+ok = checkUnique(passiveSkills, (skill) => skill.name.zh, "被动技能中文名") && ok;
 for (const pal of pals) {
   for (const skillId of pal.activeSkills ?? []) {
     if (!skillIds.has(skillId)) {
       ok = false;
       console.error(`✗ 帕鲁 ${pal.id} 引用了不存在的主动技能: ${skillId}`);
     }
+  }
+  for (const passiveId of pal.passiveSkills ?? []) {
+    if (!passiveIds.has(passiveId)) {
+      ok = false;
+      console.error(`✗ 帕鲁 ${pal.id} 引用了不存在的被动技能: ${passiveId}`);
+    }
+  }
+  const workTypes = (pal.workSuitability ?? []).map((work) => work.type);
+  if (new Set(workTypes).size !== workTypes.length) {
+    ok = false;
+    console.error(`✗ 帕鲁 ${pal.id} 存在重复工作适性`);
   }
 }
 process.exit(ok ? 0 : 1);

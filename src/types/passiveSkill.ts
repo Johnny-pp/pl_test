@@ -13,7 +13,7 @@ export interface PassiveSkill {
   name: PassiveSkillName;
   category: PassiveCategory;
   description: string;
-  tier?: PassiveTier;
+  tier: PassiveTier;
 }
 
 export const PASSIVE_CATEGORY_LABELS: Record<PassiveCategory, string> = {
