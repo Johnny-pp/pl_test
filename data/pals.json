@@ -1,631 +1,146 @@
 [
   {
-    "id": 1,
-    "name": {
-      "zh": "棉悠悠",
-      "en": "Lamball"
-    },
-    "description": "它只要走在坡道上就肯定会跌倒并滚动起来。  而且还会因为眼冒金星而无法动弹，  非常容易被当做是猎物，是食物链的底层。",
-    "rarity": 2,
-    "elements": [
-      "neutral"
-    ],
-    "stats": {
-      "hp": 70,
-      "attack": 70,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 300,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "handiwork",
-        "level": 1
-      },
-      {
-        "type": "transport",
-        "level": 1
-      },
-      {
-        "type": "farming",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "茸茸盾牌",
-      "description": "发动后，它会化身为装备在玩家身上的盾牌。将它分派到家畜牧场，它就有机会掉落羊毛。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "pulse-shot"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "初始台地",
-      "翠绿溪谷"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 1, "name": { "zh": "绒芽兽", "en": "Woolbud" },
+    "description": "像蒲公英种子般轻盈的温顺幻兽，成群迁徙时会把柔软绒毛留在风里。",
+    "rarity": 1, "size": "small", "elements": ["neutral"], "catchRate": 62, "foodAmount": 2,
+    "stats": { "hp": 78, "attack": 58, "defense": 72, "workSpeed": 92, "moveSpeed": 285, "rideSprintSpeed": 0, "price": 120 },
+    "growth": { "hpPerLevel": 4.2, "attackPerLevel": 2.2, "defensePerLevel": 3.1, "experienceCurve": "fast" },
+    "workSuitability": [{ "type": "handiwork", "level": 1 }, { "type": "transport", "level": 1 }, { "type": "farming", "level": 1 }],
+    "partnerSkill": { "name": "绒风护幕", "description": "抖开蓬松绒毛，为同行者短暂缓冲伤害。", "ranks": [] },
+    "activeSkills": ["quick-strike", "pulse-shot"], "passiveSkills": [],
+    "drops": [{ "item": "柔韧绒丝", "rate": 55 }], "spawnLocations": ["晴风原野"],
+    "breeding": { "power": 18, "parents": [] }
   },
   {
-    "id": 2,
-    "name": {
-      "zh": "捣蛋猫",
-      "en": "Cattiva"
-    },
-    "description": "它装出一副威风凛凛的样子，其实胆小软弱。  如果被捣蛋猫看不起，  某种意义上可谓奇耻大辱。",
-    "rarity": 2,
-    "elements": [
-      "neutral"
-    ],
-    "stats": {
-      "hp": 70,
-      "attack": 70,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 350,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "handiwork",
-        "level": 1
-      },
-      {
-        "type": "gathering",
-        "level": 1
-      },
-      {
-        "type": "mining",
-        "level": 1
-      },
-      {
-        "type": "transport",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "跟猫借手手",
-      "description": "若它在队伍中，捣蛋猫就会帮忙载运行李，玩家的负重上限将提高(100~200)。（不可叠加）",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "pulse-shot"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "初始台地",
-      "翠绿溪谷"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 2, "name": { "zh": "斑尾灵", "en": "Mottlekin" },
+    "description": "好奇心旺盛的林缘居民，会用带斑纹的尾巴模仿旅人的手势。",
+    "rarity": 1, "size": "small", "elements": ["neutral"], "catchRate": 58, "foodAmount": 2,
+    "stats": { "hp": 70, "attack": 66, "defense": 60, "workSpeed": 104, "moveSpeed": 340, "rideSprintSpeed": 0, "price": 135 },
+    "growth": { "hpPerLevel": 3.6, "attackPerLevel": 2.9, "defensePerLevel": 2.5, "experienceCurve": "fast" },
+    "workSuitability": [{ "type": "handiwork", "level": 1 }, { "type": "gathering", "level": 1 }, { "type": "transport", "level": 1 }],
+    "partnerSkill": { "name": "灵巧尾手", "description": "帮忙整理行囊，小幅提高探索时的采集效率。", "ranks": [] },
+    "activeSkills": ["quick-strike", "pulse-shot"], "passiveSkills": [],
+    "drops": [{ "item": "斑纹软皮", "rate": 42 }], "spawnLocations": ["晴风原野"],
+    "breeding": { "power": 20, "parents": [] }
   },
   {
-    "id": 29,
-    "name": {
-      "zh": "火绒狐",
-      "en": "Foxparks"
-    },
-    "description": "它刚出生时无法很好地操纵火焰， 动不动就不小心喷出火焰，结果呛到自己。火绒狐的喷嚏会引起森林火灾。",
-    "rarity": 2,
-    "elements": [
-      "fire"
-    ],
-    "stats": {
-      "hp": 65,
-      "attack": 75,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 400,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "kindling",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "抱抱火焰",
-      "description": "发动后，它会化身为装备在玩家身上的火焰喷射器。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "ember-dart",
-      "flame-burst"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "初始台地",
-      "翠绿溪谷（火山口附近）"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 4, "name": { "zh": "苔灯鼠", "en": "Mossgleam" },
+    "description": "背上的苔叶会储存日光，夜里散发微弱绿芒，为迷路者指引方向。",
+    "rarity": 1, "size": "small", "elements": ["grass"], "catchRate": 54, "foodAmount": 2,
+    "stats": { "hp": 74, "attack": 64, "defense": 63, "workSpeed": 108, "moveSpeed": 325, "rideSprintSpeed": 0, "price": 150 },
+    "growth": { "hpPerLevel": 3.8, "attackPerLevel": 2.7, "defensePerLevel": 2.7, "experienceCurve": "fast" },
+    "workSuitability": [{ "type": "planting", "level": 1 }, { "type": "gathering", "level": 1 }, { "type": "medicine", "level": 1 }],
+    "partnerSkill": { "name": "苔光催生", "description": "以温暖苔光照料幼苗，提高附近植物的生长速度。", "ranks": [] },
+    "activeSkills": ["quick-strike", "leaf-cutter"], "passiveSkills": [],
+    "drops": [{ "item": "荧苔孢子", "rate": 48 }], "spawnLocations": ["晴风原野"],
+    "breeding": { "power": 24, "parents": [] }
   },
   {
-    "id": 4,
-    "name": {
-      "zh": "翠叶鼠",
-      "en": "Lifmunk"
-    },
-    "description": "拥有等同于5至7岁儿童的智力。 虽然很适合作为伙伴，但也有不少的记录显示， 有些个体在学会使用武器后杀害了自己的主人。",
-    "rarity": 2,
-    "elements": [
-      "grass"
-    ],
-    "stats": {
-      "hp": 75,
-      "attack": 70,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 400,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "planting",
-        "level": 1
-      },
-      {
-        "type": "handiwork",
-        "level": 1
-      },
-      {
-        "type": "gathering",
-        "level": 1
-      },
-      {
-        "type": "lumbering",
-        "level": 1
-      },
-      {
-        "type": "medicine",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "翠叶鼠出击",
-      "description": "发动后它会坐在玩家的头上，配合玩家的攻击用冲锋枪进行追击。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "leaf-cutter"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "初始台地",
-      "翠绿溪谷",
-      "风滚草草原"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 11, "name": { "zh": "泉壶兽", "en": "Brookettle" },
+    "description": "圆润甲壳中储着清凉泉水，干旱时会主动为弱小生灵分水。",
+    "rarity": 1, "size": "small", "elements": ["water"], "catchRate": 50, "foodAmount": 3,
+    "stats": { "hp": 88, "attack": 55, "defense": 78, "workSpeed": 96, "moveSpeed": 250, "rideSprintSpeed": 0, "price": 175 },
+    "growth": { "hpPerLevel": 4.7, "attackPerLevel": 2.1, "defensePerLevel": 3.5, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "watering", "level": 1 }, { "type": "transport", "level": 1 }],
+    "partnerSkill": { "name": "活泉补给", "description": "分享壳中清泉，缓慢恢复同行者的体力。", "ranks": [] },
+    "activeSkills": ["quick-strike", "water-jet"], "passiveSkills": [],
+    "drops": [{ "item": "净水囊", "rate": 44 }], "spawnLocations": ["晴风原野", "回声遗迹"],
+    "breeding": { "power": 31, "parents": [] }
   },
   {
-    "id": 17,
-    "name": {
-      "zh": "企丸丸",
-      "en": "Pengullet"
-    },
-    "description": "它的翅膀已完全退化，无法飞翔。 但基因中刻着对天空的向往。 因此它想尽办法，想要再一次飞翔。",
-    "rarity": 2,
-    "elements": [
-      "water",
-      "ice"
-    ],
-    "stats": {
-      "hp": 70,
-      "attack": 75,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 400,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "watering",
-        "level": 1
-      },
-      {
-        "type": "handiwork",
-        "level": 1
-      },
-      {
-        "type": "cooling",
-        "level": 1
-      },
-      {
-        "type": "transport",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "企丸丸发射",
-      "description": "发动后玩家将装备火箭发射器，并可将企丸丸当作炮弹射出。命中目标后企丸丸会爆炸，并陷入濒死状态。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "water-jet",
-      "frost-shard"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "落日内海",
-      "海岸线"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 15, "name": { "zh": "闪针团", "en": "Voltquill" },
+    "description": "紧张时全身尖刺会噼啪放电，熟悉伙伴后则会用静电替人梳理头发。",
+    "rarity": 2, "size": "small", "elements": ["electric"], "catchRate": 42, "foodAmount": 3,
+    "stats": { "hp": 72, "attack": 79, "defense": 61, "workSpeed": 110, "moveSpeed": 375, "rideSprintSpeed": 0, "price": 230 },
+    "growth": { "hpPerLevel": 3.5, "attackPerLevel": 3.8, "defensePerLevel": 2.4, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "electricity", "level": 1 }, { "type": "handiwork", "level": 1 }],
+    "partnerSkill": { "name": "蓄电针阵", "description": "储存移动产生的电荷，为小型设施提供额外电力。", "ranks": [] },
+    "activeSkills": ["quick-strike", "spark-arc"], "passiveSkills": [],
+    "drops": [{ "item": "蓄电尖针", "rate": 38 }], "spawnLocations": ["回声遗迹"],
+    "breeding": { "power": 38, "parents": [] }
   },
   {
-    "id": 11,
-    "name": {
-      "zh": "壶小象",
-      "en": "Teafant"
-    },
-    "description": "它那被认为是鼻子的器官会喷出大量的水。  虽然也有人指出那只是鼻涕罢了，  但是研究者们仍然为此进行了热烈的讨论。",
-    "rarity": 2,
-    "elements": [
-      "water"
-    ],
-    "stats": {
-      "hp": 70,
-      "attack": 60,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 350,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "watering",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "疗伤之浴",
-      "description": "若它在队伍中，若玩家的生命值低于30%，恢复(20~40)%的生命值。（不可叠加）※发动后需120秒冷却方可再次触发",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "water-jet"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "初始台地（水边）",
-      "翠绿溪谷"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 17, "name": { "zh": "冰蹼仔", "en": "Frostfin" },
+    "description": "脚蹼结着薄霜，能在水面留下短暂冰路，却常因回头欣赏而摔倒。",
+    "rarity": 2, "size": "small", "elements": ["water", "ice"], "catchRate": 40, "foodAmount": 3,
+    "stats": { "hp": 80, "attack": 73, "defense": 69, "workSpeed": 98, "moveSpeed": 315, "rideSprintSpeed": 0, "price": 245 },
+    "growth": { "hpPerLevel": 4.1, "attackPerLevel": 3.2, "defensePerLevel": 3.0, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "watering", "level": 1 }, { "type": "cooling", "level": 1 }, { "type": "handiwork", "level": 1 }],
+    "partnerSkill": { "name": "霜径滑行", "description": "在湿润地面铺出冰径，让队伍短时间加速移动。", "ranks": [] },
+    "activeSkills": ["quick-strike", "water-jet", "frost-shard"], "passiveSkills": [],
+    "drops": [{ "item": "清霜结晶", "rate": 36 }], "spawnLocations": ["晴风原野", "回声遗迹"],
+    "breeding": { "power": 42, "parents": [] }
   },
   {
-    "id": 15,
-    "name": {
-      "zh": "电棘鼠",
-      "en": "Jolthog"
-    },
-    "description": "它在受到冲击后会释放储存的电力。 它的电压超过1000万伏特。 将它扔出去的话，威力比普通的重型炮弹危险得多。",
-    "rarity": 2,
-    "elements": [
-      "neutral"
-    ],
-    "stats": {
-      "hp": 70,
-      "attack": 75,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 500,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "electricity",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "电击炸弹",
-      "description": "发动后就能将电棘鼠装备在手上，若将它投向敌人且命中目标，便会引发雷属性爆炸。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "spark-arc"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "初始台地",
-      "翠绿溪谷"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 22, "name": { "zh": "暮铃魅", "en": "Duskwisp" },
+    "description": "黄昏后从旧石缝中浮现，尾端铃光会回应远方同伴的低鸣。",
+    "rarity": 2, "size": "small", "elements": ["dark"], "catchRate": 36, "foodAmount": 3,
+    "stats": { "hp": 68, "attack": 84, "defense": 57, "workSpeed": 102, "moveSpeed": 390, "rideSprintSpeed": 0, "price": 280 },
+    "growth": { "hpPerLevel": 3.2, "attackPerLevel": 4.0, "defensePerLevel": 2.2, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "transport", "level": 1 }, { "type": "gathering", "level": 1 }],
+    "partnerSkill": { "name": "暮铃感知", "description": "铃光感应附近隐蔽事物，使夜间采集点更容易被发现。", "ranks": [] },
+    "activeSkills": ["quick-strike", "night-orb"], "passiveSkills": [],
+    "drops": [{ "item": "幽光铃片", "rate": 33 }], "spawnLocations": ["晴风原野（夜）", "回声遗迹（夜）"],
+    "breeding": { "power": 46, "parents": [] }
   },
   {
-    "id": 26,
-    "name": {
-      "zh": "燎火鹿",
-      "en": "Rooby"
-    },
-    "description": "野生的燎火鹿从不生病，让人相当惊讶。 据说这种帕鲁永保健康的秘诀， 就是每天吃掉一根用树枝烧成的木炭。",
-    "rarity": 2,
-    "elements": [
-      "fire"
-    ],
-    "stats": {
-      "hp": 75,
-      "attack": 70,
-      "defense": 75,
-      "workSpeed": 100,
-      "moveSpeed": 500,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "kindling",
-        "level": 1
-      },
-      {
-        "type": "farming",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "微小火种",
-      "description": "若它在队伍中，火属性帕鲁的防御力会提升(15~30)%。（不可叠加）将它分派到家畜牧场，它就有机会掉落喷火器官。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "ember-dart",
-      "flame-burst"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "翠绿溪谷",
-      "火山地带"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 23, "name": { "zh": "枝冠猿", "en": "Branchape" },
+    "description": "以弯曲枝冠记录年岁，擅长辨认成熟果实，也会严厉驱赶浪费食物者。",
+    "rarity": 2, "size": "medium", "elements": ["grass"], "catchRate": 34, "foodAmount": 5,
+    "stats": { "hp": 96, "attack": 82, "defense": 76, "workSpeed": 122, "moveSpeed": 305, "rideSprintSpeed": 0, "price": 320 },
+    "growth": { "hpPerLevel": 5.0, "attackPerLevel": 3.7, "defensePerLevel": 3.4, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "planting", "level": 2 }, { "type": "gathering", "level": 2 }, { "type": "lumbering", "level": 1 }],
+    "partnerSkill": { "name": "丰收号令", "description": "辨认作物状态，提升基地种植与采集工作的产量。", "ranks": [] },
+    "activeSkills": ["quick-strike", "leaf-cutter"], "passiveSkills": [],
+    "drops": [{ "item": "韧性枝冠", "rate": 30 }, { "item": "酸甜野果", "rate": 52 }], "spawnLocations": ["回声遗迹"],
+    "breeding": { "power": 52, "parents": [] }
   },
   {
-    "id": 23,
-    "name": {
-      "zh": "新叶猿",
-      "en": "Tanzee"
-    },
-    "description": "在古时这种帕鲁会使用树枝等细长状的物品作为武器。 但在它们与人类频繁接触后，便不再使用这些物品。 因为它们发现了同样细长，却更为高效的「枪械」。",
-    "rarity": 2,
-    "elements": [
-      "grass"
-    ],
-    "stats": {
-      "hp": 80,
-      "attack": 70,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 450,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "planting",
-        "level": 1
-      },
-      {
-        "type": "handiwork",
-        "level": 1
-      },
-      {
-        "type": "gathering",
-        "level": 1
-      },
-      {
-        "type": "lumbering",
-        "level": 1
-      },
-      {
-        "type": "transport",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "猴急步枪",
-      "description": "发动后，新叶猿会在一定时间内用突击步枪猛烈扫射附近的敌人。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "leaf-cutter"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "翠绿溪谷",
-      "风滚草草原"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 26, "name": { "zh": "赤角鹿", "en": "Emberhart" },
+    "description": "角中流动着温暖余烬，寒夜里会站在幼兽外围，为族群挡住冷风。",
+    "rarity": 3, "size": "medium", "elements": ["fire"], "catchRate": 28, "foodAmount": 6,
+    "stats": { "hp": 105, "attack": 88, "defense": 84, "workSpeed": 112, "moveSpeed": 430, "rideSprintSpeed": 620, "price": 410 },
+    "growth": { "hpPerLevel": 5.4, "attackPerLevel": 4.0, "defensePerLevel": 3.8, "experienceCurve": "slow" },
+    "workSuitability": [{ "type": "kindling", "level": 2 }, { "type": "lumbering", "level": 1 }, { "type": "transport", "level": 1 }],
+    "partnerSkill": { "name": "余烬奔途", "description": "允许骑乘，并在冲刺经过时温暖附近的伙伴。", "ranks": [] },
+    "activeSkills": ["quick-strike", "ember-dart", "flame-burst"], "passiveSkills": [],
+    "drops": [{ "item": "温火角屑", "rate": 32 }], "spawnLocations": ["回声遗迹"],
+    "breeding": { "power": 61, "parents": [] }
   },
   {
-    "id": 28,
-    "name": {
-      "zh": "草莽猪",
-      "en": "Rushoar"
-    },
-    "description": "它十分好战，会在弄清双方力量差距前挑事。  虽然身材娇小，但拥有惊人的冲锋威力，  甚至能弹飞巨大岩石。",
-    "rarity": 2,
-    "elements": [
-      "ground"
-    ],
-    "stats": {
-      "hp": 80,
-      "attack": 70,
-      "defense": 70,
-      "workSpeed": 100,
-      "moveSpeed": 450,
-      "rideSprintSpeed": 900
-    },
-    "workSuitability": [
-      {
-        "type": "mining",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "坚硬头壳",
-      "description": "可骑在它的背上移动。骑乘期间破坏岩石的效率将提升(500~2000)%。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "earth-hammer",
-      "stone-shard"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "风滚草草原",
-      "落日内海"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 28, "name": { "zh": "岩脊豚", "en": "Cragboar" },
+    "description": "会用坚硬背脊翻松板结土层，认准方向后几乎没有障碍能让它转弯。",
+    "rarity": 2, "size": "medium", "elements": ["ground"], "catchRate": 33, "foodAmount": 5,
+    "stats": { "hp": 112, "attack": 86, "defense": 91, "workSpeed": 94, "moveSpeed": 330, "rideSprintSpeed": 510, "price": 350 },
+    "growth": { "hpPerLevel": 5.8, "attackPerLevel": 3.8, "defensePerLevel": 4.2, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "mining", "level": 2 }, { "type": "transport", "level": 1 }, { "type": "farming", "level": 1 }],
+    "partnerSkill": { "name": "破土突进", "description": "允许骑乘，撞击矿脉或松土时能够获得额外材料。", "ranks": [] },
+    "activeSkills": ["quick-strike", "earth-hammer", "stone-shard"], "passiveSkills": [],
+    "drops": [{ "item": "岩脊硬片", "rate": 41 }], "spawnLocations": ["回声遗迹"],
+    "breeding": { "power": 56, "parents": [] }
   },
   {
-    "id": 22,
-    "name": {
-      "zh": "寐魔",
-      "en": "Daedream"
-    },
-    "description": "它可以使心仪的对象陷入熟睡当中，  并使对方永远做着幸福的美梦。  直到死亡来临之前都不会醒来。",
-    "rarity": 2,
-    "elements": [
-      "dark"
-    ],
-    "stats": {
-      "hp": 70,
-      "attack": 75,
-      "defense": 60,
-      "workSpeed": 100,
-      "moveSpeed": 500,
-      "rideSprintSpeed": 0
-    },
-    "workSuitability": [
-      {
-        "type": "handiwork",
-        "level": 1
-      },
-      {
-        "type": "gathering",
-        "level": 1
-      },
-      {
-        "type": "transport",
-        "level": 1
-      }
-    ],
-    "partnerSkill": {
-      "name": "逐梦者",
-      "description": "若它在队伍中，就会出现于玩家身边。它会用暗属性的魔弹追击敌对个体。且该追击不会使猎物毙命。",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "night-orb"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "初始台地（夜晚）",
-      "翠绿溪谷（夜晚）"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 29, "name": { "zh": "火尾狸", "en": "Cindertail" },
+    "description": "尾梢火焰会随情绪改变形状，开心时像花朵，警戒时则拉成长针。",
+    "rarity": 2, "size": "small", "elements": ["fire"], "catchRate": 39, "foodAmount": 3,
+    "stats": { "hp": 76, "attack": 81, "defense": 62, "workSpeed": 106, "moveSpeed": 405, "rideSprintSpeed": 0, "price": 270 },
+    "growth": { "hpPerLevel": 3.7, "attackPerLevel": 3.9, "defensePerLevel": 2.5, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "kindling", "level": 1 }, { "type": "handiwork", "level": 1 }],
+    "partnerSkill": { "name": "尾火引燃", "description": "用可控尾焰协助点火，并降低制作时的燃料消耗。", "ranks": [] },
+    "activeSkills": ["quick-strike", "ember-dart", "flame-burst"], "passiveSkills": [],
+    "drops": [{ "item": "暖焰绒", "rate": 43 }], "spawnLocations": ["晴风原野（夜）", "回声遗迹（夜）"],
+    "breeding": { "power": 44, "parents": [] }
   },
   {
-    "id": 30,
-    "name": {
-      "zh": "烽歌龙",
-      "en": "Vanwyrm"
-    },
-    "description": "据说用烽歌龙的外骨骼制成的笛子，  所奏的笛声可越遍千山万水，  因此在古代战事中通常会被用来发出攻击信号。",
-    "rarity": 2,
-    "elements": [
-      "fire",
-      "dark"
-    ],
-    "stats": {
-      "hp": 90,
-      "attack": 115,
-      "defense": 90,
-      "workSpeed": 100,
-      "moveSpeed": 800,
-      "rideSprintSpeed": 1300
-    },
-    "workSuitability": [
-      {
-        "type": "kindling",
-        "level": 2
-      },
-      {
-        "type": "transport",
-        "level": 3
-      }
-    ],
-    "partnerSkill": {
-      "name": "大空袭击者",
-      "description": "可骑在它的背上在空中飞行。若它在队伍中，玩家攻击敌方弱点部位造成的伤害将提升(20~40)%。（不可叠加）",
-      "ranks": []
-    },
-    "activeSkills": [
-      "quick-strike",
-      "ember-dart",
-      "night-orb",
-      "dragon-comet"
-    ],
-    "passiveSkills": [],
-    "drops": [],
-    "spawnLocations": [
-      "巍雪峰",
-      "火山上空"
-    ],
-    "breeding": {
-      "power": 0,
-      "parents": []
-    }
+    "id": 30, "name": { "zh": "烬翼龙", "en": "Ashwing" },
+    "description": "栖息在风化高塔顶端，翼膜上的余烬纹路会在振翅时连成星图。",
+    "rarity": 4, "size": "large", "elements": ["fire", "dragon"], "catchRate": 16, "foodAmount": 8,
+    "stats": { "hp": 132, "attack": 116, "defense": 94, "workSpeed": 118, "moveSpeed": 520, "rideSprintSpeed": 780, "price": 780 },
+    "growth": { "hpPerLevel": 6.8, "attackPerLevel": 5.4, "defensePerLevel": 4.3, "experienceCurve": "slow" },
+    "workSuitability": [{ "type": "kindling", "level": 3 }, { "type": "transport", "level": 2 }],
+    "partnerSkill": { "name": "星烬翔行", "description": "允许空中骑乘，夜间飞行时移动速度进一步提高。", "ranks": [] },
+    "activeSkills": ["quick-strike", "ember-dart", "flame-burst", "dragon-comet"], "passiveSkills": [],
+    "drops": [{ "item": "星烬翼膜", "rate": 22 }, { "item": "龙息晶核", "rate": 12 }], "spawnLocations": ["回声遗迹（夜）"],
+    "breeding": { "power": 88, "parents": [] }
   }
 ]

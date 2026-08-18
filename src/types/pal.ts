@@ -24,6 +24,13 @@ export interface PalStats {
   price?: number;
 }
 
+export interface PalGrowth {
+  hpPerLevel: number;
+  attackPerLevel: number;
+  defensePerLevel: number;
+  experienceCurve: "fast" | "medium" | "slow";
+}
+
 export interface WorkSuitability {
   type: WorkType;
   level: number;
@@ -55,6 +62,7 @@ export interface Pal {
   catchRate?: number;
   foodAmount?: number;
   stats: PalStats;
+  growth: PalGrowth;
   workSuitability: WorkSuitability[];
   partnerSkill?: PartnerSkill;
   /** References data/active-skills.json by id. */

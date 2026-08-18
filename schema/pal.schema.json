@@ -4,7 +4,7 @@
   "title": "帕鲁 (Pal) 数据模型",
   "description": "类幻兽帕鲁网页游戏中单个帕鲁（宝宝）的数据结构定义。字段参考 paldb.cn / Palpedia / PokeAPI 的结构设计，数值需自行设计，勿直接搬运。",
   "type": "object",
-  "required": ["id", "name", "elements", "rarity", "stats", "workSuitability"],
+  "required": ["id", "name", "elements", "rarity", "size", "catchRate", "foodAmount", "stats", "growth", "workSuitability"],
   "additionalProperties": false,
   "properties": {
     "id": {
@@ -75,6 +75,18 @@
         "moveSpeed": { "type": "integer", "minimum": 0, "description": "移动速度" },
         "rideSprintSpeed": { "type": "integer", "minimum": 0, "description": "骑行冲刺速度" },
         "price": { "type": "integer", "minimum": 0, "description": "商店售价" }
+      }
+    },
+    "growth": {
+      "type": "object",
+      "description": "个体升级时使用的原创成长参数",
+      "required": ["hpPerLevel", "attackPerLevel", "defensePerLevel", "experienceCurve"],
+      "additionalProperties": false,
+      "properties": {
+        "hpPerLevel": { "type": "number", "minimum": 0 },
+        "attackPerLevel": { "type": "number", "minimum": 0 },
+        "defensePerLevel": { "type": "number", "minimum": 0 },
+        "experienceCurve": { "type": "string", "enum": ["fast", "medium", "slow"] }
       }
     },
     "workSuitability": {

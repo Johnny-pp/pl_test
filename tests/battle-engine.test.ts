@@ -17,6 +17,7 @@ function pal(id: number, name: string, element: Pal["elements"][number], speed =
     rarity: 1,
     elements: [element],
     stats: { hp: 100, attack: 80, defense: 80, workSpeed: 10, moveSpeed: speed, rideSprintSpeed: 0 },
+    growth: { hpPerLevel: 4, attackPerLevel: 3, defensePerLevel: 3, experienceCurve: "medium" },
     workSuitability: [],
     activeSkills: ["test-skill"],
   };

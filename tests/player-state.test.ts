@@ -18,6 +18,7 @@ const species: Pal = {
   rarity: 1,
   elements: ["neutral"],
   stats: { hp: 80, attack: 70, defense: 60, workSpeed: 10, moveSpeed: 100, rideSprintSpeed: 0 },
+  growth: { hpPerLevel: 4, attackPerLevel: 3, defensePerLevel: 3, experienceCurve: "medium" },
   workSuitability: [],
   activeSkills: ["quick-strike"],
 };
