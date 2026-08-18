@@ -53,6 +53,13 @@
 - 新增帕鲁数据时应符合该 Schema；字段结构参考 paldb.cn / Palpedia / PokeAPI，数值自行设计。
 - 示例数据：`data/pals.json`（2 个原创示例帕鲁）；校验脚本：`scripts/validate-pals.mjs`（`node scripts/validate-pals.mjs`，依赖 ajv）。
 
+## 帕鲁数据（参照真实资料）
+- 数据来源：paldb.cn（`https://paldb.cn/pals/<英文名>`），仅作字段/数值参考，版权归 Palworld/paldb.cn，商用前自行确认授权。
+- 抓取脚本：`scripts/fetch-paldb.py`（用法：`python3 scripts/fetch-paldb.py <slug1> <slug2> ... > data/pals.json`）。
+- 可稳定抓取的字段：中文名/英文名/元素/HP/攻击/防御/工作速度/工作适性(类型+等级)/伙伴技能名。
+- 站点未稳定渲染的字段（移动速度/骑行速度、掉落物、刷新位置、主动/被动技能、伙伴技能描述、rarity）目前为默认值或留空，需自行补全。
+- 全量 slug 列表（299 只）可在 paldb.cn/pals 页面获取；要扩充直接加 slug 重跑脚本即可。
+
 ## 局域网访问（仅本机 + 同 WiFi/路由器的其他设备）
 > 已配置 `vite.config.mjs` 的 `server.host: true`，dev 启动会打印 `Network` 地址，同局域网设备直接用该地址访问即可，无需公网/内网穿透。
 
