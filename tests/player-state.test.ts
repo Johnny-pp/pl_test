@@ -61,6 +61,7 @@ test("存档可完成写入和读取往返", () => {
   const storage = memoryStorage();
   const instance = createPalInstance(species, () => "pal-1");
   const save = addCapturedPal(createEmptySave(), instance);
+  save.base.resources.food = 20.5;
   assert.equal(saveGame(storage, save), true);
   assert.deepEqual(loadGame(storage), save);
 });

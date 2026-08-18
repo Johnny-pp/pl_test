@@ -18,11 +18,14 @@ import {
   loadGame,
   recordBattleWin,
   saveGame,
+  updatePalCurrentHp,
 } from "../player/playerState";
+import { consumeCaptureOrb } from "../base/baseSystem";
 
 interface BattleSceneData {
   playerId: number;
   enemyId: number;
+  playerUid?: string;
   returnTo?: {
     scene: string;
     data?: Record<string, unknown>;
@@ -42,6 +45,7 @@ export class BattleScene extends Phaser.Scene {
   private captureAttempted = false;
   private captureMessage = "";
   private returnTo?: BattleSceneData["returnTo"];
+  private playerUid?: string;
 
   constructor() {
     super("BattleScene");
@@ -51,6 +55,7 @@ export class BattleScene extends Phaser.Scene {
     this.captureAttempted = false;
     this.captureMessage = "";
     this.returnTo = data.returnTo;
+    this.playerUid = data.playerUid;
     const player = pals.find((pal) => pal.id === data.playerId);
     const enemy = pals.find((pal) => pal.id === data.enemyId);
     if (!player || !enemy) {
@@ -60,6 +65,10 @@ export class BattleScene extends Phaser.Scene {
     }
 
     this.state = createBattle(player, enemy);
+    if (this.playerUid) {
+      const instance = loadGame(localStorage).ownedPals.find((pal) => pal.uid === this.playerUid);
+      if (instance) this.state.player.hp = Math.max(1, Math.min(this.state.player.maxHp, instance.currentHp));
+    }
     this.add.text(18, 18, "< 退出战斗", {
       fontFamily: "sans-serif",
       fontSize: "18px",
@@ -155,6 +164,7 @@ export class BattleScene extends Phaser.Scene {
       const dex = this.makeNavButton(665, 602, "返回图鉴", () => this.scene.start("DexScene"));
       this.actionLayer.add([title, again, dex]);
       if (this.state.phase === "victory") {
+        const currentSave = loadGame(localStorage);
         const enemyPal = pals.find((pal) => pal.id === this.state?.enemy.id);
         if (enemyPal && !this.captureAttempted) {
           const chance = calculateCaptureChance({
@@ -163,8 +173,15 @@ export class BattleScene extends Phaser.Scene {
             rarity: enemyPal.rarity,
             catchRate: enemyPal.catchRate,
           });
-          const capture = this.makeNavButton(170, 602, `捕获 ${chance}%`, () => this.captureEnemy(enemyPal));
-          this.actionLayer.add(capture);
+          if (currentSave.inventory.captureOrbs > 0) {
+            const capture = this.makeNavButton(170, 602, `捕获 ${chance}% · ${currentSave.inventory.captureOrbs}`, () => this.captureEnemy(enemyPal));
+            this.actionLayer.add(capture);
+          } else {
+            const noOrb = this.add.text(170, 602, "捕获器不足，请到基地制造", {
+              fontFamily: "sans-serif", fontSize: "14px", color: "#ff8a80",
+            }).setOrigin(0.5);
+            this.actionLayer.add(noOrb);
+          }
         } else if (this.captureMessage) {
           const message = this.add.text(170, 602, this.captureMessage, {
             fontFamily: "sans-serif",
@@ -213,16 +230,22 @@ export class BattleScene extends Phaser.Scene {
     if (!enemySkill) return;
     this.busy = true;
     this.state = resolveTurn(this.state, playerSkill, enemySkill);
-    if (this.state.phase === "victory") {
-      const save = recordBattleWin(loadGame(localStorage));
-      saveGame(localStorage, save);
-    }
+    let save = loadGame(localStorage);
+    if (this.playerUid) save = updatePalCurrentHp(save, this.playerUid, this.state.player.hp);
+    if (this.state.phase === "victory") save = recordBattleWin(save);
+    saveGame(localStorage, save);
     this.render();
     this.busy = false;
   }
 
   private captureEnemy(enemyPal: (typeof pals)[number]) {
     if (!this.state || this.captureAttempted) return;
+    const consumed = consumeCaptureOrb(loadGame(localStorage));
+    if (!consumed.consumed) {
+      this.captureMessage = "捕获器不足";
+      this.render();
+      return;
+    }
     this.captureAttempted = true;
     const result = attemptCapture({
       hp: this.state.enemy.hp,
@@ -231,11 +254,11 @@ export class BattleScene extends Phaser.Scene {
       catchRate: enemyPal.catchRate,
     });
     if (result.success) {
-      const current = loadGame(localStorage);
-      const next = addCapturedPal(current, createPalInstance(enemyPal));
+      const next = addCapturedPal(consumed.save, createPalInstance(enemyPal));
       const persisted = saveGame(localStorage, next);
       this.captureMessage = persisted ? "捕获成功！" : "捕获成功，但存档失败";
     } else {
+      saveGame(localStorage, consumed.save);
       this.captureMessage = "捕获失败";
     }
     this.render();

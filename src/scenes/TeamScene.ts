@@ -9,6 +9,7 @@ import {
   type PalInstance,
 } from "../player/playerState";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
+import { useHealingTonic } from "../base/baseSystem";
 
 const GRID_TOP = 190;
 
@@ -109,5 +110,19 @@ export class TeamScene extends Phaser.Scene {
       this.render();
     });
     this.content.add([bg, name, detail, button, buttonText]);
+    if (instance.currentHp < species.stats.hp) {
+      const heal = this.add.rectangle(x - 65, y + 25, 100, 30, 0x49743f).setInteractive({ useHandCursor: true });
+      const healText = this.add.text(x - 65, y + 25, `治疗 ×${this.save.inventory.healingTonics}`, {
+        fontFamily: "sans-serif", fontSize: "13px", color: "#ffffff",
+      }).setOrigin(0.5);
+      heal.on("pointerdown", () => {
+        const next = useHealingTonic(this.save, instance.uid, species.stats.hp);
+        if (next === this.save) return;
+        this.save = next;
+        saveGame(localStorage, this.save);
+        this.render();
+      });
+      this.content.add([heal, healText]);
+    }
   }
 }

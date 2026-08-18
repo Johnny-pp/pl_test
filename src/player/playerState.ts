@@ -114,6 +114,10 @@ function finiteCount(value: unknown, fallback = 0): number {
   return Number.isFinite(value) ? Math.max(0, Math.floor(value as number)) : fallback;
 }
 
+function finiteAmount(value: unknown, fallback = 0): number {
+  return Number.isFinite(value) ? Math.max(0, Math.floor((value as number) * 10) / 10) : fallback;
+}
+
 function migrateSave(value: unknown, now = Date.now()): GameSave {
   if (!value || typeof value !== "object") return createEmptySave(now);
   const raw = value as Record<string, unknown>;
@@ -163,11 +167,11 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
     },
     base: {
       resources: {
-        wood: finiteCount(rawResources.wood, 20),
-        stone: finiteCount(rawResources.stone, 10),
-        food: finiteCount(rawResources.food, 20),
-        fiber: finiteCount(rawResources.fiber, 10),
-        crystal: finiteCount(rawResources.crystal),
+        wood: finiteAmount(rawResources.wood, 20),
+        stone: finiteAmount(rawResources.stone, 10),
+        food: finiteAmount(rawResources.food, 20),
+        fiber: finiteAmount(rawResources.fiber, 10),
+        crystal: finiteAmount(rawResources.crystal),
       },
       assignments: assignments.filter((item, index) => assignments.findIndex((candidate) => candidate.palUid === item.palUid) === index),
       facilities: {
@@ -224,4 +228,14 @@ export function toggleTeamMember(save: GameSave, uid: string): GameSave {
   }
   if (save.teamIds.length >= TEAM_LIMIT) return save;
   return { ...save, teamIds: [...save.teamIds, uid] };
+}
+
+export function updatePalCurrentHp(save: GameSave, uid: string, hp: number): GameSave {
+  if (!save.ownedPals.some((pal) => pal.uid === uid)) return save;
+  return {
+    ...save,
+    ownedPals: save.ownedPals.map((pal) => pal.uid === uid
+      ? { ...pal, currentHp: Math.max(0, Math.floor(hp)) }
+      : pal),
+  };
 }

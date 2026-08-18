@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assignWorker, craftItem, simulateProduction, upgradeFacility } from "../src/base/baseSystem.ts";
+import { assignWorker, consumeCaptureOrb, craftItem, simulateProduction, upgradeFacility, useHealingTonic } from "../src/base/baseSystem.ts";
 import { addCapturedPal, createEmptySave, createPalInstance } from "../src/player/playerState.ts";
 import type { Pal } from "../src/types/pal.ts";
 
@@ -42,4 +42,18 @@ test("设施资源不足时不会升级", () => {
   save.base.resources.wood = 100;
   save.base.resources.stone = 100;
   assert.equal(upgradeFacility(save, "warehouse").base.facilities.warehouse, 2);
+});
+
+test("捕获器与治疗剂会实际消耗库存", () => {
+  let save = createEmptySave(0);
+  const consumed = consumeCaptureOrb(save);
+  assert.equal(consumed.consumed, true);
+  assert.equal(consumed.save.inventory.captureOrbs, save.inventory.captureOrbs - 1);
+
+  const instance = { ...createPalInstance(worker, () => "worker-1"), currentHp: 1 };
+  save = addCapturedPal(save, instance);
+  save.inventory.healingTonics = 1;
+  const healed = useHealingTonic(save, instance.uid, worker.stats.hp);
+  assert.equal(healed.ownedPals[0].currentHp, worker.stats.hp);
+  assert.equal(healed.inventory.healingTonics, 0);
 });

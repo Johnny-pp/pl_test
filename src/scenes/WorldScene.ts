@@ -21,6 +21,7 @@ interface WorldSceneData {
   playerX?: number;
   playerY?: number;
   leaderId?: number;
+  leaderUid?: string;
   encounterCooldown?: boolean;
   gathered?: number;
   collectedResourceIds?: string[];
@@ -52,6 +53,7 @@ export class WorldScene extends Phaser.Scene {
   private wasd!: Record<"up" | "down" | "left" | "right", Phaser.Input.Keyboard.Key>;
   private interactKey!: Phaser.Input.Keyboard.Key;
   private leader!: Pal;
+  private leaderUid?: string;
   private zoneText!: Phaser.GameObjects.Text;
   private resourceText!: Phaser.GameObjects.Text;
   private promptText!: Phaser.GameObjects.Text;
@@ -73,7 +75,9 @@ export class WorldScene extends Phaser.Scene {
     this.encounterLocked = false;
     this.gathered = data.gathered ?? 0;
     this.collected = new Set(data.collectedResourceIds ?? []);
-    this.leader = this.resolveLeader(data.leaderId);
+    const leader = this.resolveLeader(data.leaderId, data.leaderUid);
+    this.leader = leader.species;
+    this.leaderUid = leader.uid;
     this.createTextures();
 
     const map = this.make.tilemap({
@@ -136,13 +140,14 @@ export class WorldScene extends Phaser.Scene {
     if (direction.lengthSq() > 0) this.tryEncounter(zone, period);
   }
 
-  private resolveLeader(preferredId?: number): Pal {
+  private resolveLeader(preferredId?: number, preferredUid?: string): { species: Pal; uid?: string } {
     const save = loadGame(localStorage);
+    const preferredInstance = save.ownedPals.find((pal) => pal.uid === preferredUid && pal.speciesId === preferredId);
     const firstTeamUid = save.teamIds[0];
     const firstTeamPal = save.ownedPals.find((pal) => pal.uid === firstTeamUid);
-    return pals.find((pal) => pal.id === preferredId)
-      ?? pals.find((pal) => pal.id === firstTeamPal?.speciesId)
-      ?? pals[0];
+    if (preferredInstance) return { species: pals.find((pal) => pal.id === preferredInstance.speciesId) ?? pals[0], uid: preferredInstance.uid };
+    if (firstTeamPal) return { species: pals.find((pal) => pal.id === firstTeamPal.speciesId) ?? pals[0], uid: firstTeamPal.uid };
+    return { species: pals.find((pal) => pal.id === preferredId) ?? pals[0] };
   }
 
   private createTextures() {
@@ -231,6 +236,7 @@ export class WorldScene extends Phaser.Scene {
     this.player.setVelocity(0, 0);
     this.scene.start("BattleScene", {
       playerId: this.leader.id,
+      playerUid: this.leaderUid,
       enemyId,
       returnTo: {
         scene: "WorldScene",
@@ -238,6 +244,7 @@ export class WorldScene extends Phaser.Scene {
           playerX: this.player.x,
           playerY: this.player.y,
           leaderId: this.leader.id,
+          leaderUid: this.leaderUid,
           encounterCooldown: true,
           gathered: this.gathered,
           collectedResourceIds: [...this.collected],
