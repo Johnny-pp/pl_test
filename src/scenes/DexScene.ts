@@ -76,6 +76,7 @@ export class DexScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.makePassiveButton(width);
+    this.makeBattleButton();
 
     this.buildSearchInput();
     this.buildSortButtons();
@@ -442,5 +443,17 @@ export class DexScene extends Phaser.Scene {
       .setOrigin(1, 0.5)
       .setInteractive({ useHandCursor: true });
     btn.on("pointerdown", () => this.scene.start("PassiveSkillsScene"));
+  }
+
+  private makeBattleButton() {
+    const btn = this.add
+      .text(16, 22, "开始战斗", {
+        fontFamily: "sans-serif",
+        fontSize: "18px",
+        color: "#ffd54f",
+      })
+      .setOrigin(0, 0.5)
+      .setInteractive({ useHandCursor: true });
+    btn.on("pointerdown", () => this.scene.start("SelectPalScene"));
   }
 }
