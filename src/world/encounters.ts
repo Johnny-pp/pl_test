@@ -59,5 +59,5 @@ export function pickEncounter(
     roll -= entry.weight;
     if (roll < 0) return entry.speciesId;
   }
-  return entries.at(-1)?.speciesId;
+  return entries[entries.length - 1]?.speciesId;
 }

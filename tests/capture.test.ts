@@ -23,5 +23,8 @@ test("野生个体会按概率获得不重复被动", () => {
   const rolls = [0, 0, 0, 0.99];
   const result = rollWildPassiveSkills(["a", "b"], () => rolls.shift() ?? 0.99);
   assert.deepEqual(result, ["a", "b"]);
-  assert.deepEqual(rollWildPassiveSkills(["a"], () => 0.99), []);
+  assert.deepEqual(
+    rollWildPassiveSkills(["a"], () => 0.99),
+    []
+  );
 });

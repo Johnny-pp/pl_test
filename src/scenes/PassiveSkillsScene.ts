@@ -9,7 +9,14 @@ import {
 } from "../types/passiveSkill";
 
 const CATEGORIES: (PassiveCategory | "all")[] = [
-  "all", "attack", "defense", "work", "move", "element", "resource", "other",
+  "all",
+  "attack",
+  "defense",
+  "work",
+  "move",
+  "element",
+  "resource",
+  "other",
 ];
 const ROW_H = 54;
 const ROW_GAP = 8;
@@ -70,7 +77,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
         .rectangle(x, y, chipW, chipH, cat === this.selected ? 0x0f3460 : 0x16213e)
         .setStrokeStyle(1, 0x0f3460)
         .setInteractive({ useHandCursor: true });
-      const txt = this.add
+      this.add
         .text(x, y, label, {
           fontFamily: "sans-serif",
           fontSize: "14px",
@@ -89,9 +96,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
     this.list.removeAll(true);
     const width = this.scale.width;
     const rowW = width - 60;
-    const items = passiveSkills.filter(
-      (s) => this.selected === "all" || s.category === this.selected
-    );
+    const items = passiveSkills.filter((s) => this.selected === "all" || s.category === this.selected);
     items.forEach((s, i) => {
       const y = LIST_TOP + i * (ROW_H + ROW_GAP);
       const row = this.add.container(30, y);
@@ -110,12 +115,11 @@ export class PassiveSkillsScene extends Phaser.Scene {
         fontSize: "12px",
         color: "#9aa0c0",
       });
-      const cat = this.add
-        .text(160, -10, PASSIVE_CATEGORY_LABELS[s.category], {
-          fontFamily: "sans-serif",
-          fontSize: "13px",
-          color: "#" + PASSIVE_CATEGORY_COLORS[s.category].toString(16).padStart(6, "0"),
-        });
+      const cat = this.add.text(160, -10, PASSIVE_CATEGORY_LABELS[s.category], {
+        fontFamily: "sans-serif",
+        fontSize: "13px",
+        color: "#" + PASSIVE_CATEGORY_COLORS[s.category].toString(16).padStart(6, "0"),
+      });
       const desc = this.add.text(160, 12, s.description, {
         fontFamily: "sans-serif",
         fontSize: "12px",

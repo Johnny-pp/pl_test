@@ -1,14 +1,28 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assignWorker, consumeCaptureOrb, craftItem, simulateProduction, upgradeFacility, useHealingTonic } from "../src/base/baseSystem.ts";
+import {
+  assignWorker,
+  consumeCaptureOrb,
+  craftItem,
+  simulateProduction,
+  upgradeFacility,
+  useHealingTonic,
+} from "../src/base/baseSystem.ts";
 import { addCapturedPal, createEmptySave, createPalInstance } from "../src/player/playerState.ts";
 import type { Pal } from "../src/types/pal.ts";
 
 const worker: Pal = {
-  id: 9, name: { zh: "工兽", en: "Worker" }, rarity: 1, size: "small", elements: ["grass"], catchRate: 50, foodAmount: 2,
+  id: 9,
+  name: { zh: "工兽", en: "Worker" },
+  rarity: 1,
+  size: "small",
+  elements: ["grass"],
+  catchRate: 50,
+  foodAmount: 2,
   stats: { hp: 80, attack: 60, defense: 60, workSpeed: 120, moveSpeed: 100, rideSprintSpeed: 0 },
   growth: { hpPerLevel: 4, attackPerLevel: 3, defensePerLevel: 3, experienceCurve: "medium" },
-  workSuitability: [{ type: "planting", level: 2 }], activeSkills: ["quick-strike"],
+  workSuitability: [{ type: "planting", level: 2 }],
+  activeSkills: ["quick-strike"],
 };
 const species = new Map([[worker.id, worker]]);
 

@@ -20,11 +20,7 @@ export interface BreedResult {
   error?: "same-parent" | "missing-parent" | "missing-species" | "insufficient-food" | "queue-full";
 }
 
-export function previewOffspring(
-  parentA: Pal,
-  parentB: Pal,
-  species: readonly Pal[]
-): Pal | undefined {
+export function previewOffspring(parentA: Pal, parentB: Pal, species: readonly Pal[]): Pal | undefined {
   const powerA = parentA.breeding?.power ?? parentA.id;
   const powerB = parentB.breeding?.power ?? parentB.id;
   const sharedElementBonus = parentA.elements.some((element) => parentB.elements.includes(element)) ? -3 : 3;
@@ -69,7 +65,8 @@ export function breed(
   passivePool: readonly string[],
   random: () => number = Math.random,
   now = Date.now(),
-  idFactory: () => string = () => globalThis.crypto?.randomUUID?.() ?? `egg-${now.toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+  idFactory: () => string = () =>
+    globalThis.crypto?.randomUUID?.() ?? `egg-${now.toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 ): BreedResult {
   if (parentAUid === parentBUid) return { save, error: "same-parent" };
   if (save.breedingEggs.length >= 4) return { save, error: "queue-full" };
@@ -96,7 +93,10 @@ export function breed(
     egg,
     save: {
       ...save,
-      base: { ...save.base, resources: { ...save.base.resources, food: save.base.resources.food - BREEDING_FOOD_COST } },
+      base: {
+        ...save.base,
+        resources: { ...save.base.resources, food: save.base.resources.food - BREEDING_FOOD_COST },
+      },
       breedingEggs: [...save.breedingEggs, egg],
     },
   };

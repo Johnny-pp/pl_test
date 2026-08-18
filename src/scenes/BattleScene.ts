@@ -75,22 +75,28 @@ export class BattleScene extends Phaser.Scene {
       const instance = loadGame(localStorage).ownedPals.find((pal) => pal.uid === this.playerUid);
       if (instance) this.state.player.hp = Math.max(1, Math.min(this.state.player.maxHp, instance.currentHp));
     }
-    this.add.text(18, 18, "< 退出战斗", {
-      fontFamily: "sans-serif",
-      fontSize: "18px",
-      color: "#4fc3f7",
-    }).setInteractive({ useHandCursor: true })
+    this.add
+      .text(18, 18, "< 退出战斗", {
+        fontFamily: "sans-serif",
+        fontSize: "18px",
+        color: "#4fc3f7",
+      })
+      .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.leaveBattle());
-    this.add.text(450, 28, "幻兽对决", {
-      fontFamily: "sans-serif",
-      fontSize: "30px",
-      color: "#ffffff",
-    }).setOrigin(0.5);
-    this.roundText = this.add.text(450, 66, "", {
-      fontFamily: "sans-serif",
-      fontSize: "15px",
-      color: "#9aa0c0",
-    }).setOrigin(0.5);
+    this.add
+      .text(450, 28, "幻兽对决", {
+        fontFamily: "sans-serif",
+        fontSize: "30px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5);
+    this.roundText = this.add
+      .text(450, 66, "", {
+        fontFamily: "sans-serif",
+        fontSize: "15px",
+        color: "#9aa0c0",
+      })
+      .setOrigin(0.5);
 
     this.makeCombatantPanel(655, 150, this.state.enemy, false);
     this.makeCombatantPanel(245, 330, this.state.player, true);
@@ -112,11 +118,16 @@ export class BattleScene extends Phaser.Scene {
     const contentX = player ? x - 55 : x - 145;
     this.add.rectangle(x, y, 350, 130, 0x16213e).setStrokeStyle(2, ELEMENT_COLORS[element]);
     addPalPortrait(this, fighter.id, x + (player ? -120 : 120), y + 8, 110);
-    this.add.text(contentX, y - 48, `${fighter.name}  ·  ${fighter.elements.map((e) => ELEMENT_LABELS[e]).join("/")}`, {
-      fontFamily: "sans-serif",
-      fontSize: "21px",
-      color: "#ffffff",
-    });
+    this.add.text(
+      contentX,
+      y - 48,
+      `${fighter.name}  ·  ${fighter.elements.map((e) => ELEMENT_LABELS[e]).join("/")}`,
+      {
+        fontFamily: "sans-serif",
+        fontSize: "21px",
+        color: "#ffffff",
+      }
+    );
     this.add.rectangle(contentX, y, 200, 16, 0x301f38).setOrigin(0, 0.5);
     const hp = this.add.rectangle(contentX, y, 200, 16, 0x66bb6a).setOrigin(0, 0.5);
     const status = this.add.text(contentX, y + 18, "", {
@@ -150,23 +161,24 @@ export class BattleScene extends Phaser.Scene {
     hpBar.displayWidth = 200 * (fighter.hp / fighter.maxHp);
     hpBar.setFillStyle(fighter.hp / fighter.maxHp > 0.35 ? 0x66bb6a : 0xef5350);
     const statusNames = fighter.statuses.map((effect) => getStatusLabel(effect.type)).join("、");
-    status.setText(`HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100${statusNames ? `    ${statusNames}` : ""}`);
+    status.setText(
+      `HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100${statusNames ? `    ${statusNames}` : ""}`
+    );
   }
 
   private renderActions() {
     this.actionLayer.removeAll(true);
     if (!this.state) return;
     if (this.state.phase === "victory" || this.state.phase === "defeat") {
-      const title = this.add.text(450, 555, this.state.phase === "victory" ? "战斗胜利" : "战斗失败", {
-        fontFamily: "sans-serif",
-        fontSize: "24px",
-        color: this.state.phase === "victory" ? "#ffd54f" : "#ff8a80",
-      }).setOrigin(0.5);
-      const again = this.makeNavButton(
-        500,
-        602,
-        this.returnTo ? "返回地图" : "重新选角",
-        () => this.returnTo ? this.leaveBattle() : this.scene.start("SelectPalScene")
+      const title = this.add
+        .text(450, 555, this.state.phase === "victory" ? "战斗胜利" : "战斗失败", {
+          fontFamily: "sans-serif",
+          fontSize: "24px",
+          color: this.state.phase === "victory" ? "#ffd54f" : "#ff8a80",
+        })
+        .setOrigin(0.5);
+      const again = this.makeNavButton(500, 602, this.returnTo ? "返回地图" : "重新选角", () =>
+        this.returnTo ? this.leaveBattle() : this.scene.start("SelectPalScene")
       );
       const dex = this.makeNavButton(665, 602, "返回图鉴", () => this.scene.start("DexScene"));
       this.actionLayer.add([title, again, dex]);
@@ -181,20 +193,31 @@ export class BattleScene extends Phaser.Scene {
             catchRate: enemyPal.catchRate,
           });
           if (currentSave.inventory.captureOrbs > 0) {
-            const capture = this.makeNavButton(170, 602, `捕获 ${chance}% · ${currentSave.inventory.captureOrbs}`, () => this.captureEnemy(enemyPal));
+            const capture = this.makeNavButton(
+              170,
+              602,
+              `捕获 ${chance}% · ${currentSave.inventory.captureOrbs}`,
+              () => this.captureEnemy(enemyPal)
+            );
             this.actionLayer.add(capture);
           } else {
-            const noOrb = this.add.text(170, 602, "捕获器不足，请到基地制造", {
-              fontFamily: "sans-serif", fontSize: "14px", color: "#ff8a80",
-            }).setOrigin(0.5);
+            const noOrb = this.add
+              .text(170, 602, "捕获器不足，请到基地制造", {
+                fontFamily: "sans-serif",
+                fontSize: "14px",
+                color: "#ff8a80",
+              })
+              .setOrigin(0.5);
             this.actionLayer.add(noOrb);
           }
         } else if (this.captureMessage) {
-          const message = this.add.text(170, 602, this.captureMessage, {
-            fontFamily: "sans-serif",
-            fontSize: "16px",
-            color: this.captureMessage.startsWith("捕获成功") ? "#9ccc65" : "#ff8a80",
-          }).setOrigin(0.5);
+          const message = this.add
+            .text(170, 602, this.captureMessage, {
+              fontFamily: "sans-serif",
+              fontSize: "16px",
+              color: this.captureMessage.startsWith("捕获成功") ? "#9ccc65" : "#ff8a80",
+            })
+            .setOrigin(0.5);
           this.actionLayer.add(message);
         }
       }
@@ -213,19 +236,24 @@ export class BattleScene extends Phaser.Scene {
     skills.forEach((skill, index) => {
       const x = 150 + index * 185;
       const affordable = this.state ? this.state.player.energy >= skill.energyCost : false;
-      const bg = this.add.rectangle(x, 594, 165, 58, affordable ? 0x20345c : 0x29293b)
+      const bg = this.add
+        .rectangle(x, 594, 165, 58, affordable ? 0x20345c : 0x29293b)
         .setStrokeStyle(1, ELEMENT_COLORS[skill.element])
         .setInteractive({ useHandCursor: true });
-      const name = this.add.text(x, 582, skill.name.zh, {
-        fontFamily: "sans-serif",
-        fontSize: "16px",
-        color: affordable ? "#ffffff" : "#89899c",
-      }).setOrigin(0.5);
-      const stats = this.add.text(x, 606, `威力 ${skill.power} · 能量 ${skill.energyCost}`, {
-        fontFamily: "sans-serif",
-        fontSize: "12px",
-        color: "#9aa0c0",
-      }).setOrigin(0.5);
+      const name = this.add
+        .text(x, 582, skill.name.zh, {
+          fontFamily: "sans-serif",
+          fontSize: "16px",
+          color: affordable ? "#ffffff" : "#89899c",
+        })
+        .setOrigin(0.5);
+      const stats = this.add
+        .text(x, 606, `威力 ${skill.power} · 能量 ${skill.energyCost}`, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#9aa0c0",
+        })
+        .setOrigin(0.5);
       bg.on("pointerdown", () => this.takeTurn(skill));
       this.actionLayer.add([bg, name, stats]);
     });
@@ -262,7 +290,10 @@ export class BattleScene extends Phaser.Scene {
     });
     if (result.success) {
       const rolledPassives = rollWildPassiveSkills(passiveSkills.map((skill) => skill.id));
-      const next = addCapturedPal(consumed.save, createPalInstance(enemyPal, undefined, undefined, rolledPassives));
+      const next = addCapturedPal(
+        consumed.save,
+        createPalInstance(enemyPal, undefined, undefined, rolledPassives)
+      );
       const persisted = saveGame(localStorage, next);
       this.captureMessage = persisted ? "捕获成功！" : "捕获成功，但存档失败";
     } else {
@@ -281,13 +312,14 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private makeNavButton(x: number, y: number, label: string, action: () => void) {
-    const bg = this.add.rectangle(x, y, 145, 38, 0x0f3460)
-      .setInteractive({ useHandCursor: true });
-    const text = this.add.text(x, y, label, {
-      fontFamily: "sans-serif",
-      fontSize: "16px",
-      color: "#ffffff",
-    }).setOrigin(0.5);
+    const bg = this.add.rectangle(x, y, 145, 38, 0x0f3460).setInteractive({ useHandCursor: true });
+    const text = this.add
+      .text(x, y, label, {
+        fontFamily: "sans-serif",
+        fontSize: "16px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5);
     bg.on("pointerdown", action);
     const container = this.add.container(0, 0, [bg, text]);
     return container;

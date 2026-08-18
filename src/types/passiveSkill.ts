@@ -1,5 +1,4 @@
-export type PassiveCategory =
-  | "attack" | "defense" | "work" | "move" | "element" | "resource" | "other";
+export type PassiveCategory = "attack" | "defense" | "work" | "move" | "element" | "resource" | "other";
 
 export type PassiveTier = "common" | "rare" | "legendary";
 

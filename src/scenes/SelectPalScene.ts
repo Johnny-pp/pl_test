@@ -20,40 +20,43 @@ export class SelectPalScene extends Phaser.Scene {
 
   create() {
     const width = this.scale.width;
-    this.add.text(18, 18, "< 返回图鉴", {
-      fontFamily: "sans-serif",
-      fontSize: "18px",
-      color: "#4fc3f7",
-    }).setInteractive({ useHandCursor: true })
+    this.add
+      .text(18, 18, "< 返回图鉴", {
+        fontFamily: "sans-serif",
+        fontSize: "18px",
+        color: "#4fc3f7",
+      })
+      .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.scene.start("DexScene"));
 
-    this.add.text(width / 2, 28, "选择出战幻兽", {
-      fontFamily: "sans-serif",
-      fontSize: "30px",
-      color: "#ffffff",
-    }).setOrigin(0.5);
-    this.add.text(width / 2, 66, "选择后将随机遭遇一只野生幻兽", {
-      fontFamily: "sans-serif",
-      fontSize: "15px",
-      color: "#9aa0c0",
-    }).setOrigin(0.5);
+    this.add
+      .text(width / 2, 28, "选择出战幻兽", {
+        fontFamily: "sans-serif",
+        fontSize: "30px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5);
+    this.add
+      .text(width / 2, 66, "选择后将随机遭遇一只野生幻兽", {
+        fontFamily: "sans-serif",
+        fontSize: "15px",
+        color: "#9aa0c0",
+      })
+      .setOrigin(0.5);
 
     const totalW = COLS * CARD_W + (COLS - 1) * GAP;
     const startX = (width - totalW) / 2 + CARD_W / 2;
     pals.forEach((pal, index) => {
       const col = index % COLS;
       const row = Math.floor(index / COLS);
-      this.makeCard(
-        pal,
-        startX + col * (CARD_W + GAP),
-        135 + row * (CARD_H + GAP)
-      );
+      this.makeCard(pal, startX + col * (CARD_W + GAP), 135 + row * (CARD_H + GAP));
     });
   }
 
   private makeCard(pal: Pal, x: number, y: number) {
     const element = pal.elements[0] ?? "neutral";
-    const bg = this.add.rectangle(x, y, CARD_W, CARD_H, 0x16213e)
+    const bg = this.add
+      .rectangle(x, y, CARD_W, CARD_H, 0x16213e)
       .setStrokeStyle(2, ELEMENT_COLORS[element])
       .setInteractive({ useHandCursor: true });
     addPalPortrait(this, pal.id, x - 62, y, 74);

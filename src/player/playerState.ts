@@ -116,13 +116,15 @@ export function createPalInstance(
 function isPalInstance(value: unknown): value is PalInstance {
   if (!value || typeof value !== "object") return false;
   const pal = value as Partial<PalInstance>;
-  return typeof pal.uid === "string"
-    && Number.isInteger(pal.speciesId)
-    && Number.isInteger(pal.level)
-    && Number.isFinite(pal.experience)
-    && Number.isFinite(pal.currentHp)
-    && Array.isArray(pal.passiveSkillIds)
-    && typeof pal.capturedAt === "string";
+  return (
+    typeof pal.uid === "string" &&
+    Number.isInteger(pal.speciesId) &&
+    Number.isInteger(pal.level) &&
+    Number.isFinite(pal.experience) &&
+    Number.isFinite(pal.currentHp) &&
+    Array.isArray(pal.passiveSkillIds) &&
+    typeof pal.capturedAt === "string"
+  );
 }
 
 function finiteCount(value: unknown, fallback = 0): number {
@@ -136,49 +138,55 @@ function finiteAmount(value: unknown, fallback = 0): number {
 function migrateSave(value: unknown, now = Date.now()): GameSave {
   if (!value || typeof value !== "object") return createEmptySave(now);
   const raw = value as Record<string, unknown>;
-  const ownedPals = Array.isArray(raw.ownedPals)
-    ? raw.ownedPals.filter(isPalInstance)
-    : [];
+  const ownedPals = Array.isArray(raw.ownedPals) ? raw.ownedPals.filter(isPalInstance) : [];
   const ownedIds = new Set(ownedPals.map((pal) => pal.uid));
   const teamIds = Array.isArray(raw.teamIds)
-    ? raw.teamIds.filter((id): id is string => typeof id === "string" && ownedIds.has(id)).slice(0, TEAM_LIMIT)
+    ? raw.teamIds
+        .filter((id): id is string => typeof id === "string" && ownedIds.has(id))
+        .slice(0, TEAM_LIMIT)
     : [];
-  const progress = raw.progress && typeof raw.progress === "object"
-    ? raw.progress as Partial<GameProgress>
-    : {};
-  const inventory = raw.inventory && typeof raw.inventory === "object"
-    ? raw.inventory as Partial<PlayerInventory>
-    : {};
-  const rawBase = raw.base && typeof raw.base === "object"
-    ? raw.base as Partial<BaseState>
-    : {};
-  const rawResources = rawBase.resources && typeof rawBase.resources === "object"
-    ? rawBase.resources as Partial<BaseState["resources"]>
-    : {};
-  const rawFacilities = rawBase.facilities && typeof rawBase.facilities === "object"
-    ? rawBase.facilities as Partial<BaseState["facilities"]>
-    : {};
+  const progress =
+    raw.progress && typeof raw.progress === "object" ? (raw.progress as Partial<GameProgress>) : {};
+  const inventory =
+    raw.inventory && typeof raw.inventory === "object" ? (raw.inventory as Partial<PlayerInventory>) : {};
+  const rawBase = raw.base && typeof raw.base === "object" ? (raw.base as Partial<BaseState>) : {};
+  const rawResources =
+    rawBase.resources && typeof rawBase.resources === "object"
+      ? (rawBase.resources as Partial<BaseState["resources"]>)
+      : {};
+  const rawFacilities =
+    rawBase.facilities && typeof rawBase.facilities === "object"
+      ? (rawBase.facilities as Partial<BaseState["facilities"]>)
+      : {};
   const validJobs = new Set<BaseJob>(["planting", "mining", "lumbering", "generating"]);
   const assignments = Array.isArray(rawBase.assignments)
     ? rawBase.assignments.filter((assignment): assignment is BaseAssignment => {
-      if (!assignment || typeof assignment !== "object") return false;
-      const item = assignment as Partial<BaseAssignment>;
-      return typeof item.palUid === "string" && ownedIds.has(item.palUid)
-        && typeof item.job === "string" && validJobs.has(item.job as BaseJob);
-    })
+        if (!assignment || typeof assignment !== "object") return false;
+        const item = assignment as Partial<BaseAssignment>;
+        return (
+          typeof item.palUid === "string" &&
+          ownedIds.has(item.palUid) &&
+          typeof item.job === "string" &&
+          validJobs.has(item.job as BaseJob)
+        );
+      })
     : [];
   const breedingEggs = Array.isArray(raw.breedingEggs)
     ? raw.breedingEggs.filter((egg): egg is BreedingEgg => {
-      if (!egg || typeof egg !== "object") return false;
-      const item = egg as Partial<BreedingEgg>;
-      return typeof item.id === "string"
-        && Array.isArray(item.parentUids) && item.parentUids.length === 2
-        && item.parentUids.every((uid) => typeof uid === "string" && ownedIds.has(uid))
-        && Number.isInteger(item.speciesId)
-        && Array.isArray(item.passiveSkillIds)
-        && ["common", "fine", "radiant"].includes(item.quality ?? "")
-        && Number.isFinite(item.createdAt) && Number.isFinite(item.hatchAt);
-    })
+        if (!egg || typeof egg !== "object") return false;
+        const item = egg as Partial<BreedingEgg>;
+        return (
+          typeof item.id === "string" &&
+          Array.isArray(item.parentUids) &&
+          item.parentUids.length === 2 &&
+          item.parentUids.every((uid) => typeof uid === "string" && ownedIds.has(uid)) &&
+          Number.isInteger(item.speciesId) &&
+          Array.isArray(item.passiveSkillIds) &&
+          ["common", "fine", "radiant"].includes(item.quality ?? "") &&
+          Number.isFinite(item.createdAt) &&
+          Number.isFinite(item.hatchAt)
+        );
+      })
     : [];
 
   return {
@@ -187,7 +195,9 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
     teamIds: [...new Set(teamIds)],
     progress: {
       battlesWon: Number.isFinite(progress.battlesWon) ? Math.max(0, Math.floor(progress.battlesWon!)) : 0,
-      captures: Number.isFinite(progress.captures) ? Math.max(0, Math.floor(progress.captures!)) : ownedPals.length,
+      captures: Number.isFinite(progress.captures)
+        ? Math.max(0, Math.floor(progress.captures!))
+        : ownedPals.length,
     },
     inventory: {
       captureOrbs: finiteCount(inventory.captureOrbs, 3),
@@ -201,7 +211,9 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
         fiber: finiteAmount(rawResources.fiber, 10),
         crystal: finiteAmount(rawResources.crystal),
       },
-      assignments: assignments.filter((item, index) => assignments.findIndex((candidate) => candidate.palUid === item.palUid) === index),
+      assignments: assignments.filter(
+        (item, index) => assignments.findIndex((candidate) => candidate.palUid === item.palUid) === index
+      ),
       facilities: {
         warehouse: Math.max(1, finiteCount(rawFacilities.warehouse, 1)),
         farm: Math.max(1, finiteCount(rawFacilities.farm, 1)),
@@ -263,8 +275,8 @@ export function updatePalCurrentHp(save: GameSave, uid: string, hp: number): Gam
   if (!save.ownedPals.some((pal) => pal.uid === uid)) return save;
   return {
     ...save,
-    ownedPals: save.ownedPals.map((pal) => pal.uid === uid
-      ? { ...pal, currentHp: Math.max(0, Math.floor(hp)) }
-      : pal),
+    ownedPals: save.ownedPals.map((pal) =>
+      pal.uid === uid ? { ...pal, currentHp: Math.max(0, Math.floor(hp)) } : pal
+    ),
   };
 }

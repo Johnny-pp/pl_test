@@ -1,9 +1,5 @@
 import type { Pal } from "../types/pal";
-import type {
-  BaseJob,
-  FacilityId,
-  GameSave,
-} from "../player/playerState";
+import type { BaseJob, FacilityId, GameSave } from "../player/playerState";
 
 export type ResourceId = keyof GameSave["base"]["resources"];
 export type CraftableItem = "capture-orb" | "healing-tonic";
@@ -60,7 +56,10 @@ export function removeWorker(save: GameSave, palUid: string): GameSave {
   if (!save.base.assignments.some((assignment) => assignment.palUid === palUid)) return save;
   return {
     ...save,
-    base: { ...save.base, assignments: save.base.assignments.filter((assignment) => assignment.palUid !== palUid) },
+    base: {
+      ...save.base,
+      assignments: save.base.assignments.filter((assignment) => assignment.palUid !== palUid),
+    },
   };
 }
 
@@ -78,9 +77,8 @@ export function simulateProduction(
     if (!species) continue;
     const level = suitabilityLevel(species, assignment.job);
     if (level <= 0) continue;
-    const facilityLevel = assignment.job === "planting"
-      ? save.base.facilities.farm
-      : save.base.facilities.workshop;
+    const facilityLevel =
+      assignment.job === "planting" ? save.base.facilities.farm : save.base.facilities.workshop;
     const facilityMultiplier = 1 + (facilityLevel - 1) * 0.15;
     const ratePerMinute = level * (species.stats.workSpeed / 100) * facilityMultiplier * 0.25;
     const resource = JOB_RESOURCE[assignment.job];
@@ -92,7 +90,10 @@ export function simulateProduction(
   return { ...save, base: { ...save.base, resources, lastUpdatedAt: now } };
 }
 
-function canPay(resources: GameSave["base"]["resources"], costs: Partial<Record<ResourceId, number>>): boolean {
+function canPay(
+  resources: GameSave["base"]["resources"],
+  costs: Partial<Record<ResourceId, number>>
+): boolean {
   return Object.entries(costs).every(([resource, cost]) => resources[resource as ResourceId] >= (cost ?? 0));
 }
 
@@ -145,7 +146,9 @@ export function useHealingTonic(save: GameSave, palUid: string, maxHp: number): 
   if (save.inventory.healingTonics <= 0) return save;
   const index = save.ownedPals.findIndex((pal) => pal.uid === palUid);
   if (index < 0 || save.ownedPals[index].currentHp >= maxHp) return save;
-  const ownedPals = save.ownedPals.map((pal, current) => current === index ? { ...pal, currentHp: maxHp } : pal);
+  const ownedPals = save.ownedPals.map((pal, current) =>
+    current === index ? { ...pal, currentHp: maxHp } : pal
+  );
   return {
     ...save,
     ownedPals,

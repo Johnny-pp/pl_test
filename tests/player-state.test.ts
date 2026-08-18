@@ -27,12 +27,18 @@ function memoryStorage(initial: string | null = null): StorageLike {
   let value = initial;
   return {
     getItem: () => value,
-    setItem: (_key, next) => { value = next; },
+    setItem: (_key, next) => {
+      value = next;
+    },
   };
 }
 
 test("捕获个体会自动加入未满的队伍", () => {
-  const instance = createPalInstance(species, () => "pal-1", () => "2026-01-01T00:00:00.000Z");
+  const instance = createPalInstance(
+    species,
+    () => "pal-1",
+    () => "2026-01-01T00:00:00.000Z"
+  );
   const save = addCapturedPal(createEmptySave(), instance);
   assert.equal(save.ownedPals.length, 1);
   assert.deepEqual(save.teamIds, ["pal-1"]);
@@ -42,7 +48,10 @@ test("捕获个体会自动加入未满的队伍", () => {
 test("队伍不会超过容量限制", () => {
   let save = createEmptySave();
   for (let index = 0; index < TEAM_LIMIT + 1; index += 1) {
-    save = addCapturedPal(save, createPalInstance(species, () => `pal-${index}`));
+    save = addCapturedPal(
+      save,
+      createPalInstance(species, () => `pal-${index}`)
+    );
   }
   assert.equal(save.ownedPals.length, TEAM_LIMIT + 1);
   assert.equal(save.teamIds.length, TEAM_LIMIT);

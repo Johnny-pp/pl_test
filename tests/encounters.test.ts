@@ -14,8 +14,14 @@ test("昼夜边界按 6 点和 18 点切换", () => {
 test("地图左右区域使用不同遭遇表", () => {
   assert.equal(getZoneAtTile(19), "sunlit-meadow");
   assert.equal(getZoneAtTile(20), "echo-ruins");
-  assert.equal(pickEncounter("sunlit-meadow", "day", () => 0), 1);
-  assert.equal(pickEncounter("echo-ruins", "night", () => 0.999), 30);
+  assert.equal(
+    pickEncounter("sunlit-meadow", "day", () => 0),
+    1
+  );
+  assert.equal(
+    pickEncounter("echo-ruins", "night", () => 0.999),
+    30
+  );
 });
 
 test("瓦片地图四周均为不可通行边界", () => {
@@ -28,7 +34,9 @@ test("瓦片地图四周均为不可通行边界", () => {
 });
 
 test("所有遭遇表只引用存在的物种", () => {
-  const species = JSON.parse(readFileSync(new URL("../data/pals.json", import.meta.url), "utf-8")) as Array<{ id: number }>;
+  const species = JSON.parse(readFileSync(new URL("../data/pals.json", import.meta.url), "utf-8")) as Array<{
+    id: number;
+  }>;
   const ids = new Set(species.map((pal) => pal.id));
   for (const periods of Object.values(ENCOUNTER_TABLES)) {
     for (const entries of Object.values(periods)) {

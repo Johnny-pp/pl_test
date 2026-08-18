@@ -1,12 +1,7 @@
 import Phaser from "phaser";
 import { pals } from "../data/loadPals";
 import { loadGame } from "../player/playerState";
-import {
-  getTimePeriod,
-  getZoneAtTile,
-  pickEncounter,
-  type WorldZone,
-} from "../world/encounters";
+import { getTimePeriod, getZoneAtTile, pickEncounter, type WorldZone } from "../world/encounters";
 import {
   TILE_ENCOUNTER,
   TILE_SIZE,
@@ -57,10 +52,13 @@ export class WorldScene extends Phaser.Scene {
   private zoneText!: Phaser.GameObjects.Text;
   private resourceText!: Phaser.GameObjects.Text;
   private promptText!: Phaser.GameObjects.Text;
-  private resources = new Map<string, {
-    node: Phaser.GameObjects.Arc;
-    label: Phaser.GameObjects.Text;
-  }>();
+  private resources = new Map<
+    string,
+    {
+      node: Phaser.GameObjects.Arc;
+      label: Phaser.GameObjects.Text;
+    }
+  >();
   private collected = new Set<string>();
   private gathered = 0;
   private encounterLocked = false;
@@ -91,14 +89,14 @@ export class WorldScene extends Phaser.Scene {
     if (!tileset) throw new Error("无法创建世界地图图块集");
     const layer = map.createLayer(0, tileset, 0, 0);
     if (!layer) throw new Error("无法创建世界地图图层");
-    this.layer = layer;
+    this.layer = layer as Phaser.Tilemaps.TilemapLayer;
     this.layer.setCollision(TILE_WALL);
 
     const startX = data.playerX ?? 3.5 * TILE_SIZE;
     const startY = data.playerY ?? 14.5 * TILE_SIZE;
     this.player = this.physics.add.sprite(startX, startY, "world-player");
     this.player.setCollideWorldBounds(true);
-    this.player.body.setSize(22, 22);
+    (this.player.body as Phaser.Physics.Arcade.Body).setSize(22, 22);
     this.physics.world.setBounds(0, 0, WORLD_COLS * TILE_SIZE, WORLD_ROWS * TILE_SIZE);
     this.physics.add.collider(this.player, this.layer);
 
@@ -132,12 +130,15 @@ export class WorldScene extends Phaser.Scene {
     const tileX = Math.floor(this.player.x / TILE_SIZE);
     const zone = getZoneAtTile(tileX);
     const period = getTimePeriod(new Date().getHours());
-    this.zoneText.setText(`${ZONE_LABELS[zone]} · ${period === "day" ? "白昼" : "夜晚"} · 领队 ${this.leader.name.zh}`);
+    this.zoneText.setText(
+      `${ZONE_LABELS[zone]} · ${period === "day" ? "白昼" : "夜晚"} · 领队 ${this.leader.name.zh}`
+    );
 
     const nearest = this.findNearbyResource();
     this.promptText.setVisible(Boolean(nearest));
     if (nearest) this.promptText.setText(`按 E 采集 ${nearest.label}`);
-    if (nearest && (Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested)) this.gatherResource(nearest);
+    if (nearest && (Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested))
+      this.gatherResource(nearest);
     this.touchInteractRequested = false;
 
     if (direction.lengthSq() > 0) this.tryEncounter(zone, period);
@@ -145,17 +146,27 @@ export class WorldScene extends Phaser.Scene {
 
   private resolveLeader(preferredId?: number, preferredUid?: string): { species: Pal; uid?: string } {
     const save = loadGame(localStorage);
-    const preferredInstance = save.ownedPals.find((pal) => pal.uid === preferredUid && pal.speciesId === preferredId);
+    const preferredInstance = save.ownedPals.find(
+      (pal) => pal.uid === preferredUid && pal.speciesId === preferredId
+    );
     const firstTeamUid = save.teamIds[0];
     const firstTeamPal = save.ownedPals.find((pal) => pal.uid === firstTeamUid);
-    if (preferredInstance) return { species: pals.find((pal) => pal.id === preferredInstance.speciesId) ?? pals[0], uid: preferredInstance.uid };
-    if (firstTeamPal) return { species: pals.find((pal) => pal.id === firstTeamPal.speciesId) ?? pals[0], uid: firstTeamPal.uid };
+    if (preferredInstance)
+      return {
+        species: pals.find((pal) => pal.id === preferredInstance.speciesId) ?? pals[0],
+        uid: preferredInstance.uid,
+      };
+    if (firstTeamPal)
+      return {
+        species: pals.find((pal) => pal.id === firstTeamPal.speciesId) ?? pals[0],
+        uid: firstTeamPal.uid,
+      };
     return { species: pals.find((pal) => pal.id === preferredId) ?? pals[0] };
   }
 
   private createTextures() {
     if (!this.textures.exists("world-tiles")) {
-      const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+      const graphics = this.make.graphics({ x: 0, y: 0 });
       [0x315d3c, 0x263447, 0x477c4d, 0x8a795e].forEach((color, index) => {
         graphics.fillStyle(color);
         graphics.fillRect(index * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE);
@@ -166,7 +177,7 @@ export class WorldScene extends Phaser.Scene {
       graphics.destroy();
     }
     if (!this.textures.exists("world-player")) {
-      const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+      const graphics = this.make.graphics({ x: 0, y: 0 });
       graphics.fillStyle(0xffd54f);
       graphics.fillCircle(14, 14, 12);
       graphics.lineStyle(3, 0xffffff);
@@ -178,20 +189,46 @@ export class WorldScene extends Phaser.Scene {
 
   private createHud() {
     this.add.rectangle(450, 28, 880, 44, 0x0b1224, 0.9).setScrollFactor(0).setDepth(20);
-    const back = this.add.text(20, 18, "< 返回图鉴", {
-      fontFamily: "sans-serif", fontSize: "16px", color: "#4fc3f7",
-    }).setScrollFactor(0).setDepth(21).setInteractive({ useHandCursor: true });
+    const back = this.add
+      .text(20, 18, "< 返回图鉴", {
+        fontFamily: "sans-serif",
+        fontSize: "16px",
+        color: "#4fc3f7",
+      })
+      .setScrollFactor(0)
+      .setDepth(21)
+      .setInteractive({ useHandCursor: true });
     back.on("pointerdown", () => this.scene.start("DexScene"));
-    this.zoneText = this.add.text(450, 20, "", {
-      fontFamily: "sans-serif", fontSize: "15px", color: "#ffffff",
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(21);
-    this.resourceText = this.add.text(875, 18, "", {
-      fontFamily: "sans-serif", fontSize: "14px", color: "#9ccc65",
-    }).setOrigin(1, 0).setScrollFactor(0).setDepth(21);
-    this.promptText = this.add.text(450, 594, "", {
-      fontFamily: "sans-serif", fontSize: "17px", color: "#ffffff",
-      backgroundColor: "#0b1224", padding: { x: 12, y: 8 },
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(21).setVisible(false);
+    this.zoneText = this.add
+      .text(450, 20, "", {
+        fontFamily: "sans-serif",
+        fontSize: "15px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(21);
+    this.resourceText = this.add
+      .text(875, 18, "", {
+        fontFamily: "sans-serif",
+        fontSize: "14px",
+        color: "#9ccc65",
+      })
+      .setOrigin(1, 0)
+      .setScrollFactor(0)
+      .setDepth(21);
+    this.promptText = this.add
+      .text(450, 594, "", {
+        fontFamily: "sans-serif",
+        fontSize: "17px",
+        color: "#ffffff",
+        backgroundColor: "#0b1224",
+        padding: { x: 12, y: 8 },
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(21)
+      .setVisible(false);
     this.updateResourceText();
     this.createTouchControls();
   }
@@ -201,12 +238,24 @@ export class WorldScene extends Phaser.Scene {
     this.makeTouchDirectionButton(82, 600, "▼", "down");
     this.makeTouchDirectionButton(44, 563, "◀", "left");
     this.makeTouchDirectionButton(120, 563, "▶", "right");
-    const action = this.add.circle(826, 558, 38, 0x0f4660, 0.72)
-      .setScrollFactor(0).setDepth(22).setInteractive({ useHandCursor: true });
-    this.add.text(826, 558, "E\n采集", {
-      fontFamily: "sans-serif", fontSize: "14px", color: "#ffffff", align: "center",
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(23);
-    action.on("pointerdown", () => { this.touchInteractRequested = true; });
+    const action = this.add
+      .circle(826, 558, 38, 0x0f4660, 0.72)
+      .setScrollFactor(0)
+      .setDepth(22)
+      .setInteractive({ useHandCursor: true });
+    this.add
+      .text(826, 558, "E\n采集", {
+        fontFamily: "sans-serif",
+        fontSize: "14px",
+        color: "#ffffff",
+        align: "center",
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(23);
+    action.on("pointerdown", () => {
+      this.touchInteractRequested = true;
+    });
   }
 
   private makeTouchDirectionButton(
@@ -215,13 +264,26 @@ export class WorldScene extends Phaser.Scene {
     label: string,
     direction: keyof typeof this.touchDirection
   ) {
-    const button = this.add.circle(x, y, 32, 0x0f3460, 0.6)
-      .setScrollFactor(0).setDepth(22).setInteractive({ useHandCursor: true });
-    this.add.text(x, y, label, {
-      fontFamily: "sans-serif", fontSize: "20px", color: "#ffffff",
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(23);
-    button.on("pointerdown", () => { this.touchDirection[direction] = true; });
-    const release = () => { this.touchDirection[direction] = false; };
+    const button = this.add
+      .circle(x, y, 32, 0x0f3460, 0.6)
+      .setScrollFactor(0)
+      .setDepth(22)
+      .setInteractive({ useHandCursor: true });
+    this.add
+      .text(x, y, label, {
+        fontFamily: "sans-serif",
+        fontSize: "20px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(23);
+    button.on("pointerdown", () => {
+      this.touchDirection[direction] = true;
+    });
+    const release = () => {
+      this.touchDirection[direction] = false;
+    };
     button.on("pointerup", release);
     button.on("pointerout", release);
   }
@@ -231,9 +293,13 @@ export class WorldScene extends Phaser.Scene {
     for (const resource of RESOURCES) {
       if (this.collected.has(resource.id)) continue;
       const node = this.add.circle(resource.x, resource.y, 13, 0x80deea).setStrokeStyle(3, 0xffffff, 0.7);
-      const label = this.add.text(resource.x, resource.y + 18, resource.label, {
-        fontFamily: "sans-serif", fontSize: "12px", color: "#d5f7ff",
-      }).setOrigin(0.5, 0);
+      const label = this.add
+        .text(resource.x, resource.y + 18, resource.label, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#d5f7ff",
+        })
+        .setOrigin(0.5, 0);
       this.resources.set(resource.id, { node, label });
     }
   }
@@ -241,7 +307,10 @@ export class WorldScene extends Phaser.Scene {
   private findNearbyResource(): ResourceNode | undefined {
     return RESOURCES.find((resource) => {
       const object = this.resources.get(resource.id);
-      return object?.node.active && Phaser.Math.Distance.Between(this.player.x, this.player.y, resource.x, resource.y) < 52;
+      return (
+        object?.node.active &&
+        Phaser.Math.Distance.Between(this.player.x, this.player.y, resource.x, resource.y) < 52
+      );
     });
   }
 
@@ -260,7 +329,12 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private tryEncounter(zone: WorldZone, period: "day" | "night") {
-    if (this.encounterLocked || this.time.now < this.encounterCooldownUntil || this.time.now < this.nextEncounterCheck) return;
+    if (
+      this.encounterLocked ||
+      this.time.now < this.encounterCooldownUntil ||
+      this.time.now < this.nextEncounterCheck
+    )
+      return;
     this.nextEncounterCheck = this.time.now + 450;
     const tile = this.layer.getTileAtWorldXY(this.player.x, this.player.y);
     if (tile?.index !== TILE_ENCOUNTER || Math.random() >= 0.16) return;

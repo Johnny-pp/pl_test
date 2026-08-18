@@ -16,14 +16,33 @@ export const ELEMENT_COLORS: Record<ElementType, number> = {
 };
 
 export const ELEMENT_LABELS: Record<ElementType, string> = {
-  neutral: "无", fire: "火", water: "水", grass: "草", electric: "电",
-  ice: "冰", ground: "地", wind: "风", dark: "暗", dragon: "龙",
-  rock: "岩", normal: "普通",
+  neutral: "无",
+  fire: "火",
+  water: "水",
+  grass: "草",
+  electric: "电",
+  ice: "冰",
+  ground: "地",
+  wind: "风",
+  dark: "暗",
+  dragon: "龙",
+  rock: "岩",
+  normal: "普通",
 };
 
 export const WORK_LABELS: Record<WorkType, string> = {
-  planting: "种植", handiwork: "手工", gathering: "采集", kindling: "点火",
-  watering: "浇水", transport: "搬运", farming: "农业", electricity: "发电",
-  generating: "生电", lumbering: "伐木", mining: "采矿", medicine: "制药",
-  cooling: "冷却", sorting: "分拣",
+  planting: "种植",
+  handiwork: "手工",
+  gathering: "采集",
+  kindling: "点火",
+  watering: "浇水",
+  transport: "搬运",
+  farming: "农业",
+  electricity: "发电",
+  generating: "生电",
+  lumbering: "伐木",
+  mining: "采矿",
+  medicine: "制药",
+  cooling: "冷却",
+  sorting: "分拣",
 };

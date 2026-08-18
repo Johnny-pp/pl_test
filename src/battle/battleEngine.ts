@@ -59,8 +59,12 @@ export const ELEMENT_ADVANTAGES: Record<ElementType, ElementType[]> = {
 };
 
 const STATUS_LABELS: Record<StatusEffectType, string> = {
-  burn: "灼烧", poison: "中毒", freeze: "冻结",
-  "attack-up": "攻击提升", "defense-up": "防御提升", "speed-up": "速度提升",
+  burn: "灼烧",
+  poison: "中毒",
+  freeze: "冻结",
+  "attack-up": "攻击提升",
+  "defense-up": "防御提升",
+  "speed-up": "速度提升",
 };
 
 export function getStatusLabel(status: StatusEffectType): string {
@@ -93,10 +97,7 @@ export function createBattle(playerPal: Pal, enemyPal: Pal): BattleState {
   };
 }
 
-export function getEffectiveness(
-  attacking: ElementType,
-  defending: ElementType[]
-): number {
+export function getEffectiveness(attacking: ElementType, defending: ElementType[]): number {
   let multiplier = 1;
   for (const element of defending) {
     if (ELEMENT_ADVANTAGES[attacking].includes(element)) multiplier *= 2;
@@ -128,15 +129,8 @@ export function calculateDamage(
   const attack = attacker.attack * (1 + attackBoost / 100);
   const defense = Math.max(1, defender.defense * (1 + defenseBoost / 100));
   const base = 2 + (attack * skill.power) / (defense * 2);
-  const damage = Math.max(
-    1,
-    Math.floor(base * sameTypeBonus * effectiveness * variance)
-  );
-  const effectText = effectiveness > 1
-    ? "效果绝佳！"
-    : effectiveness < 1
-      ? "效果不佳。"
-      : "";
+  const damage = Math.max(1, Math.floor(base * sameTypeBonus * effectiveness * variance));
+  const effectText = effectiveness > 1 ? "效果绝佳！" : effectiveness < 1 ? "效果不佳。" : "";
 
   return {
     hit: true,
@@ -146,12 +140,7 @@ export function calculateDamage(
   };
 }
 
-function act(
-  attacker: Combatant,
-  defender: Combatant,
-  skill: ActiveSkill,
-  random: RandomSource
-): string[] {
+function act(attacker: Combatant, defender: Combatant, skill: ActiveSkill, random: RandomSource): string[] {
   const frozen = attacker.statuses.find((status) => status.type === "freeze");
   if (frozen) {
     attacker.statuses = attacker.statuses.filter((status) => status !== frozen);
@@ -230,15 +219,31 @@ export function resolveTurn(
   const next: BattleState = {
     ...state,
     phase: "resolving",
-    player: { ...state.player, elements: [...state.player.elements], skillIds: [...state.player.skillIds], statuses: state.player.statuses.map((status) => ({ ...status })) },
-    enemy: { ...state.enemy, elements: [...state.enemy.elements], skillIds: [...state.enemy.skillIds], statuses: state.enemy.statuses.map((status) => ({ ...status })) },
+    player: {
+      ...state.player,
+      elements: [...state.player.elements],
+      skillIds: [...state.player.skillIds],
+      statuses: state.player.statuses.map((status) => ({ ...status })),
+    },
+    enemy: {
+      ...state.enemy,
+      elements: [...state.enemy.elements],
+      skillIds: [...state.enemy.skillIds],
+      statuses: state.enemy.statuses.map((status) => ({ ...status })),
+    },
     log: [...state.log, `── 第 ${state.round} 回合 ──`],
   };
 
   const playerFirst = goesFirst(next.player, next.enemy, playerSkill, enemySkill, random);
   const actions: Array<[Combatant, Combatant, ActiveSkill]> = playerFirst
-    ? [[next.player, next.enemy, playerSkill], [next.enemy, next.player, enemySkill]]
-    : [[next.enemy, next.player, enemySkill], [next.player, next.enemy, playerSkill]];
+    ? [
+        [next.player, next.enemy, playerSkill],
+        [next.enemy, next.player, enemySkill],
+      ]
+    : [
+        [next.enemy, next.player, enemySkill],
+        [next.player, next.enemy, playerSkill],
+      ];
 
   for (const [attacker, defender, skill] of actions) {
     if (attacker.hp <= 0 || defender.hp <= 0) continue;
@@ -272,7 +277,7 @@ export function chooseEnemySkill(
 ): ActiveSkill | undefined {
   const affordable = enemy.skillIds
     .map((id) => skillsById.get(id))
-    .filter((skill): skill is ActiveSkill => Boolean(skill) && skill.energyCost <= enemy.energy);
+    .filter((skill): skill is ActiveSkill => skill !== undefined && skill.energyCost <= enemy.energy);
   const fallback = enemy.skillIds
     .map((id) => skillsById.get(id))
     .find((skill): skill is ActiveSkill => Boolean(skill));

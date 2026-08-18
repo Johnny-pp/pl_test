@@ -1,12 +1,6 @@
 import type { ElementType } from "./pal";
 
-export type StatusEffectType =
-  | "burn"
-  | "poison"
-  | "freeze"
-  | "attack-up"
-  | "defense-up"
-  | "speed-up";
+export type StatusEffectType = "burn" | "poison" | "freeze" | "attack-up" | "defense-up" | "speed-up";
 
 export interface ActiveSkillEffect {
   status: StatusEffectType;

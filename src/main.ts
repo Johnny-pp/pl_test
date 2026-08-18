@@ -10,10 +10,22 @@ import { BaseScene } from "./scenes/BaseScene";
 import { BreedingScene } from "./scenes/BreedingScene";
 import { CompareScene } from "./scenes/CompareScene";
 
-const defaultScenes = [DexScene, DetailScene, PassiveSkillsScene, SelectPalScene, BattleScene, TeamScene, WorldScene, BaseScene, BreedingScene, CompareScene];
-const scenes = new URLSearchParams(window.location.search).get("start") === "world"
-  ? [WorldScene, ...defaultScenes.filter((scene) => scene !== WorldScene)]
-  : defaultScenes;
+const defaultScenes = [
+  DexScene,
+  DetailScene,
+  PassiveSkillsScene,
+  SelectPalScene,
+  BattleScene,
+  TeamScene,
+  WorldScene,
+  BaseScene,
+  BreedingScene,
+  CompareScene,
+];
+const scenes =
+  new URLSearchParams(window.location.search).get("start") === "world"
+    ? [WorldScene, ...defaultScenes.filter((scene) => scene !== WorldScene)]
+    : defaultScenes;
 
 new Phaser.Game({
   type: Phaser.AUTO,

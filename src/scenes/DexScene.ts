@@ -100,21 +100,37 @@ export class DexScene extends Phaser.Scene {
 
     this.applyStateToUI();
 
-    this.countText = this.add.text(280, 60, "", {
-      fontFamily: "sans-serif",
-      fontSize: "15px",
-      color: "#9aa0c0",
-    }).setOrigin(0, 0.5);
-    this.pageText = this.add.text(342, 60, "", {
-      fontFamily: "sans-serif", fontSize: "13px", color: "#68718e",
-    }).setOrigin(0, 0.5);
-    this.previousPage = this.add.text(385, 60, "‹", {
-      fontFamily: "sans-serif", fontSize: "24px", color: "#4fc3f7",
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.countText = this.add
+      .text(280, 60, "", {
+        fontFamily: "sans-serif",
+        fontSize: "15px",
+        color: "#9aa0c0",
+      })
+      .setOrigin(0, 0.5);
+    this.pageText = this.add
+      .text(342, 60, "", {
+        fontFamily: "sans-serif",
+        fontSize: "13px",
+        color: "#68718e",
+      })
+      .setOrigin(0, 0.5);
+    this.previousPage = this.add
+      .text(385, 60, "‹", {
+        fontFamily: "sans-serif",
+        fontSize: "24px",
+        color: "#4fc3f7",
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
     this.previousPage.on("pointerdown", () => this.changePage(-1));
-    this.nextPage = this.add.text(405, 60, "›", {
-      fontFamily: "sans-serif", fontSize: "24px", color: "#4fc3f7",
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.nextPage = this.add
+      .text(405, 60, "›", {
+        fontFamily: "sans-serif",
+        fontSize: "24px",
+        color: "#4fc3f7",
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
     this.nextPage.on("pointerdown", () => this.changePage(1));
 
     this.emptyText = this.add
@@ -129,22 +145,12 @@ export class DexScene extends Phaser.Scene {
     this.grid = this.add.container(0, 0);
     this.renderGrid();
 
-    this.input.on(
-      "wheel",
-      (_p: unknown, _o: unknown, _dx: number, dy: number) => {
-        const maxScroll = Math.min(
-          0,
-          this.scale.height - this.grid.height - GRID_TOP
-        );
-        this.scrollY = Phaser.Math.Clamp(
-          this.grid.y - dy * 0.5,
-          maxScroll,
-          0
-        );
-        this.grid.y = this.scrollY;
-        this.saveState();
-      }
-    );
+    this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
+      const maxScroll = Math.min(0, this.scale.height - this.grid.height - GRID_TOP);
+      this.scrollY = Phaser.Math.Clamp(this.grid.y - dy * 0.5, maxScroll, 0);
+      this.grid.y = this.scrollY;
+      this.saveState();
+    });
   }
 
   // ---- 搜索框（DOM，支持中文输入法） ----
@@ -185,9 +191,7 @@ export class DexScene extends Phaser.Scene {
       const chip = this.makeChip(x, y, w, 28, s.label, () => {
         this.sortKey = s.key;
         this.page = 0;
-        this.sortButtons.forEach((c, key) =>
-          this.refreshChip(c, key === s.key, 0x4fc3f7)
-        );
+        this.sortButtons.forEach((c, key) => this.refreshChip(c, key === s.key, 0x4fc3f7));
         this.renderGrid();
       });
       this.sortButtons.set(s.key, chip);
@@ -204,11 +208,7 @@ export class DexScene extends Phaser.Scene {
         if (this.activeElements.has(e)) this.activeElements.delete(e);
         else this.activeElements.add(e);
         this.page = 0;
-        this.refreshChip(
-          this.elementChips.get(e)!,
-          this.activeElements.has(e),
-          ELEMENT_COLORS[e]
-        );
+        this.refreshChip(this.elementChips.get(e)!, this.activeElements.has(e), ELEMENT_COLORS[e]);
         this.renderGrid();
       });
       this.elementChips.set(e, chip);
@@ -222,11 +222,7 @@ export class DexScene extends Phaser.Scene {
         if (this.activeWorks.has(w)) this.activeWorks.delete(w);
         else this.activeWorks.add(w);
         this.page = 0;
-        this.refreshChip(
-          this.workChips.get(w)!,
-          this.activeWorks.has(w),
-          0x4fc3f7
-        );
+        this.refreshChip(this.workChips.get(w)!, this.activeWorks.has(w), 0x4fc3f7);
         this.renderGrid();
       });
       this.workChips.set(w, chip);
@@ -264,20 +260,11 @@ export class DexScene extends Phaser.Scene {
     this.workChips.forEach((c) => this.refreshChip(c, false, 0));
     this.sortKey = "id";
     this.page = 0;
-    this.sortButtons.forEach((c, key) =>
-      this.refreshChip(c, key === "id", 0x4fc3f7)
-    );
+    this.sortButtons.forEach((c, key) => this.refreshChip(c, key === "id", 0x4fc3f7));
     this.renderGrid();
   }
 
-  private makeChip(
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    label: string,
-    onClick: () => void
-  ): Chip {
+  private makeChip(x: number, y: number, w: number, h: number, label: string, onClick: () => void): Chip {
     const bg = this.add
       .rectangle(x, y, w, h, 0x16213e)
       .setStrokeStyle(1, 0x0f3460)
@@ -326,8 +313,7 @@ export class DexScene extends Phaser.Scene {
       (saved.works ?? []).forEach((w) => {
         if (WORKS.includes(w)) this.activeWorks.add(w);
       });
-      if (typeof saved.scrollY === "number" && Number.isFinite(saved.scrollY))
-        this.scrollY = saved.scrollY;
+      if (typeof saved.scrollY === "number" && Number.isFinite(saved.scrollY)) this.scrollY = saved.scrollY;
       if (typeof saved.page === "number" && Number.isInteger(saved.page) && saved.page >= 0)
         this.page = saved.page;
     } catch {
@@ -353,15 +339,9 @@ export class DexScene extends Phaser.Scene {
 
   private applyStateToUI() {
     if (this.searchInput) this.searchInput.value = this.searchText;
-    this.sortButtons.forEach((c, key) =>
-      this.refreshChip(c, key === this.sortKey, 0x4fc3f7)
-    );
-    this.elementChips.forEach((c, e) =>
-      this.refreshChip(c, this.activeElements.has(e), ELEMENT_COLORS[e])
-    );
-    this.workChips.forEach((c, w) =>
-      this.refreshChip(c, this.activeWorks.has(w), 0x4fc3f7)
-    );
+    this.sortButtons.forEach((c, key) => this.refreshChip(c, key === this.sortKey, 0x4fc3f7));
+    this.elementChips.forEach((c, e) => this.refreshChip(c, this.activeElements.has(e), ELEMENT_COLORS[e]));
+    this.workChips.forEach((c, w) => this.refreshChip(c, this.activeWorks.has(w), 0x4fc3f7));
   }
 
   // ---- 过滤 + 排序 ----
@@ -381,15 +361,8 @@ export class DexScene extends Phaser.Scene {
           .toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (
-        this.activeElements.size > 0 &&
-        !p.elements.some((e) => this.activeElements.has(e))
-      )
-        return false;
-      if (
-        this.activeWorks.size > 0 &&
-        !p.workSuitability.some((w) => this.activeWorks.has(w.type))
-      )
+      if (this.activeElements.size > 0 && !p.elements.some((e) => this.activeElements.has(e))) return false;
+      if (this.activeWorks.size > 0 && !p.workSuitability.some((w) => this.activeWorks.has(w.type)))
         return false;
       return true;
     });
@@ -429,20 +402,14 @@ export class DexScene extends Phaser.Scene {
     const totalW = COLS * (CARD_W + GAP) - GAP;
     const startX = (width - totalW) / 2 + CARD_W / 2;
 
-      pageItems.forEach((pal, i) => {
+    pageItems.forEach((pal, i) => {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
       const card = this.makeCard(pal);
-      card.setPosition(
-        startX + col * (CARD_W + GAP),
-        GRID_TOP + row * (CARD_H + GAP)
-      );
+      card.setPosition(startX + col * (CARD_W + GAP), GRID_TOP + row * (CARD_H + GAP));
       this.grid.add(card);
     });
-    const maxScroll = Math.min(
-      0,
-      this.scale.height - this.grid.height - GRID_TOP
-    );
+    const maxScroll = Math.min(0, this.scale.height - this.grid.height - GRID_TOP);
     this.grid.y = Phaser.Math.Clamp(this.scrollY, maxScroll, 0);
     this.saveState();
   }
@@ -458,9 +425,7 @@ export class DexScene extends Phaser.Scene {
 
   private makeCard(pal: Pal): Phaser.GameObjects.Container {
     const c = this.add.container(0, 0);
-    const bg = this.add
-      .rectangle(0, 0, CARD_W, CARD_H, 0x16213e)
-      .setStrokeStyle(2, 0x0f3460);
+    const bg = this.add.rectangle(0, 0, CARD_W, CARD_H, 0x16213e).setStrokeStyle(2, 0x0f3460);
     const elem = pal.elements[0] ?? "neutral";
     const portrait = addPalPortrait(this, pal.id, -CARD_W / 2 + 42, 0, 76);
     const idText = this.add.text(-CARD_W / 2 + 82, -CARD_H / 2 + 10, `#${pal.id}`, {

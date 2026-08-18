@@ -20,10 +20,7 @@ export function calculateCaptureChance(target: CaptureTarget): number {
   return Math.round(Math.max(5, Math.min(95, chance)) * 10) / 10;
 }
 
-export function attemptCapture(
-  target: CaptureTarget,
-  random: () => number = Math.random
-): CaptureResult {
+export function attemptCapture(target: CaptureTarget, random: () => number = Math.random): CaptureResult {
   const chance = calculateCaptureChance(target);
   const roll = Math.max(0, Math.min(0.999999, random())) * 100;
   return { success: roll < chance, chance, roll };

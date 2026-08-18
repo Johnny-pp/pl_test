@@ -34,9 +34,7 @@ export class DetailScene extends Phaser.Scene {
     back.on("pointerdown", () => this.scene.start("DexScene"));
 
     if (!pal) {
-      this.add
-        .text(width / 2, 200, "未找到该幻兽", { fontSize: "24px", color: "#fff" })
-        .setOrigin(0.5);
+      this.add.text(width / 2, 200, "未找到该幻兽", { fontSize: "24px", color: "#fff" }).setOrigin(0.5);
       return;
     }
 
@@ -56,9 +54,15 @@ export class DetailScene extends Phaser.Scene {
     const elemStr = pal.elements.map((e) => ELEMENT_LABELS[e]).join(" / ");
     this.content.add(this.line(x, y, `属性：${elemStr}`, ELEMENT_COLORS[pal.elements[0] ?? "neutral"]));
     y += 26;
-    const weak = ALL_ELEMENTS.filter((element) => getEffectiveness(element, pal.elements) > 1).map((element) => ELEMENT_LABELS[element]);
-    const resist = ALL_ELEMENTS.filter((element) => getEffectiveness(element, pal.elements) < 1).map((element) => ELEMENT_LABELS[element]);
-    this.content.add(this.line(x, y, `弱点：${weak.join("、") || "无"}    抗性：${resist.join("、") || "无"}`, 0xb39ddb, 14));
+    const weak = ALL_ELEMENTS.filter((element) => getEffectiveness(element, pal.elements) > 1).map(
+      (element) => ELEMENT_LABELS[element]
+    );
+    const resist = ALL_ELEMENTS.filter((element) => getEffectiveness(element, pal.elements) < 1).map(
+      (element) => ELEMENT_LABELS[element]
+    );
+    this.content.add(
+      this.line(x, y, `弱点：${weak.join("、") || "无"}    抗性：${resist.join("、") || "无"}`, 0xb39ddb, 14)
+    );
     y += 24;
     if (pal.description) {
       this.content.add(this.line(x, y, `描述：${pal.description}`, 0xcccccc, 16, 610));
@@ -69,10 +73,15 @@ export class DetailScene extends Phaser.Scene {
     y = this.statsBlock(x, y, pal);
 
     y = this.section(x, y, "成长参数");
-    this.content.add(this.line(x, y,
-      `每级 HP +${pal.growth.hpPerLevel} · 攻击 +${pal.growth.attackPerLevel} · 防御 +${pal.growth.defensePerLevel} · ${pal.growth.experienceCurve === "fast" ? "快速" : pal.growth.experienceCurve === "slow" ? "缓慢" : "标准"}经验曲线`,
-      0x80deea, 15
-    ));
+    this.content.add(
+      this.line(
+        x,
+        y,
+        `每级 HP +${pal.growth.hpPerLevel} · 攻击 +${pal.growth.attackPerLevel} · 防御 +${pal.growth.defensePerLevel} · ${pal.growth.experienceCurve === "fast" ? "快速" : pal.growth.experienceCurve === "slow" ? "缓慢" : "标准"}经验曲线`,
+        0x80deea,
+        15
+      )
+    );
     y += 32;
 
     y = this.section(x, y, "工作适性");
@@ -102,17 +111,37 @@ export class DetailScene extends Phaser.Scene {
     }
 
     y = this.section(x, y, "技能");
-    const skills = (pal.activeSkills ?? []).map((id) => activeSkillsById.get(id)).filter((skill) => Boolean(skill));
+    const skills = (pal.activeSkills ?? [])
+      .map((id) => activeSkillsById.get(id))
+      .filter((skill) => Boolean(skill));
     if (skills.length === 0) {
       this.content.add(this.line(x, y, "—", 0x888888));
       y += 26;
     }
     for (const skill of skills) {
       if (!skill) continue;
-      this.content.add(this.line(x, y, `${skill.name.zh} · ${ELEMENT_LABELS[skill.element]}`, ELEMENT_COLORS[skill.element], 17));
+      this.content.add(
+        this.line(
+          x,
+          y,
+          `${skill.name.zh} · ${ELEMENT_LABELS[skill.element]}`,
+          ELEMENT_COLORS[skill.element],
+          17
+        )
+      );
       y += 23;
-      const effect = skill.effect ? ` · ${getStatusLabel(skill.effect.status)} ${skill.effect.chance}%/${skill.effect.duration}回合` : "";
-      this.content.add(this.line(x + 12, y, `威力 ${skill.power} · 命中 ${skill.accuracy}% · 能量 ${skill.energyCost}${effect}`, 0x9aa0c0, 14));
+      const effect = skill.effect
+        ? ` · ${getStatusLabel(skill.effect.status)} ${skill.effect.chance}%/${skill.effect.duration}回合`
+        : "";
+      this.content.add(
+        this.line(
+          x + 12,
+          y,
+          `威力 ${skill.power} · 命中 ${skill.accuracy}% · 能量 ${skill.energyCost}${effect}`,
+          0x9aa0c0,
+          14
+        )
+      );
       y += 20;
       this.content.add(this.line(x + 12, y, skill.description, 0xcccccc, 14, 740));
       y += 30;
@@ -147,12 +176,9 @@ export class DetailScene extends Phaser.Scene {
       y += 24;
     }
 
-    this.input.on(
-      "wheel",
-      (_p: unknown, _o: unknown, _dx: number, dy: number) => {
-        this.content.y = Phaser.Math.Clamp(this.content.y - dy * 0.5, -y + this.scale.height - 40, 0);
-      }
-    );
+    this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
+      this.content.y = Phaser.Math.Clamp(this.content.y - dy * 0.5, -y + this.scale.height - 40, 0);
+    });
   }
 
   private line(
@@ -199,9 +225,7 @@ export class DetailScene extends Phaser.Scene {
     for (const [label, val] of rows) {
       this.content.add(this.line(x, y, label, 0xcccccc, 15));
       const bg = this.add.rectangle(x + 70, y + 8, barW, 12, 0x0f3460).setOrigin(0, 0.5);
-      const fill = this.add
-        .rectangle(x + 70, y + 8, (barW * val) / maxVal, 12, 0x4fc3f7)
-        .setOrigin(0, 0.5);
+      const fill = this.add.rectangle(x + 70, y + 8, (barW * val) / maxVal, 12, 0x4fc3f7).setOrigin(0, 0.5);
       this.content.add([bg, fill]);
       this.content.add(this.line(x + 70 + barW + 10, y, `${val}`, 0xffffff, 14));
       y += 24;

@@ -1,13 +1,32 @@
 export type ElementType =
-  | "neutral" | "fire" | "water" | "grass" | "electric"
-  | "ice" | "ground" | "wind" | "dark" | "dragon"
-  | "rock" | "normal";
+  | "neutral"
+  | "fire"
+  | "water"
+  | "grass"
+  | "electric"
+  | "ice"
+  | "ground"
+  | "wind"
+  | "dark"
+  | "dragon"
+  | "rock"
+  | "normal";
 
 export type WorkType =
-  | "planting" | "handiwork" | "gathering" | "kindling"
-  | "watering" | "transport" | "farming" | "electricity"
-  | "generating" | "lumbering" | "mining" | "medicine"
-  | "cooling" | "sorting";
+  | "planting"
+  | "handiwork"
+  | "gathering"
+  | "kindling"
+  | "watering"
+  | "transport"
+  | "farming"
+  | "electricity"
+  | "generating"
+  | "lumbering"
+  | "mining"
+  | "medicine"
+  | "cooling"
+  | "sorting";
 
 export interface PalName {
   zh: string;
