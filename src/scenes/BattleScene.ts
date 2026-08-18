@@ -4,6 +4,7 @@ import { activeSkillsById } from "../data/loadActiveSkills";
 import {
   chooseEnemySkill,
   createBattle,
+  getStatusLabel,
   resolveTurn,
   type BattleState,
   type Combatant,
@@ -132,7 +133,8 @@ export class BattleScene extends Phaser.Scene {
   ) {
     hpBar.displayWidth = 260 * (fighter.hp / fighter.maxHp);
     hpBar.setFillStyle(fighter.hp / fighter.maxHp > 0.35 ? 0x66bb6a : 0xef5350);
-    status.setText(`HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100`);
+    const statusNames = fighter.statuses.map((effect) => getStatusLabel(effect.type)).join("、");
+    status.setText(`HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100${statusNames ? `    ${statusNames}` : ""}`);
   }
 
   private renderActions() {

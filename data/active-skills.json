@@ -2,13 +2,13 @@
   { "id": "quick-strike", "name": { "zh": "迅捷冲撞", "en": "Quick Strike" }, "description": "抢先撞向对手，造成稳定的无属性伤害。", "element": "neutral", "power": 34, "accuracy": 100, "energyCost": 12, "priority": 1 },
   { "id": "pulse-shot", "name": { "zh": "脉冲弹", "en": "Pulse Shot" }, "description": "凝聚能量后射出一枚脉冲弹。", "element": "neutral", "power": 46, "accuracy": 95, "energyCost": 18, "priority": 0 },
   { "id": "ember-dart", "name": { "zh": "烬火飞矢", "en": "Ember Dart" }, "description": "投射一束轻巧而灼热的火矢。", "element": "fire", "power": 50, "accuracy": 95, "energyCost": 20, "priority": 0 },
-  { "id": "flame-burst", "name": { "zh": "焰环爆发", "en": "Flame Burst" }, "description": "引爆环形火焰，威力较高但消耗更多能量。", "element": "fire", "power": 72, "accuracy": 85, "energyCost": 32, "priority": 0 },
+  { "id": "flame-burst", "name": { "zh": "焰环爆发", "en": "Flame Burst" }, "description": "引爆环形火焰，并有概率使目标灼烧。", "element": "fire", "power": 72, "accuracy": 85, "energyCost": 32, "priority": 0, "effect": { "status": "burn", "target": "opponent", "chance": 40, "duration": 2, "magnitude": 6 } },
   { "id": "water-jet", "name": { "zh": "清泉冲击", "en": "Water Jet" }, "description": "用压缩水流冲击目标。", "element": "water", "power": 52, "accuracy": 95, "energyCost": 20, "priority": 0 },
   { "id": "leaf-cutter", "name": { "zh": "青叶回旋", "en": "Leaf Cutter" }, "description": "让锋利叶片旋转切过目标。", "element": "grass", "power": 52, "accuracy": 95, "energyCost": 20, "priority": 0 },
   { "id": "spark-arc", "name": { "zh": "跃动电弧", "en": "Spark Arc" }, "description": "释放会跳跃的短程电弧。", "element": "electric", "power": 54, "accuracy": 92, "energyCost": 22, "priority": 0 },
-  { "id": "frost-shard", "name": { "zh": "霜晶飞片", "en": "Frost Shard" }, "description": "发射一簇锐利的寒霜晶片。", "element": "ice", "power": 55, "accuracy": 92, "energyCost": 22, "priority": 0 },
+  { "id": "frost-shard", "name": { "zh": "霜晶飞片", "en": "Frost Shard" }, "description": "发射寒霜晶片，有概率冻结目标一次行动。", "element": "ice", "power": 55, "accuracy": 92, "energyCost": 22, "priority": 0, "effect": { "status": "freeze", "target": "opponent", "chance": 25, "duration": 1, "magnitude": 0 } },
   { "id": "earth-hammer", "name": { "zh": "地脉重锤", "en": "Earth Hammer" }, "description": "借助地脉力量发动沉重一击。", "element": "ground", "power": 62, "accuracy": 90, "energyCost": 26, "priority": 0 },
-  { "id": "night-orb", "name": { "zh": "暮影球", "en": "Night Orb" }, "description": "将暗影压缩为球体后掷向对手。", "element": "dark", "power": 58, "accuracy": 92, "energyCost": 24, "priority": 0 },
-  { "id": "dragon-comet", "name": { "zh": "星鳞彗击", "en": "Scale Comet" }, "description": "以星鳞包裹身体，如彗星般冲击目标。", "element": "dragon", "power": 76, "accuracy": 84, "energyCost": 34, "priority": 0 },
+  { "id": "night-orb", "name": { "zh": "暮影球", "en": "Night Orb" }, "description": "投出含有暮影毒素的球体，有概率使目标中毒。", "element": "dark", "power": 58, "accuracy": 92, "energyCost": 24, "priority": 0, "effect": { "status": "poison", "target": "opponent", "chance": 35, "duration": 3, "magnitude": 5 } },
+  { "id": "dragon-comet", "name": { "zh": "星鳞彗击", "en": "Scale Comet" }, "description": "以星鳞包裹身体冲击目标，并提升自身攻击。", "element": "dragon", "power": 76, "accuracy": 84, "energyCost": 34, "priority": 0, "effect": { "status": "attack-up", "target": "self", "chance": 100, "duration": 2, "magnitude": 25 } },
   { "id": "stone-shard", "name": { "zh": "岩屑连射", "en": "Stone Shards" }, "description": "连续抛射细小而坚硬的岩石碎片。", "element": "rock", "power": 50, "accuracy": 96, "energyCost": 20, "priority": 0 }
 ]

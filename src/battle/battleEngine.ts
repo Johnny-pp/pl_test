@@ -1,4 +1,4 @@
-import type { ActiveSkill } from "../types/activeSkill";
+import type { ActiveSkill, StatusEffectType } from "../types/activeSkill";
 import type { ElementType, Pal } from "../types/pal";
 
 export const MAX_ENERGY = 100;
@@ -17,6 +17,13 @@ export interface Combatant {
   speed: number;
   energy: number;
   skillIds: string[];
+  statuses: StatusInstance[];
+}
+
+export interface StatusInstance {
+  type: StatusEffectType;
+  turns: number;
+  magnitude: number;
 }
 
 export interface BattleState {
@@ -36,16 +43,29 @@ export interface SkillResult {
 
 export type RandomSource = () => number;
 
-const ADVANTAGES: Partial<Record<ElementType, ElementType[]>> = {
+export const ELEMENT_ADVANTAGES: Record<ElementType, ElementType[]> = {
+  neutral: [],
   fire: ["grass", "ice"],
   water: ["fire", "ground", "rock"],
   grass: ["water", "ground", "rock"],
-  electric: ["water"],
-  ice: ["grass", "dragon"],
-  ground: ["fire", "electric"],
-  rock: ["fire", "ice"],
-  dragon: ["dragon"],
+  electric: ["water", "wind"],
+  ice: ["grass", "dragon", "wind"],
+  ground: ["fire", "electric", "rock"],
+  wind: ["grass", "ground"],
+  dark: ["neutral", "normal"],
+  dragon: ["dragon", "dark"],
+  rock: ["fire", "ice", "wind"],
+  normal: [],
 };
+
+const STATUS_LABELS: Record<StatusEffectType, string> = {
+  burn: "灼烧", poison: "中毒", freeze: "冻结",
+  "attack-up": "攻击提升", "defense-up": "防御提升", "speed-up": "速度提升",
+};
+
+export function getStatusLabel(status: StatusEffectType): string {
+  return STATUS_LABELS[status];
+}
 
 export function createCombatant(pal: Pal): Combatant {
   return {
@@ -59,6 +79,7 @@ export function createCombatant(pal: Pal): Combatant {
     speed: pal.stats.moveSpeed,
     energy: MAX_ENERGY,
     skillIds: [...(pal.activeSkills ?? [])],
+    statuses: [],
   };
 }
 
@@ -78,8 +99,8 @@ export function getEffectiveness(
 ): number {
   let multiplier = 1;
   for (const element of defending) {
-    if (ADVANTAGES[attacking]?.includes(element)) multiplier *= 2;
-    if (ADVANTAGES[element]?.includes(attacking)) multiplier *= 0.5;
+    if (ELEMENT_ADVANTAGES[attacking].includes(element)) multiplier *= 2;
+    if (ELEMENT_ADVANTAGES[element].includes(attacking)) multiplier *= 0.5;
   }
   return multiplier;
 }
@@ -102,8 +123,11 @@ export function calculateDamage(
   const effectiveness = getEffectiveness(skill.element, defender.elements);
   const sameTypeBonus = attacker.elements.includes(skill.element) ? 1.2 : 1;
   const variance = 0.9 + random() * 0.1;
-  const defense = Math.max(1, defender.defense);
-  const base = 2 + (attacker.attack * skill.power) / (defense * 2);
+  const attackBoost = attacker.statuses.find((status) => status.type === "attack-up")?.magnitude ?? 0;
+  const defenseBoost = defender.statuses.find((status) => status.type === "defense-up")?.magnitude ?? 0;
+  const attack = attacker.attack * (1 + attackBoost / 100);
+  const defense = Math.max(1, defender.defense * (1 + defenseBoost / 100));
+  const base = 2 + (attack * skill.power) / (defense * 2);
   const damage = Math.max(
     1,
     Math.floor(base * sameTypeBonus * effectiveness * variance)
@@ -127,18 +151,54 @@ function act(
   defender: Combatant,
   skill: ActiveSkill,
   random: RandomSource
-): string {
+): string[] {
+  const frozen = attacker.statuses.find((status) => status.type === "freeze");
+  if (frozen) {
+    attacker.statuses = attacker.statuses.filter((status) => status !== frozen);
+    return [`${attacker.name}被冻结，无法行动。`];
+  }
   if (!attacker.skillIds.includes(skill.id)) {
-    return `${attacker.name}尚未学会${skill.name.zh}。`;
+    return [`${attacker.name}尚未学会${skill.name.zh}。`];
   }
   if (attacker.energy < skill.energyCost) {
-    return `${attacker.name}的能量不足，行动失败。`;
+    return [`${attacker.name}的能量不足，行动失败。`];
   }
 
   attacker.energy -= skill.energyCost;
   const result = calculateDamage(attacker, defender, skill, random);
   defender.hp = Math.max(0, defender.hp - result.damage);
-  return result.message;
+  const messages = [result.message];
+  if (result.hit && skill.effect && random() * 100 < skill.effect.chance) {
+    const target = skill.effect.target === "self" ? attacker : defender;
+    const nextStatus: StatusInstance = {
+      type: skill.effect.status,
+      turns: skill.effect.duration,
+      magnitude: skill.effect.magnitude,
+    };
+    const existing = target.statuses.find((status) => status.type === nextStatus.type);
+    if (existing) {
+      existing.turns = Math.max(existing.turns, nextStatus.turns);
+      existing.magnitude = Math.max(existing.magnitude, nextStatus.magnitude);
+    } else {
+      target.statuses.push(nextStatus);
+    }
+    messages.push(`${target.name}获得状态：${STATUS_LABELS[nextStatus.type]}。`);
+  }
+  return messages;
+}
+
+function tickStatuses(fighter: Combatant): string[] {
+  const messages: string[] = [];
+  for (const status of fighter.statuses) {
+    if (status.type === "burn" || status.type === "poison") {
+      const damage = Math.max(1, Math.round(status.magnitude));
+      fighter.hp = Math.max(0, fighter.hp - damage);
+      messages.push(`${fighter.name}受到${STATUS_LABELS[status.type]}伤害 ${damage} 点。`);
+    }
+    if (status.type !== "freeze") status.turns -= 1;
+  }
+  fighter.statuses = fighter.statuses.filter((status) => status.turns > 0);
+  return messages;
 }
 
 function goesFirst(
@@ -151,7 +211,11 @@ function goesFirst(
   if (playerSkill.priority !== enemySkill.priority) {
     return playerSkill.priority > enemySkill.priority;
   }
-  if (player.speed !== enemy.speed) return player.speed > enemy.speed;
+  const playerBoost = player.statuses.find((status) => status.type === "speed-up")?.magnitude ?? 0;
+  const enemyBoost = enemy.statuses.find((status) => status.type === "speed-up")?.magnitude ?? 0;
+  const playerSpeed = player.speed * (1 + playerBoost / 100);
+  const enemySpeed = enemy.speed * (1 + enemyBoost / 100);
+  if (playerSpeed !== enemySpeed) return playerSpeed > enemySpeed;
   return random() < 0.5;
 }
 
@@ -166,8 +230,8 @@ export function resolveTurn(
   const next: BattleState = {
     ...state,
     phase: "resolving",
-    player: { ...state.player, elements: [...state.player.elements], skillIds: [...state.player.skillIds] },
-    enemy: { ...state.enemy, elements: [...state.enemy.elements], skillIds: [...state.enemy.skillIds] },
+    player: { ...state.player, elements: [...state.player.elements], skillIds: [...state.player.skillIds], statuses: state.player.statuses.map((status) => ({ ...status })) },
+    enemy: { ...state.enemy, elements: [...state.enemy.elements], skillIds: [...state.enemy.skillIds], statuses: state.enemy.statuses.map((status) => ({ ...status })) },
     log: [...state.log, `── 第 ${state.round} 回合 ──`],
   };
 
@@ -178,7 +242,11 @@ export function resolveTurn(
 
   for (const [attacker, defender, skill] of actions) {
     if (attacker.hp <= 0 || defender.hp <= 0) continue;
-    next.log.push(act(attacker, defender, skill, random));
+    next.log.push(...act(attacker, defender, skill, random));
+  }
+
+  if (next.player.hp > 0 && next.enemy.hp > 0) {
+    next.log.push(...tickStatuses(next.player), ...tickStatuses(next.enemy));
   }
 
   if (next.enemy.hp <= 0) {

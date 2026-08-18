@@ -24,6 +24,18 @@
     "power": { "type": "integer", "minimum": 1, "maximum": 200 },
     "accuracy": { "type": "integer", "minimum": 1, "maximum": 100 },
     "energyCost": { "type": "integer", "minimum": 0, "maximum": 100 },
-    "priority": { "type": "integer", "minimum": -5, "maximum": 5 }
+    "priority": { "type": "integer", "minimum": -5, "maximum": 5 },
+    "effect": {
+      "type": "object",
+      "required": ["status", "target", "chance", "duration", "magnitude"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "string", "enum": ["burn", "poison", "freeze", "attack-up", "defense-up", "speed-up"] },
+        "target": { "type": "string", "enum": ["self", "opponent"] },
+        "chance": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "duration": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "magnitude": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    }
   }
 }
