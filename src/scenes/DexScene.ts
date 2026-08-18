@@ -8,6 +8,7 @@ const CARD_W = 200;
 const CARD_H = 96;
 const GAP = 16;
 const COLS = 4;
+const PAGE_SIZE = 24;
 
 const ELEMENTS = Object.keys(ELEMENT_LABELS) as ElementType[];
 const WORKS = Object.keys(WORK_LABELS) as WorkType[];
@@ -39,6 +40,7 @@ interface SavedState {
   elements: ElementType[];
   works: WorkType[];
   scrollY: number;
+  page: number;
 }
 
 export class DexScene extends Phaser.Scene {
@@ -52,6 +54,10 @@ export class DexScene extends Phaser.Scene {
   private activeWorks = new Set<WorkType>();
   private sortKey: SortOpt["key"] = "id";
   private scrollY = 0;
+  private page = 0;
+  private pageText!: Phaser.GameObjects.Text;
+  private previousPage!: Phaser.GameObjects.Text;
+  private nextPage!: Phaser.GameObjects.Text;
 
   private elementChips = new Map<ElementType, Chip>();
   private workChips = new Map<WorkType, Chip>();
@@ -99,6 +105,17 @@ export class DexScene extends Phaser.Scene {
       fontSize: "15px",
       color: "#9aa0c0",
     }).setOrigin(0, 0.5);
+    this.pageText = this.add.text(342, 60, "", {
+      fontFamily: "sans-serif", fontSize: "13px", color: "#68718e",
+    }).setOrigin(0, 0.5);
+    this.previousPage = this.add.text(385, 60, "‹", {
+      fontFamily: "sans-serif", fontSize: "24px", color: "#4fc3f7",
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.previousPage.on("pointerdown", () => this.changePage(-1));
+    this.nextPage = this.add.text(405, 60, "›", {
+      fontFamily: "sans-serif", fontSize: "24px", color: "#4fc3f7",
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.nextPage.on("pointerdown", () => this.changePage(1));
 
     this.emptyText = this.add
       .text(width / 2, GRID_TOP + 80, "未找到匹配的幻兽", {
@@ -151,6 +168,7 @@ export class DexScene extends Phaser.Scene {
     this.add.dom(16, 60, input).setOrigin(0, 0.5);
     input.addEventListener("input", () => {
       this.searchText = input.value;
+      this.page = 0;
       this.renderGrid();
     });
     this.searchInput = input;
@@ -166,6 +184,7 @@ export class DexScene extends Phaser.Scene {
     SORTS.forEach((s) => {
       const chip = this.makeChip(x, y, w, 28, s.label, () => {
         this.sortKey = s.key;
+        this.page = 0;
         this.sortButtons.forEach((c, key) =>
           this.refreshChip(c, key === s.key, 0x4fc3f7)
         );
@@ -184,6 +203,7 @@ export class DexScene extends Phaser.Scene {
       const chip = this.makeChip(ex, 102, 64, 26, ELEMENT_LABELS[e], () => {
         if (this.activeElements.has(e)) this.activeElements.delete(e);
         else this.activeElements.add(e);
+        this.page = 0;
         this.refreshChip(
           this.elementChips.get(e)!,
           this.activeElements.has(e),
@@ -201,6 +221,7 @@ export class DexScene extends Phaser.Scene {
       const chip = this.makeChip(wx, 138, 54, 24, WORK_LABELS[w], () => {
         if (this.activeWorks.has(w)) this.activeWorks.delete(w);
         else this.activeWorks.add(w);
+        this.page = 0;
         this.refreshChip(
           this.workChips.get(w)!,
           this.activeWorks.has(w),
@@ -214,6 +235,15 @@ export class DexScene extends Phaser.Scene {
   }
 
   private buildClearButton(width: number) {
+    const compare = this.add
+      .text(width - 126, 60, "属性对比", {
+        fontFamily: "sans-serif",
+        fontSize: "15px",
+        color: "#80deea",
+      })
+      .setOrigin(1, 0.5)
+      .setInteractive({ useHandCursor: true });
+    compare.on("pointerdown", () => this.scene.start("CompareScene"));
     const btn = this.add
       .text(width - 16, 60, "清除", {
         fontFamily: "sans-serif",
@@ -233,6 +263,7 @@ export class DexScene extends Phaser.Scene {
     this.elementChips.forEach((c) => this.refreshChip(c, false, 0));
     this.workChips.forEach((c) => this.refreshChip(c, false, 0));
     this.sortKey = "id";
+    this.page = 0;
     this.sortButtons.forEach((c, key) =>
       this.refreshChip(c, key === "id", 0x4fc3f7)
     );
@@ -281,6 +312,7 @@ export class DexScene extends Phaser.Scene {
     this.activeWorks.clear();
     this.sortKey = "id";
     this.scrollY = 0;
+    this.page = 0;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
@@ -296,6 +328,8 @@ export class DexScene extends Phaser.Scene {
       });
       if (typeof saved.scrollY === "number" && Number.isFinite(saved.scrollY))
         this.scrollY = saved.scrollY;
+      if (typeof saved.page === "number" && Number.isInteger(saved.page) && saved.page >= 0)
+        this.page = saved.page;
     } catch {
       // 忽略损坏/不可用的本地存储，回退到默认状态
     }
@@ -308,6 +342,7 @@ export class DexScene extends Phaser.Scene {
       elements: [...this.activeElements],
       works: [...this.activeWorks],
       scrollY: this.scrollY,
+      page: this.page,
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -383,12 +418,18 @@ export class DexScene extends Phaser.Scene {
     const list = this.getFilteredPals();
     this.countText.setText(`共 ${list.length} 只`);
     this.emptyText.setVisible(list.length === 0);
+    const pageCount = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    this.page = Phaser.Math.Clamp(this.page, 0, pageCount - 1);
+    const pageItems = list.slice(this.page * PAGE_SIZE, (this.page + 1) * PAGE_SIZE);
+    this.pageText.setText(`${this.page + 1}/${pageCount}`);
+    this.previousPage.setAlpha(this.page > 0 ? 1 : 0.25);
+    this.nextPage.setAlpha(this.page < pageCount - 1 ? 1 : 0.25);
 
     const width = this.scale.width;
     const totalW = COLS * (CARD_W + GAP) - GAP;
     const startX = (width - totalW) / 2 + CARD_W / 2;
 
-      list.forEach((pal, i) => {
+      pageItems.forEach((pal, i) => {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
       const card = this.makeCard(pal);
@@ -404,6 +445,15 @@ export class DexScene extends Phaser.Scene {
     );
     this.grid.y = Phaser.Math.Clamp(this.scrollY, maxScroll, 0);
     this.saveState();
+  }
+
+  private changePage(delta: number) {
+    const pageCount = Math.max(1, Math.ceil(this.getFilteredPals().length / PAGE_SIZE));
+    const next = Phaser.Math.Clamp(this.page + delta, 0, pageCount - 1);
+    if (next === this.page) return;
+    this.page = next;
+    this.scrollY = 0;
+    this.renderGrid();
   }
 
   private makeCard(pal: Pal): Phaser.GameObjects.Container {

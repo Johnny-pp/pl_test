@@ -4,6 +4,10 @@ import { activeSkillsById } from "../data/loadActiveSkills";
 import { ELEMENT_COLORS, ELEMENT_LABELS, WORK_LABELS } from "../types/elements";
 import type { Pal } from "../types/pal";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
+import { getEffectiveness, getStatusLabel } from "../battle/battleEngine";
+import type { ElementType } from "../types/pal";
+
+const ALL_ELEMENTS = Object.keys(ELEMENT_LABELS) as ElementType[];
 
 export class DetailScene extends Phaser.Scene {
   private content!: Phaser.GameObjects.Container;
@@ -52,13 +56,24 @@ export class DetailScene extends Phaser.Scene {
     const elemStr = pal.elements.map((e) => ELEMENT_LABELS[e]).join(" / ");
     this.content.add(this.line(x, y, `属性：${elemStr}`, ELEMENT_COLORS[pal.elements[0] ?? "neutral"]));
     y += 26;
+    const weak = ALL_ELEMENTS.filter((element) => getEffectiveness(element, pal.elements) > 1).map((element) => ELEMENT_LABELS[element]);
+    const resist = ALL_ELEMENTS.filter((element) => getEffectiveness(element, pal.elements) < 1).map((element) => ELEMENT_LABELS[element]);
+    this.content.add(this.line(x, y, `弱点：${weak.join("、") || "无"}    抗性：${resist.join("、") || "无"}`, 0xb39ddb, 14));
+    y += 24;
     if (pal.description) {
-      this.content.add(this.line(x, y, `描述：${pal.description}`, 0xcccccc, 16, 760));
+      this.content.add(this.line(x, y, `描述：${pal.description}`, 0xcccccc, 16, 610));
       y += 48;
     }
 
     y = this.section(x, y, "基础属性");
     y = this.statsBlock(x, y, pal);
+
+    y = this.section(x, y, "成长参数");
+    this.content.add(this.line(x, y,
+      `每级 HP +${pal.growth.hpPerLevel} · 攻击 +${pal.growth.attackPerLevel} · 防御 +${pal.growth.defensePerLevel} · ${pal.growth.experienceCurve === "fast" ? "快速" : pal.growth.experienceCurve === "slow" ? "缓慢" : "标准"}经验曲线`,
+      0x80deea, 15
+    ));
+    y += 32;
 
     y = this.section(x, y, "工作适性");
     if (pal.workSuitability.length === 0) {
@@ -87,11 +102,21 @@ export class DetailScene extends Phaser.Scene {
     }
 
     y = this.section(x, y, "技能");
-    const skillNames = (pal.activeSkills ?? []).map(
-      (id) => activeSkillsById.get(id)?.name.zh ?? id
-    );
-    this.content.add(this.line(x, y, `主动：${skillNames.join("、") || "—"}`, 0x80deea));
-    y += 26;
+    const skills = (pal.activeSkills ?? []).map((id) => activeSkillsById.get(id)).filter((skill) => Boolean(skill));
+    if (skills.length === 0) {
+      this.content.add(this.line(x, y, "—", 0x888888));
+      y += 26;
+    }
+    for (const skill of skills) {
+      if (!skill) continue;
+      this.content.add(this.line(x, y, `${skill.name.zh} · ${ELEMENT_LABELS[skill.element]}`, ELEMENT_COLORS[skill.element], 17));
+      y += 23;
+      const effect = skill.effect ? ` · ${getStatusLabel(skill.effect.status)} ${skill.effect.chance}%/${skill.effect.duration}回合` : "";
+      this.content.add(this.line(x + 12, y, `威力 ${skill.power} · 命中 ${skill.accuracy}% · 能量 ${skill.energyCost}${effect}`, 0x9aa0c0, 14));
+      y += 20;
+      this.content.add(this.line(x + 12, y, skill.description, 0xcccccc, 14, 740));
+      y += 30;
+    }
     this.content.add(
       this.line(x, y, "被动（全局特性）：任意幻兽均可随机携带，捕获/孵化时概率获得。", 0x80deea, 15, 760)
     );
