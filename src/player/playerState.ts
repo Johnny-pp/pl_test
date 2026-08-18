@@ -244,6 +244,22 @@ export function saveGame(storage: StorageLike, save: GameSave): boolean {
   }
 }
 
+export function exportSaveBackup(save: GameSave): string {
+  return JSON.stringify(migrateSave(save), null, 2);
+}
+
+export function importSaveBackup(raw: string): GameSave | undefined {
+  try {
+    const value: unknown = JSON.parse(raw);
+    if (!value || typeof value !== "object") return undefined;
+    const candidate = value as Record<string, unknown>;
+    if (!Array.isArray(candidate.ownedPals) || !Array.isArray(candidate.teamIds)) return undefined;
+    return migrateSave(candidate);
+  } catch {
+    return undefined;
+  }
+}
+
 export function addCapturedPal(save: GameSave, pal: PalInstance): GameSave {
   if (save.ownedPals.some((owned) => owned.uid === pal.uid)) return save;
   const autoJoin = save.teamIds.length < TEAM_LIMIT;

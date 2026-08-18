@@ -5,6 +5,8 @@ import {
   addCapturedPal,
   createEmptySave,
   createPalInstance,
+  exportSaveBackup,
+  importSaveBackup,
   loadGame,
   saveGame,
   toggleTeamMember,
@@ -73,4 +75,18 @@ test("存档可完成写入和读取往返", () => {
   save.base.resources.food = 20.5;
   assert.equal(saveGame(storage, save), true);
   assert.deepEqual(loadGame(storage), save);
+});
+
+test("存档备份可导出、迁移后导入，并拒绝无关 JSON", () => {
+  const save = addCapturedPal(
+    createEmptySave(100),
+    createPalInstance(species, () => "backup-pal")
+  );
+  const restored = importSaveBackup(exportSaveBackup(save));
+  assert.deepEqual(restored, save);
+
+  const oldBackup = JSON.stringify({ version: 1, ownedPals: [], teamIds: [] });
+  assert.equal(importSaveBackup(oldBackup)?.version, 3);
+  assert.equal(importSaveBackup('{"hello":"world"}'), undefined);
+  assert.equal(importSaveBackup("not-json"), undefined);
 });

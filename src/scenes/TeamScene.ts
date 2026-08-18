@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import { pals } from "../data/loadPals";
 import {
   TEAM_LIMIT,
+  exportSaveBackup,
+  importSaveBackup,
   loadGame,
   saveGame,
   toggleTeamMember,
@@ -18,6 +20,7 @@ const GRID_TOP = 190;
 export class TeamScene extends Phaser.Scene {
   private save!: GameSave;
   private content!: Phaser.GameObjects.Container;
+  private backupMessage = "";
 
   constructor() {
     super("TeamScene");
@@ -57,6 +60,8 @@ export class TeamScene extends Phaser.Scene {
 
   private render() {
     this.content.removeAll(true);
+    this.makeBackupButton(720, 110, "导出备份", () => this.downloadBackup());
+    this.makeBackupButton(830, 110, "导入备份", () => this.chooseBackup());
     const summary = this.add
       .text(
         450,
@@ -66,6 +71,16 @@ export class TeamScene extends Phaser.Scene {
       )
       .setOrigin(0.5);
     this.content.add(summary);
+    if (this.backupMessage) {
+      const feedback = this.add
+        .text(450, 94, this.backupMessage, {
+          fontFamily: "sans-serif",
+          fontSize: "13px",
+          color: "#80cbc4",
+        })
+        .setOrigin(0.5);
+      this.content.add(feedback);
+    }
 
     const teamTitle = this.add.text(38, 106, "当前队伍", {
       fontFamily: "sans-serif",
@@ -106,6 +121,54 @@ export class TeamScene extends Phaser.Scene {
     }
 
     this.save.ownedPals.forEach((instance, index) => this.makeCard(instance, index));
+  }
+
+  private makeBackupButton(x: number, y: number, label: string, action: () => void) {
+    const background = this.add.rectangle(x, y, 98, 30, 0x354a68).setInteractive({ useHandCursor: true });
+    const text = this.add
+      .text(x, y, label, { fontFamily: "sans-serif", fontSize: "13px", color: "#ffffff" })
+      .setOrigin(0.5);
+    background.on("pointerdown", action);
+    this.content.add([background, text]);
+  }
+
+  private downloadBackup() {
+    const blob = new Blob([exportSaveBackup(this.save)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `幻兽远征存档-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    this.backupMessage = "存档备份已导出";
+    this.render();
+  }
+
+  private chooseBackup() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json,.json";
+    input.addEventListener(
+      "change",
+      () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        void file.text().then((raw) => {
+          const imported = importSaveBackup(raw);
+          if (!imported) {
+            this.backupMessage = "导入失败：不是有效的游戏存档";
+          } else if (!saveGame(localStorage, imported)) {
+            this.backupMessage = "导入失败：浏览器无法写入存档";
+          } else {
+            this.save = imported;
+            this.backupMessage = "存档已导入并完成兼容迁移";
+          }
+          this.render();
+        });
+      },
+      { once: true }
+    );
+    input.click();
   }
 
   private makeCard(instance: PalInstance, index: number) {
