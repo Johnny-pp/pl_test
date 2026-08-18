@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/pal.schema.json",
+  "title": "帕鲁 (Pal) 数据模型",
+  "description": "类幻兽帕鲁网页游戏中单个帕鲁（宝宝）的数据结构定义。字段参考 paldb.cn / Palpedia / PokeAPI 的结构设计，数值需自行设计，勿直接搬运。",
+  "type": "object",
+  "required": ["id", "name", "elements", "rarity", "stats", "workSuitability"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "图鉴编号（Paldeck No.）"
+    },
+    "name": {
+      "type": "object",
+      "description": "名称（多语言）",
+      "required": ["zh", "en"],
+      "additionalProperties": false,
+      "properties": {
+        "zh": { "type": "string", "description": "中文名" },
+        "en": { "type": "string", "description": "英文名" }
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "图鉴描述/背景故事"
+    },
+    "rarity": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "稀有度（1=普通, 5=传说）"
+    },
+    "size": {
+      "type": "string",
+      "enum": ["small", "medium", "large"],
+      "description": "体型"
+    },
+    "elements": {
+      "type": "array",
+      "description": "元素/属性，可拥有多个（参考 paldb.cn 元素体系）",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "type": "string",
+        "enum": [
+          "neutral", "fire", "water", "grass", "electric",
+          "ice", "ground", "wind", "dark", "dragon",
+          "rock", "normal"
+        ]
+      }
+    },
+    "catchRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "基础捕获概率（%）"
+    },
+    "foodAmount": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "饱食度/每次进食量"
+    },
+    "stats": {
+      "type": "object",
+      "description": "战斗与基础属性",
+      "required": ["hp", "attack", "defense", "workSpeed", "moveSpeed"],
+      "additionalProperties": false,
+      "properties": {
+        "hp": { "type": "integer", "minimum": 1, "description": "生命值" },
+        "attack": { "type": "integer", "minimum": 0, "description": "近战攻击" },
+        "defense": { "type": "integer", "minimum": 0, "description": "防御" },
+        "workSpeed": { "type": "integer", "minimum": 0, "description": "工作速度" },
+        "moveSpeed": { "type": "integer", "minimum": 0, "description": "移动速度" },
+        "rideSprintSpeed": { "type": "integer", "minimum": 0, "description": "骑行冲刺速度" },
+        "price": { "type": "integer", "minimum": 0, "description": "商店售价" }
+      }
+    },
+    "workSuitability": {
+      "type": "array",
+      "description": "工作适性：每个条目一种工作类型及其熟练等级",
+      "items": {
+        "type": "object",
+        "required": ["type", "level"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "planting", "handiwork", "gathering", "kindling",
+              "watering", "transport", "farming", "electricity",
+              "generating", "lumbering", "mining", "medicine",
+              "cooling", "sorting"
+            ],
+            "description": "工作类型"
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4,
+            "description": "熟练等级（0=不能, 1-4 递增）"
+          }
+        }
+      }
+    },
+    "partnerSkill": {
+      "type": "object",
+      "description": "伙伴技能（骑乘/协同效果）",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "ranks": {
+          "type": "array",
+          "description": "各星级/等级的效果描述",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "activeSkills": {
+      "type": "array",
+      "description": "可学习的主动技能名称列表",
+      "items": { "type": "string" }
+    },
+    "passiveSkills": {
+      "type": "array",
+      "description": "可能携带的被动技能名称列表",
+      "items": { "type": "string" }
+    },
+    "drops": {
+      "type": "array",
+      "description": "击败后掉落物及概率",
+      "items": {
+        "type": "object",
+        "required": ["item", "rate"],
+        "additionalProperties": false,
+        "properties": {
+          "item": { "type": "string", "description": "掉落物名称" },
+          "rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "掉落概率（%）"
+          }
+        }
+      }
+    },
+    "spawnLocations": {
+      "type": "array",
+      "description": "刷新位置/栖息地",
+      "items": { "type": "string" }
+    },
+    "breeding": {
+      "type": "object",
+      "description": "配种相关",
+      "additionalProperties": false,
+      "properties": {
+        "power": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "配种力（影响孵化速度）"
+        },
+        "parents": {
+          "type": "array",
+          "description": "可生成该帕鲁的父代组合（每条为两个父代 id 或名称）",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

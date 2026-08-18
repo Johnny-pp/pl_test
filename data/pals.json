@@ -1,0 +1,89 @@
+[
+  {
+    "id": 1,
+    "name": { "zh": "焰尾鼠", "en": "Flaremouse" },
+    "description": "栖息在火山脚下的小型帕鲁，尾尖常年燃烧，性情机警。",
+    "rarity": 2,
+    "size": "small",
+    "elements": ["fire"],
+    "catchRate": 45,
+    "foodAmount": 2,
+    "stats": {
+      "hp": 70,
+      "attack": 85,
+      "defense": 50,
+      "workSpeed": 60,
+      "moveSpeed": 90,
+      "rideSprintSpeed": 120,
+      "price": 1200
+    },
+    "workSuitability": [
+      { "type": "kindling", "level": 2 },
+      { "type": "transport", "level": 1 }
+    ],
+    "partnerSkill": {
+      "name": "炽尾冲刺",
+      "description": "骑乘时提升移动速度，并点燃途经的草地。",
+      "ranks": [
+        "等级1：移动速度 +10%",
+        "等级2：移动速度 +20%，经过草丛有 30% 概率点燃",
+        "等级3：移动速度 +30%，点燃概率提升至 60%"
+      ]
+    },
+    "activeSkills": ["火花", "撕咬", "烈焰冲击"],
+    "passiveSkills": ["勇敢", "易燃体质"],
+    "drops": [
+      { "item": "火焰鬃毛", "rate": 35 },
+      { "item": "生肉", "rate": 100 }
+    ],
+    "spawnLocations": ["火山脚下", "焦土平原"],
+    "breeding": {
+      "power": 50,
+      "parents": []
+    }
+  },
+  {
+    "id": 2,
+    "name": { "zh": "碧波龟", "en": "Aquaturtle" },
+    "description": "缓慢而坚韧的水生帕鲁，背甲可抵御大部分攻击，擅长灌溉农田。",
+    "rarity": 2,
+    "size": "medium",
+    "elements": ["water"],
+    "catchRate": 50,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 130,
+      "attack": 55,
+      "defense": 95,
+      "workSpeed": 70,
+      "moveSpeed": 45,
+      "rideSprintSpeed": 0,
+      "price": 1500
+    },
+    "workSuitability": [
+      { "type": "watering", "level": 3 },
+      { "type": "planting", "level": 2 },
+      { "type": "transport", "level": 1 }
+    ],
+    "partnerSkill": {
+      "name": "涌泉守护",
+      "description": "骑乘时为主人持续回复少量水分与生命。",
+      "ranks": [
+        "等级1：每秒回复 1% 生命",
+        "等级2：每秒回复 2% 生命，并在水中提速",
+        "等级3：每秒回复 3% 生命，水中移速 +25%"
+      ]
+    },
+    "activeSkills": ["水枪", "撞击", "泡沫"],
+    "passiveSkills": ["硬壳", "慢性子"],
+    "drops": [
+      { "item": "龟甲碎片", "rate": 40 },
+      { "item": "生肉", "rate": 100 }
+    ],
+    "spawnLocations": ["碧湖", "海岸礁石"],
+    "breeding": {
+      "power": 60,
+      "parents": []
+    }
+  }
+]
