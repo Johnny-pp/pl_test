@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { pals } from "../data/loadPals";
 import { ELEMENT_COLORS, ELEMENT_LABELS, WORK_LABELS } from "../types/elements";
 import type { ElementType, WorkType, Pal } from "../types/pal";
+import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 
 const CARD_W = 200;
 const CARD_H = 96;
@@ -58,6 +59,10 @@ export class DexScene extends Phaser.Scene {
 
   constructor() {
     super("DexScene");
+  }
+
+  preload() {
+    preloadPalPortraits(this);
   }
 
   create() {
@@ -407,18 +412,18 @@ export class DexScene extends Phaser.Scene {
       .rectangle(0, 0, CARD_W, CARD_H, 0x16213e)
       .setStrokeStyle(2, 0x0f3460);
     const elem = pal.elements[0] ?? "neutral";
-    const dot = this.add.circle(-CARD_W / 2 + 22, 0, 10, ELEMENT_COLORS[elem]);
-    const idText = this.add.text(-CARD_W / 2 + 42, -CARD_H / 2 + 10, `#${pal.id}`, {
+    const portrait = addPalPortrait(this, pal.id, -CARD_W / 2 + 42, 0, 76);
+    const idText = this.add.text(-CARD_W / 2 + 82, -CARD_H / 2 + 10, `#${pal.id}`, {
       fontFamily: "sans-serif",
       fontSize: "14px",
       color: "#8a8aa0",
     });
-    const nameText = this.add.text(-CARD_W / 2 + 42, -CARD_H / 2 + 30, pal.name.zh, {
+    const nameText = this.add.text(-CARD_W / 2 + 82, -CARD_H / 2 + 30, pal.name.zh, {
       fontFamily: "sans-serif",
       fontSize: "20px",
       color: "#ffffff",
     });
-    const enText = this.add.text(-CARD_W / 2 + 42, CARD_H / 2 - 24, pal.name.en, {
+    const enText = this.add.text(-CARD_W / 2 + 82, CARD_H / 2 - 24, pal.name.en, {
       fontFamily: "sans-serif",
       fontSize: "12px",
       color: "#9aa0c0",
@@ -430,7 +435,7 @@ export class DexScene extends Phaser.Scene {
         color: "#ffffff",
       })
       .setOrigin(1, 0);
-    c.add([bg, dot, idText, nameText, enText, elemText]);
+    c.add([bg, portrait, idText, nameText, enText, elemText]);
 
     bg.setInteractive({ useHandCursor: true });
     bg.on("pointerdown", () => this.scene.start("DetailScene", { palId: pal.id }));

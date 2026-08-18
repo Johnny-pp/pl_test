@@ -3,12 +3,17 @@ import { pals } from "../data/loadPals";
 import { activeSkillsById } from "../data/loadActiveSkills";
 import { ELEMENT_COLORS, ELEMENT_LABELS, WORK_LABELS } from "../types/elements";
 import type { Pal } from "../types/pal";
+import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 
 export class DetailScene extends Phaser.Scene {
   private content!: Phaser.GameObjects.Container;
 
   constructor() {
     super("DetailScene");
+  }
+
+  preload() {
+    preloadPalPortraits(this);
   }
 
   create(data: { palId: number }) {
@@ -32,6 +37,7 @@ export class DetailScene extends Phaser.Scene {
     }
 
     this.content = this.add.container(0, 0);
+    this.content.add(addPalPortrait(this, pal.id, width - 125, 145, 190));
     let y = 70;
     const x = 40;
 

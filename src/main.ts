@@ -19,11 +19,18 @@ new Phaser.Game({
   parent: "game",
   width: 900,
   height: 640,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 900,
+    height: 640,
+  },
   backgroundColor: "#1a1a2e",
   physics: {
     default: "arcade",
     arcade: { debug: false },
   },
   dom: { createContainer: true },
+  input: { activePointers: 3 },
   scene: scenes,
 });

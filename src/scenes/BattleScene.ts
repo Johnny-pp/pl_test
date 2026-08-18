@@ -22,6 +22,7 @@ import {
   updatePalCurrentHp,
 } from "../player/playerState";
 import { consumeCaptureOrb } from "../base/baseSystem";
+import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 
 interface BattleSceneData {
   playerId: number;
@@ -50,6 +51,10 @@ export class BattleScene extends Phaser.Scene {
 
   constructor() {
     super("BattleScene");
+  }
+
+  preload() {
+    preloadPalPortraits(this);
   }
 
   create(data: BattleSceneData) {
@@ -104,16 +109,17 @@ export class BattleScene extends Phaser.Scene {
 
   private makeCombatantPanel(x: number, y: number, fighter: Combatant, player: boolean) {
     const element = fighter.elements[0] ?? "neutral";
+    const contentX = player ? x - 55 : x - 145;
     this.add.rectangle(x, y, 350, 130, 0x16213e).setStrokeStyle(2, ELEMENT_COLORS[element]);
-    this.add.circle(x + (player ? -125 : 125), y, 32, ELEMENT_COLORS[element], 0.85);
-    this.add.text(x - 145, y - 48, `${fighter.name}  ·  ${fighter.elements.map((e) => ELEMENT_LABELS[e]).join("/")}`, {
+    addPalPortrait(this, fighter.id, x + (player ? -120 : 120), y + 8, 110);
+    this.add.text(contentX, y - 48, `${fighter.name}  ·  ${fighter.elements.map((e) => ELEMENT_LABELS[e]).join("/")}`, {
       fontFamily: "sans-serif",
       fontSize: "21px",
       color: "#ffffff",
     });
-    this.add.rectangle(x - 145, y, 260, 16, 0x301f38).setOrigin(0, 0.5);
-    const hp = this.add.rectangle(x - 145, y, 260, 16, 0x66bb6a).setOrigin(0, 0.5);
-    const status = this.add.text(x - 145, y + 18, "", {
+    this.add.rectangle(contentX, y, 200, 16, 0x301f38).setOrigin(0, 0.5);
+    const hp = this.add.rectangle(contentX, y, 200, 16, 0x66bb6a).setOrigin(0, 0.5);
+    const status = this.add.text(contentX, y + 18, "", {
       fontFamily: "sans-serif",
       fontSize: "14px",
       color: "#b8c0df",
@@ -141,7 +147,7 @@ export class BattleScene extends Phaser.Scene {
     hpBar: Phaser.GameObjects.Rectangle,
     status: Phaser.GameObjects.Text
   ) {
-    hpBar.displayWidth = 260 * (fighter.hp / fighter.maxHp);
+    hpBar.displayWidth = 200 * (fighter.hp / fighter.maxHp);
     hpBar.setFillStyle(fighter.hp / fighter.maxHp > 0.35 ? 0x66bb6a : 0xef5350);
     const statusNames = fighter.statuses.map((effect) => getStatusLabel(effect.type)).join("、");
     status.setText(`HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100${statusNames ? `    ${statusNames}` : ""}`);

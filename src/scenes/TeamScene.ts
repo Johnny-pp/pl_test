@@ -10,6 +10,7 @@ import {
 } from "../player/playerState";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import { useHealingTonic } from "../base/baseSystem";
+import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 
 const GRID_TOP = 190;
 
@@ -19,6 +20,10 @@ export class TeamScene extends Phaser.Scene {
 
   constructor() {
     super("TeamScene");
+  }
+
+  preload() {
+    preloadPalPortraits(this);
   }
 
   create() {
@@ -90,10 +95,11 @@ export class TeamScene extends Phaser.Scene {
     const inTeam = this.save.teamIds.includes(instance.uid);
     const element = species.elements[0] ?? "neutral";
     const bg = this.add.rectangle(x, y, 250, 96, 0x16213e).setStrokeStyle(2, ELEMENT_COLORS[element]);
-    const name = this.add.text(x - 105, y - 34, `${species.name.zh}  Lv.${instance.level}`, {
+    const portrait = addPalPortrait(this, species.id, x - 88, y, 76);
+    const name = this.add.text(x - 45, y - 34, `${species.name.zh}  Lv.${instance.level}`, {
       fontFamily: "sans-serif", fontSize: "18px", color: "#ffffff",
     });
-    const detail = this.add.text(x - 105, y - 7,
+    const detail = this.add.text(x - 45, y - 7,
       `${species.elements.map((e) => ELEMENT_LABELS[e]).join("/")} · HP ${instance.currentHp}/${species.stats.hp}`,
       { fontFamily: "sans-serif", fontSize: "13px", color: "#9aa0c0" }
     );
@@ -109,7 +115,7 @@ export class TeamScene extends Phaser.Scene {
       saveGame(localStorage, this.save);
       this.render();
     });
-    this.content.add([bg, name, detail, button, buttonText]);
+    this.content.add([bg, portrait, name, detail, button, buttonText]);
     if (instance.currentHp < species.stats.hp) {
       const heal = this.add.rectangle(x - 65, y + 25, 100, 30, 0x49743f).setInteractive({ useHandCursor: true });
       const healText = this.add.text(x - 65, y + 25, `治疗 ×${this.save.inventory.healingTonics}`, {

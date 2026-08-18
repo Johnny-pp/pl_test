@@ -66,6 +66,8 @@ export class WorldScene extends Phaser.Scene {
   private encounterLocked = false;
   private encounterCooldownUntil = 0;
   private nextEncounterCheck = 0;
+  private touchDirection = { up: false, down: false, left: false, right: false };
+  private touchInteractRequested = false;
 
   constructor() {
     super("WorldScene");
@@ -119,10 +121,10 @@ export class WorldScene extends Phaser.Scene {
   }
 
   update() {
-    const left = this.cursors.left.isDown || this.wasd.left.isDown;
-    const right = this.cursors.right.isDown || this.wasd.right.isDown;
-    const up = this.cursors.up.isDown || this.wasd.up.isDown;
-    const down = this.cursors.down.isDown || this.wasd.down.isDown;
+    const left = this.cursors.left.isDown || this.wasd.left.isDown || this.touchDirection.left;
+    const right = this.cursors.right.isDown || this.wasd.right.isDown || this.touchDirection.right;
+    const up = this.cursors.up.isDown || this.wasd.up.isDown || this.touchDirection.up;
+    const down = this.cursors.down.isDown || this.wasd.down.isDown || this.touchDirection.down;
     const direction = new Phaser.Math.Vector2(Number(right) - Number(left), Number(down) - Number(up));
     if (direction.lengthSq() > 0) direction.normalize().scale(180);
     this.player.setVelocity(direction.x, direction.y);
@@ -135,7 +137,8 @@ export class WorldScene extends Phaser.Scene {
     const nearest = this.findNearbyResource();
     this.promptText.setVisible(Boolean(nearest));
     if (nearest) this.promptText.setText(`按 E 采集 ${nearest.label}`);
-    if (nearest && Phaser.Input.Keyboard.JustDown(this.interactKey)) this.gatherResource(nearest);
+    if (nearest && (Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested)) this.gatherResource(nearest);
+    this.touchInteractRequested = false;
 
     if (direction.lengthSq() > 0) this.tryEncounter(zone, period);
   }
@@ -190,6 +193,37 @@ export class WorldScene extends Phaser.Scene {
       backgroundColor: "#0b1224", padding: { x: 12, y: 8 },
     }).setOrigin(0.5).setScrollFactor(0).setDepth(21).setVisible(false);
     this.updateResourceText();
+    this.createTouchControls();
+  }
+
+  private createTouchControls() {
+    this.makeTouchDirectionButton(82, 526, "▲", "up");
+    this.makeTouchDirectionButton(82, 600, "▼", "down");
+    this.makeTouchDirectionButton(44, 563, "◀", "left");
+    this.makeTouchDirectionButton(120, 563, "▶", "right");
+    const action = this.add.circle(826, 558, 38, 0x0f4660, 0.72)
+      .setScrollFactor(0).setDepth(22).setInteractive({ useHandCursor: true });
+    this.add.text(826, 558, "E\n采集", {
+      fontFamily: "sans-serif", fontSize: "14px", color: "#ffffff", align: "center",
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(23);
+    action.on("pointerdown", () => { this.touchInteractRequested = true; });
+  }
+
+  private makeTouchDirectionButton(
+    x: number,
+    y: number,
+    label: string,
+    direction: keyof typeof this.touchDirection
+  ) {
+    const button = this.add.circle(x, y, 32, 0x0f3460, 0.6)
+      .setScrollFactor(0).setDepth(22).setInteractive({ useHandCursor: true });
+    this.add.text(x, y, label, {
+      fontFamily: "sans-serif", fontSize: "20px", color: "#ffffff",
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(23);
+    button.on("pointerdown", () => { this.touchDirection[direction] = true; });
+    const release = () => { this.touchDirection[direction] = false; };
+    button.on("pointerup", release);
+    button.on("pointerout", release);
   }
 
   private createResources() {

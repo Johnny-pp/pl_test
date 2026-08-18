@@ -3,6 +3,7 @@ import { pals } from "../data/loadPals";
 import { passiveSkills, passiveSkillsById } from "../data/loadPassiveSkills";
 import { BREEDING_FOOD_COST, breed, hatchEgg, previewOffspring } from "../breeding/breedingSystem";
 import { loadGame, saveGame, type EggQuality, type GameSave, type PalInstance } from "../player/playerState";
+import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 
 const QUALITY_LABELS: Record<EggQuality, string> = { common: "普通", fine: "优良", radiant: "辉光" };
 const QUALITY_COLORS: Record<EggQuality, number> = { common: 0x9aa0c0, fine: 0x4fc3f7, radiant: 0xffb300 };
@@ -16,6 +17,10 @@ export class BreedingScene extends Phaser.Scene {
 
   constructor() {
     super("BreedingScene");
+  }
+
+  preload() {
+    preloadPalPortraits(this);
   }
 
   create() {
@@ -103,15 +108,16 @@ export class BreedingScene extends Phaser.Scene {
     const bg = this.add.rectangle(x, y, 250, 76, role ? 0x244b52 : 0x16213e)
       .setStrokeStyle(2, role ? 0xffd54f : 0x0f3460)
       .setInteractive({ useHandCursor: true });
-    const name = this.add.text(x - 110, y - 27, `${role ? `[${role}] ` : ""}${species.name.zh} Lv.${instance.level}`, {
+    const portrait = addPalPortrait(this, species.id, x - 92, y, 62);
+    const name = this.add.text(x - 56, y - 27, `${role ? `[${role}] ` : ""}${species.name.zh} Lv.${instance.level}`, {
       fontFamily: "sans-serif", fontSize: "16px", color: "#ffffff",
     });
     const passives = instance.passiveSkillIds.map((id) => passiveSkillsById.get(id)?.name.zh ?? id).join("、") || "无被动";
-    const detail = this.add.text(x - 110, y + 3, passives, {
+    const detail = this.add.text(x - 56, y + 3, passives, {
       fontFamily: "sans-serif", fontSize: "12px", color: "#9aa0c0",
     });
     bg.on("pointerdown", () => this.selectParent(instance.uid));
-    this.addContent(bg, name, detail);
+    this.addContent(bg, portrait, name, detail);
   }
 
   private selectParent(uid: string) {

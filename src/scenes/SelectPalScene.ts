@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { pals } from "../data/loadPals";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import type { Pal } from "../types/pal";
+import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 
 const CARD_W = 190;
 const CARD_H = 105;
@@ -11,6 +12,10 @@ const COLS = 4;
 export class SelectPalScene extends Phaser.Scene {
   constructor() {
     super("SelectPalScene");
+  }
+
+  preload() {
+    preloadPalPortraits(this);
   }
 
   create() {
@@ -51,18 +56,18 @@ export class SelectPalScene extends Phaser.Scene {
     const bg = this.add.rectangle(x, y, CARD_W, CARD_H, 0x16213e)
       .setStrokeStyle(2, ELEMENT_COLORS[element])
       .setInteractive({ useHandCursor: true });
-    this.add.circle(x - 68, y, 18, ELEMENT_COLORS[element]);
-    this.add.text(x - 40, y - 35, `#${pal.id}  ${pal.name.zh}`, {
+    addPalPortrait(this, pal.id, x - 62, y, 74);
+    this.add.text(x - 20, y - 35, `#${pal.id}  ${pal.name.zh}`, {
       fontFamily: "sans-serif",
       fontSize: "18px",
       color: "#ffffff",
     });
-    this.add.text(x - 40, y - 8, pal.elements.map((e) => ELEMENT_LABELS[e]).join(" / "), {
+    this.add.text(x - 20, y - 8, pal.elements.map((e) => ELEMENT_LABELS[e]).join(" / "), {
       fontFamily: "sans-serif",
       fontSize: "14px",
       color: "#9aa0c0",
     });
-    this.add.text(x - 40, y + 19, `HP ${pal.stats.hp}  攻 ${pal.stats.attack}`, {
+    this.add.text(x - 20, y + 19, `HP ${pal.stats.hp}  攻 ${pal.stats.attack}`, {
       fontFamily: "sans-serif",
       fontSize: "13px",
       color: "#80deea",
