@@ -68,7 +68,7 @@ export class DexScene extends Phaser.Scene {
     this.sortButtons.clear();
 
     this.add
-      .text(width / 2, 22, "帕鲁图鉴", {
+      .text(width / 2, 22, "幻兽图鉴", {
         fontFamily: "sans-serif",
         fontSize: "30px",
         color: "#ffffff",
@@ -94,7 +94,7 @@ export class DexScene extends Phaser.Scene {
     }).setOrigin(0, 0.5);
 
     this.emptyText = this.add
-      .text(width / 2, GRID_TOP + 80, "未找到匹配的帕鲁", {
+      .text(width / 2, GRID_TOP + 80, "未找到匹配的幻兽", {
         fontFamily: "sans-serif",
         fontSize: "22px",
         color: "#9aa0c0",

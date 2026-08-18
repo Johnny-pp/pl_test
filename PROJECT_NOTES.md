@@ -50,26 +50,21 @@
 
 ## 帕鲁数据模型 Schema
 - 已定义 JSON Schema：`schema/pal.schema.json`（draft 2020-12），覆盖身份/元素/属性/工作适性/技能/掉落/分布/配种字段，`additionalProperties:false`。
-- 新增帕鲁数据时应符合该 Schema；字段结构参考 paldb.cn / Palpedia / PokeAPI，数值自行设计。
-- 示例数据：`data/pals.json`（2 个原创示例帕鲁）；校验脚本：`scripts/validate-pals.mjs`（`node scripts/validate-pals.mjs`，依赖 ajv）。
+- 新增幻兽数据时应符合该 Schema；外部资料仅用于理解常见字段维度，内容与数值必须原创设计。
+- 当前数据：`data/pals.json`（12 个原创物种）；校验脚本：`scripts/validate-pals.mjs`（依赖 ajv）。
 
-## 帕鲁数据（参照真实资料）
-- 数据来源：paldb.cn，仅作字段/数值参考，版权归 Palworld/paldb.cn，商用前自行确认授权。
-- 抓取脚本：`scripts/fetch-paldb.py`（用法：`python3 scripts/fetch-paldb.py <slug1> <slug2> ... > data/pals.json`）。
-- 接口：结构化 `https://paldb.cn/api/pal/<slug>`（gzip，部分缓存命中返回未压缩，脚本已兼容）+ 详情页 HTML 取数值。
-- **已补全（来自 API 真实值）**：图鉴编号(number)、中文名、元素、工作适性(类型+等级)、饱食度(food_amount_level)、描述(summary)、伙伴技能(名称+描述)、掉落物(partner_skill.level_tables 各级掉落与概率)、**主动技能中文名**（详情页 HTML「主动技能」区块服务器渲染，可直接解析）。
-- **经验占位 / 全局表（paldb 不提供真实值）**：
-  - `移动速度`/`骑行速度` → `scripts/fetch-paldb.py` 的 `MOVE_MAP`，按 Palworld 经验给的占位值（非精确数值）。
-  - `刷新区域` → 同脚本 `SPAWN_MAP`，paldb 仅渲染昼夜刷新点数量+地图链接、无区域名，故按经验给区域名。
-  - `被动技能` → 见下方「被动技能全局表」：`data/passive-skills.json`。Palworld 中被动技能是**全局随机特性**（任意帕鲁都可能携带），并非某只帕鲁专属，因此单独成表，不挂在单个帕鲁的 `passiveSkills` 字段下（`passiveSkills` 留空）。
-- **仍占位**：`rarity` 当前统一=2，可后续按图鉴手填。
-- 全量 slug 列表（299 只）在 paldb.cn/pals 页面可拿；要扩充直接加 slug 重跑脚本即可。
+## 原创幻兽数据
+- 12 个物种的中英文名称、描述、属性、成长、工作适性、伙伴技能、掉落物和栖息地均为本项目原创设计。
+- 图鉴编号沿用原型阶段的内部编号，以兼容已有 localStorage 存档和遭遇表引用；编号本身不代表外部作品内容。
+- `catchRate`、`growth`、稀有度、移动/骑行速度等字段已纳入 Schema，不再依赖抓取脚本或站点数据。
+- 主动技能独立存放于 `data/active-skills.json`，物种通过稳定 ID 引用。
+- 数据校验会检查物种/技能的 Schema、ID 与名称唯一性、主动/被动跨表引用和重复工作适性。
 
 ## 被动技能全局表
 - 文件：`data/passive-skills.json`，对应 Schema：`schema/passive-skill.schema.json`（draft 2020-12）。
 - 字段：`id`(slug)、`name{zh,en}`、`category`(attack/defense/work/move/element/resource/other)、`description`(效果描述)、`tier`(common/rare/legendary)。
-- 当前收录 26 个常见被动技能，数值为**经验占位**（参考 Palworld 设计，需自行校准）。
-- 校验：`npm run validate` 现已同时校验 `data/pals.json` 与 `data/passive-skills.json`。
+- 当前收录 26 个原创被动技能，包含移动、战斗、工作、资源和元素等分类。
+- 校验：`npm run validate` 同时校验物种、主动技能和被动技能，并执行跨表引用检查。
 
 ## 局域网访问（仅本机 + 同 WiFi/路由器的其他设备）
 > 已配置 `vite.config.mjs` 的 `server.host: true`，dev 启动会打印 `Network` 地址，同局域网设备直接用该地址访问即可，无需公网/内网穿透。

@@ -46,7 +46,7 @@
 - `tests/`：核心规则自动化测试
 - `data/`：帕鲁与被动技能 JSON 数据
 - `schema/`：JSON Schema 定义
-- `scripts/`：数据抓取和校验脚本
+- `scripts/`：数据校验脚本；不得加入直接搬运外部内容的抓取脚本
 - `PLAN.md`：分阶段开发计划与验收标准
 - `PROJECT_NOTES.md`：项目背景、数据来源和字段说明
 

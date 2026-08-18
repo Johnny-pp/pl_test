@@ -26,7 +26,7 @@ export class DetailScene extends Phaser.Scene {
 
     if (!pal) {
       this.add
-        .text(width / 2, 200, "未找到该帕鲁", { fontSize: "24px", color: "#fff" })
+        .text(width / 2, 200, "未找到该幻兽", { fontSize: "24px", color: "#fff" })
         .setOrigin(0.5);
       return;
     }
@@ -87,7 +87,7 @@ export class DetailScene extends Phaser.Scene {
     this.content.add(this.line(x, y, `主动：${skillNames.join("、") || "—"}`, 0x80deea));
     y += 26;
     this.content.add(
-      this.line(x, y, "被动（全局特性）：任意帕鲁均可随机携带，捕获/孵化时概率获得。", 0x80deea, 15, 760)
+      this.line(x, y, "被动（全局特性）：任意幻兽均可随机携带，捕获/孵化时概率获得。", 0x80deea, 15, 760)
     );
     y += 26;
     const link = this.line(x, y, "→ 查看全部被动技能", 0xffd54f, 15, 0);
