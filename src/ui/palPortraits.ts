@@ -8,14 +8,14 @@ const HIGHLAND_PORTRAIT_IDS = [34, 35, 36, 37, 38, 39];
 export function preloadPalPortraits(scene: Phaser.Scene) {
   if (!scene.textures.exists(PORTRAIT_KEY)) {
     scene.load.spritesheet(PORTRAIT_KEY, "/assets/pal-portraits.png", {
-      frameWidth: 362,
-      frameHeight: 362,
+      frameWidth: 384,
+      frameHeight: 384,
     });
   }
   if (!scene.textures.exists(HIGHLAND_PORTRAIT_KEY)) {
     scene.load.spritesheet(HIGHLAND_PORTRAIT_KEY, "/assets/pal-portraits-highland.png", {
-      frameWidth: 418,
-      frameHeight: 627,
+      frameWidth: 512,
+      frameHeight: 512,
     });
   }
 }

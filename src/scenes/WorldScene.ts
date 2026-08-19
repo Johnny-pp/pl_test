@@ -76,6 +76,11 @@ const REGION_LABELS: Record<WorldRegion, string> = {
   "cloudridge-highlands": "云脊高地",
 };
 
+const REGION_TILE_ASSETS: Record<WorldRegion, string> = {
+  frontier: "/assets/world-tiles-frontier.png",
+  "cloudridge-highlands": "/assets/world-tiles-cloudridge-highlands.png",
+};
+
 export class WorldScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
   private layer!: Phaser.Tilemaps.TilemapLayer;
@@ -109,6 +114,10 @@ export class WorldScene extends Phaser.Scene {
 
   preload() {
     preloadUiAssets(this);
+    for (const [region, path] of Object.entries(REGION_TILE_ASSETS)) {
+      const textureKey = `world-tiles-${region}`;
+      if (!this.textures.exists(textureKey)) this.load.image(textureKey, path);
+    }
   }
 
   create(data: WorldSceneData = {}) {
@@ -225,22 +234,6 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private createTextures() {
-    const textureKey = `world-tiles-${this.region}`;
-    if (!this.textures.exists(textureKey)) {
-      const graphics = this.make.graphics({ x: 0, y: 0 });
-      const palette =
-        this.region === HIGHLAND_REGION
-          ? [0x426a70, 0x30384f, 0x668c91, 0x8c96aa]
-          : [0x315d3c, 0x263447, 0x477c4d, 0x8a795e];
-      palette.forEach((color, index) => {
-        graphics.fillStyle(color);
-        graphics.fillRect(index * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE);
-        graphics.lineStyle(1, 0x1f2a37, 0.25);
-        graphics.strokeRect(index * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE);
-      });
-      graphics.generateTexture(textureKey, TILE_SIZE * 4, TILE_SIZE);
-      graphics.destroy();
-    }
     if (!this.textures.exists("world-player")) {
       const graphics = this.make.graphics({ x: 0, y: 0 });
       graphics.fillStyle(0xffd54f);
