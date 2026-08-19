@@ -12,6 +12,7 @@ const sceneLoaders: Record<string, SceneLoader> = {
   BaseScene: () => import("./BaseScene").then((module) => module.BaseScene),
   BreedingScene: () => import("./BreedingScene").then((module) => module.BreedingScene),
   CompareScene: () => import("./CompareScene").then((module) => module.CompareScene),
+  QuestScene: () => import("./QuestScene").then((module) => module.QuestScene),
 };
 
 export async function loadScene(key: string): Promise<typeof Phaser.Scene> {

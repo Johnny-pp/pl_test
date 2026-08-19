@@ -26,6 +26,8 @@ import {
   unlockHighlandRegion,
   type WorldRegion,
 } from "../world/regions";
+import { canChallengeBoss, getQuestViews, recordQuestEvent } from "../quests/questSystem";
+import { bossesById } from "../battle/bosses";
 
 interface WorldSceneData {
   region?: WorldRegion;
@@ -154,6 +156,7 @@ export class WorldScene extends Phaser.Scene {
 
     this.createResources();
     this.createPortal();
+    this.createBossAltar();
     this.createHud();
     this.encounterCooldownUntil = this.time.now + (data.encounterCooldown ? 2200 : 800);
   }
@@ -176,14 +179,18 @@ export class WorldScene extends Phaser.Scene {
 
     const nearest = this.findNearbyResource();
     const nearPortal = this.isNearPortal();
+    const nearBoss = this.isNearBossAltar();
     const interactRequested = Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested;
-    this.promptText.setVisible(Boolean(nearest) || nearPortal);
+    this.promptText.setVisible(Boolean(nearest) || nearPortal || nearBoss);
     if (nearest) {
       this.promptText.setText(`按 E 采集 ${nearest.label}`);
       if (interactRequested) this.gatherResource(nearest);
     } else if (nearPortal) {
       this.promptText.setText(this.getPortalPrompt());
       if (interactRequested) this.usePortal();
+    } else if (nearBoss) {
+      this.promptText.setText(this.getBossPrompt());
+      if (interactRequested) this.challengeBoss();
     }
     this.touchInteractRequested = false;
 
@@ -372,11 +379,75 @@ export class WorldScene extends Phaser.Scene {
     object?.node.destroy();
     object?.label.destroy();
     this.resources.delete(resource.id);
+    const save = recordQuestEvent(loadGame(localStorage), { type: "gather", region: this.region });
+    saveGame(localStorage, save);
     this.updateResourceText();
   }
 
   private updateResourceText() {
     this.resourceText?.setText(`采集物 ${this.gathered}`);
+  }
+
+  private createBossAltar() {
+    if (this.region !== HIGHLAND_REGION) return;
+    const x = 36 * TILE_SIZE;
+    const y = 14 * TILE_SIZE;
+    this.add.circle(x, y, 25, 0x7e57c2, 0.8).setStrokeStyle(4, 0xffd54f, 0.9);
+    this.add.circle(x, y, 10, 0xffd54f, 0.85);
+    this.add
+      .text(x, y + 32, "风暴祭坛", {
+        fontFamily: "sans-serif",
+        fontSize: "13px",
+        color: "#ffffff",
+        backgroundColor: "#0b1224",
+        padding: { x: 5, y: 2 },
+      })
+      .setOrigin(0.5, 0);
+  }
+
+  private isNearBossAltar(): boolean {
+    return (
+      this.region === HIGHLAND_REGION &&
+      Phaser.Math.Distance.Between(this.player.x, this.player.y, 36 * TILE_SIZE, 14 * TILE_SIZE) < 62
+    );
+  }
+
+  private getBossPrompt(): string {
+    const save = loadGame(localStorage);
+    if (save.progress.defeatedBossIds.includes("storm-lord")) return "风暴祭坛已经平息";
+    if (canChallengeBoss(save, "storm-lord")) return "按 E 挑战 Lv.12 风暴领主（抗性 55%）";
+    const challenge = getQuestViews(save).find((view) => view.definition.id === "storm-lord-challenge");
+    return challenge?.status === "complete"
+      ? "风暴领主已经败退，请到任务页领取奖励"
+      : "风暴祭坛尚未回应 · 先完成云脊踏勘任务";
+  }
+
+  private challengeBoss() {
+    const save = loadGame(localStorage);
+    const boss = bossesById.get("storm-lord");
+    if (!boss || !canChallengeBoss(save, boss.id)) return;
+    this.encounterLocked = true;
+    this.player.setVelocity(0, 0);
+    void startScene(this, "BattleScene", {
+      playerId: this.leader.id,
+      playerUid: this.leaderUid,
+      enemyId: boss.speciesId,
+      enemyLevel: boss.level,
+      bossId: boss.id,
+      returnTo: {
+        scene: "WorldScene",
+        data: {
+          region: this.region,
+          playerX: this.player.x,
+          playerY: this.player.y,
+          leaderId: this.leader.id,
+          leaderUid: this.leaderUid,
+          encounterCooldown: true,
+          gathered: this.gathered,
+          collectedResourceIds: [...this.collected],
+        },
+      },
+    });
   }
 
   private createPortal() {

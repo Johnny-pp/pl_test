@@ -93,6 +93,7 @@ export class DexScene extends Phaser.Scene {
     this.makeWorldButton();
     this.makeBaseButton();
     this.makeBreedingButton();
+    this.makeQuestButton();
 
     this.buildSearchInput();
     this.buildSortButtons();
@@ -528,5 +529,17 @@ export class DexScene extends Phaser.Scene {
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
     btn.on("pointerdown", () => void startScene(this, "BreedingScene"));
+  }
+
+  private makeQuestButton() {
+    const btn = this.add
+      .text(625, 22, "任务", {
+        fontFamily: "sans-serif",
+        fontSize: "18px",
+        color: "#ce93d8",
+      })
+      .setOrigin(0, 0.5)
+      .setInteractive({ useHandCursor: true });
+    btn.on("pointerdown", () => void startScene(this, "QuestScene"));
   }
 }

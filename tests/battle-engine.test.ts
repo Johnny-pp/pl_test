@@ -103,3 +103,35 @@ test("个体等级成长会真实影响战斗属性", () => {
   assert.ok(levelTen.attack > levelOne.attack);
   assert.ok(levelTen.defense > levelOne.defense);
 });
+
+test("区域首领会抵抗状态并在半血时进入强化阶段", () => {
+  const bossRules = {
+    id: "test-boss",
+    statusResistance: 55,
+    phaseThreshold: 0.5,
+    phaseAttackBoost: 28,
+    phaseDefenseBoost: 22,
+  };
+  const statusSkill: ActiveSkill = {
+    ...skill,
+    effect: { status: "freeze", target: "opponent", chance: 100, duration: 1, magnitude: 0 },
+  };
+  const resisted = resolveTurn(
+    createBattle(pal(1, "玩家", "fire", 200), pal(2, "首领", "wind", 100), 1, 1, bossRules),
+    statusSkill,
+    statusSkill,
+    () => 0.5
+  );
+  assert.equal(
+    resisted.enemy.statuses.some((status) => status.type === "freeze"),
+    false
+  );
+
+  const initial = createBattle(pal(1, "玩家", "fire", 200), pal(2, "首领", "wind", 100), 1, 1, bossRules);
+  initial.enemy.hp = Math.floor(initial.enemy.maxHp / 2);
+  const phased = resolveTurn(initial, skill, skill, () => 0);
+  assert.equal(phased.enemy.boss?.phaseTriggered, true);
+  assert.ok(phased.enemy.statuses.some((status) => status.type === "attack-up"));
+  assert.ok(phased.enemy.statuses.some((status) => status.type === "defense-up"));
+  assert.ok(phased.log.some((line) => line.includes("风暴阶段")));
+});

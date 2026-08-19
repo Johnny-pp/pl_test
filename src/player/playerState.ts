@@ -1,7 +1,7 @@
 import type { Pal } from "../types/pal";
 import { isWorldRegion, STARTING_REGION, type WorldRegion } from "../world/regions.ts";
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -19,6 +19,27 @@ export interface GameProgress {
   battlesWon: number;
   captures: number;
   unlockedRegions: WorldRegion[];
+  quests: QuestState[];
+  defeatedBossIds: string[];
+  unlockedAbilities: string[];
+}
+
+export interface QuestState {
+  id: string;
+  progress: Record<string, number>;
+  rewardClaimed: boolean;
+}
+
+const QUEST_IDS = ["frontier-preparation", "highland-survey", "storm-lord-challenge"] as const;
+
+function createInitialQuestStates(battlesWon = 0, captures = 0): QuestState[] {
+  return QUEST_IDS.map((id) => {
+    const progress: Record<string, number> =
+      id === "frontier-preparation"
+        ? { "battle-win": Math.min(3, battlesWon), capture: Math.min(2, captures) }
+        : {};
+    return { id, progress, rewardClaimed: false };
+  });
 }
 
 export type BaseJob = "planting" | "mining" | "lumbering" | "generating";
@@ -86,7 +107,14 @@ export function createEmptySave(now = Date.now()): GameSave {
     version: SAVE_VERSION,
     ownedPals: [],
     teamIds: [],
-    progress: { battlesWon: 0, captures: 0, unlockedRegions: [STARTING_REGION] },
+    progress: {
+      battlesWon: 0,
+      captures: 0,
+      unlockedRegions: [STARTING_REGION],
+      quests: createInitialQuestStates(),
+      defeatedBossIds: [],
+      unlockedAbilities: [],
+    },
     inventory: { captureOrbs: 3, healingTonics: 0 },
     base: {
       resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0 },
@@ -168,6 +196,27 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
     rawBase.resources && typeof rawBase.resources === "object"
       ? (rawBase.resources as Partial<BaseState["resources"]>)
       : {};
+  const battlesWon = Number.isFinite(progress.battlesWon) ? Math.max(0, Math.floor(progress.battlesWon!)) : 0;
+  const captures = Number.isFinite(progress.captures)
+    ? Math.max(0, Math.floor(progress.captures!))
+    : ownedPals.length;
+  const rawQuests: unknown[] = Array.isArray(progress.quests) ? progress.quests : [];
+  const quests = createInitialQuestStates(battlesWon, captures).map((fallback) => {
+    const value = rawQuests.find(
+      (quest): quest is Partial<QuestState> =>
+        Boolean(quest) && typeof quest === "object" && (quest as Partial<QuestState>).id === fallback.id
+    );
+    if (!value) return fallback;
+    const rawQuestProgress =
+      value.progress && typeof value.progress === "object" ? value.progress : fallback.progress;
+    return {
+      id: fallback.id,
+      progress: Object.fromEntries(
+        Object.entries(rawQuestProgress).map(([key, amount]) => [key, finiteCount(amount)])
+      ),
+      rewardClaimed: value.rewardClaimed === true,
+    };
+  });
   const rawFacilities =
     rawBase.facilities && typeof rawBase.facilities === "object"
       ? (rawBase.facilities as Partial<BaseState["facilities"]>)
@@ -208,15 +257,28 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
     ownedPals,
     teamIds: [...new Set(teamIds)],
     progress: {
-      battlesWon: Number.isFinite(progress.battlesWon) ? Math.max(0, Math.floor(progress.battlesWon!)) : 0,
-      captures: Number.isFinite(progress.captures)
-        ? Math.max(0, Math.floor(progress.captures!))
-        : ownedPals.length,
+      battlesWon,
+      captures,
       unlockedRegions: [
         STARTING_REGION,
         ...new Set(
           (Array.isArray(progress.unlockedRegions) ? progress.unlockedRegions : []).filter(
             (region): region is WorldRegion => isWorldRegion(region) && region !== STARTING_REGION
+          )
+        ),
+      ],
+      quests,
+      defeatedBossIds: [
+        ...new Set(
+          (Array.isArray(progress.defeatedBossIds) ? progress.defeatedBossIds : []).filter(
+            (id): id is string => typeof id === "string"
+          )
+        ),
+      ],
+      unlockedAbilities: [
+        ...new Set(
+          (Array.isArray(progress.unlockedAbilities) ? progress.unlockedAbilities : []).filter(
+            (id): id is string => typeof id === "string"
           )
         ),
       ],

@@ -25,12 +25,15 @@ import { applyExperienceAward } from "../progression/progression";
 import { consumeCaptureOrb } from "../base/baseSystem";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
+import { bossesById } from "../battle/bosses";
+import { recordBossVictory, recordQuestEvent } from "../quests/questSystem";
 
 interface BattleSceneData {
   playerId: number;
   enemyId: number;
   enemyLevel?: number;
   playerUid?: string;
+  bossId?: string;
   returnTo?: {
     scene: string;
     data?: Record<string, unknown>;
@@ -53,6 +56,7 @@ export class BattleScene extends Phaser.Scene {
   private playerUid?: string;
   private enemyLevel = 1;
   private progressionMessage = "";
+  private bossId?: string;
 
   constructor() {
     super("BattleScene");
@@ -69,6 +73,8 @@ export class BattleScene extends Phaser.Scene {
     this.returnTo = data.returnTo;
     this.playerUid = data.playerUid;
     this.enemyLevel = Math.max(1, Math.min(50, Math.floor(data.enemyLevel ?? 1)));
+    this.bossId = data.bossId;
+    const boss = this.bossId ? bossesById.get(this.bossId) : undefined;
     const player = pals.find((pal) => pal.id === data.playerId);
     const enemy = pals.find((pal) => pal.id === data.enemyId);
     if (!player || !enemy) {
@@ -81,7 +87,8 @@ export class BattleScene extends Phaser.Scene {
     const instance = this.playerUid
       ? currentSave.ownedPals.find((pal) => pal.uid === this.playerUid && pal.speciesId === player.id)
       : undefined;
-    this.state = createBattle(player, enemy, instance?.level ?? 1, this.enemyLevel);
+    this.state = createBattle(player, enemy, instance?.level ?? 1, this.enemyLevel, boss?.rules);
+    if (boss) this.state.enemy.name = boss.name;
     if (this.playerUid) {
       if (instance) this.state.player.hp = Math.max(1, Math.min(this.state.player.maxHp, instance.currentHp));
     }
@@ -94,7 +101,7 @@ export class BattleScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.leaveBattle());
     this.add
-      .text(450, 28, "幻兽对决", {
+      .text(450, 28, boss ? "区域首领战" : "幻兽对决", {
         fontFamily: "sans-serif",
         fontSize: "30px",
         color: "#ffffff",
@@ -202,7 +209,7 @@ export class BattleScene extends Phaser.Scene {
       if (this.state.phase === "victory") {
         const currentSave = loadGame(localStorage);
         const enemyPal = pals.find((pal) => pal.id === this.state?.enemy.id);
-        if (enemyPal && !this.captureAttempted) {
+        if (enemyPal && !this.captureAttempted && !this.bossId) {
           const chance = calculateCaptureChance({
             hp: this.state.enemy.hp,
             maxHp: this.state.enemy.maxHp,
@@ -286,6 +293,8 @@ export class BattleScene extends Phaser.Scene {
     if (this.playerUid) save = updatePalCurrentHp(save, this.playerUid, this.state.player.hp);
     if (this.state.phase === "victory") {
       save = recordBattleWin(save);
+      save = recordQuestEvent(save, { type: "battle-win" });
+      if (this.bossId) save = recordBossVictory(save, this.bossId);
       const playerSpecies = pals.find((pal) => pal.id === this.state?.player.id);
       const enemySpecies = pals.find((pal) => pal.id === this.state?.enemy.id);
       if (this.playerUid && playerSpecies && enemySpecies) {
@@ -328,10 +337,11 @@ export class BattleScene extends Phaser.Scene {
     });
     if (result.success) {
       const rolledPassives = rollWildPassiveSkills(passiveSkills.map((skill) => skill.id));
-      const next = addCapturedPal(
+      const captured = addCapturedPal(
         consumed.save,
         createPalInstance(enemyPal, undefined, undefined, rolledPassives)
       );
+      const next = recordQuestEvent(captured, { type: "capture" });
       const persisted = saveGame(localStorage, next);
       this.captureMessage = persisted ? "捕获成功！" : "捕获成功，但存档失败";
     } else {

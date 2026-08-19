@@ -11,6 +11,7 @@ import {
 } from "../base/baseSystem";
 import { loadGame, saveGame, type BaseJob, type FacilityId, type GameSave } from "../player/playerState";
 import { startScene } from "./sceneLoader";
+import { recordQuestEvent } from "../quests/questSystem";
 
 const speciesById = new Map(pals.map((pal) => [pal.id, pal]));
 const JOB_LABELS: Record<BaseJob, string> = {
@@ -225,7 +226,7 @@ export class BaseScene extends Phaser.Scene {
   private craft(item: CraftableItem) {
     const next = craftItem(this.save, item);
     if (next === this.save) return this.persist("资源不足，无法制造");
-    this.save = next;
+    this.save = recordQuestEvent(next, { type: "craft" });
     this.persist("制造完成");
   }
 

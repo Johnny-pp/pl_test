@@ -20,6 +20,19 @@ export interface Combatant {
   energy: number;
   skillIds: string[];
   statuses: StatusInstance[];
+  boss?: BossCombatState;
+}
+
+export interface BossBattleRules {
+  id: string;
+  statusResistance: number;
+  phaseThreshold: number;
+  phaseAttackBoost: number;
+  phaseDefenseBoost: number;
+}
+
+export interface BossCombatState extends BossBattleRules {
+  phaseTriggered: boolean;
 }
 
 export interface StatusInstance {
@@ -73,7 +86,7 @@ export function getStatusLabel(status: StatusEffectType): string {
   return STATUS_LABELS[status];
 }
 
-export function createCombatant(pal: Pal, level = 1): Combatant {
+export function createCombatant(pal: Pal, level = 1, bossRules?: BossBattleRules): Combatant {
   const stats = getProgressionStats(pal, level);
   return {
     id: pal.id,
@@ -88,15 +101,22 @@ export function createCombatant(pal: Pal, level = 1): Combatant {
     energy: MAX_ENERGY,
     skillIds: [...(pal.activeSkills ?? [])],
     statuses: [],
+    boss: bossRules ? { ...bossRules, phaseTriggered: false } : undefined,
   };
 }
 
-export function createBattle(playerPal: Pal, enemyPal: Pal, playerLevel = 1, enemyLevel = 1): BattleState {
+export function createBattle(
+  playerPal: Pal,
+  enemyPal: Pal,
+  playerLevel = 1,
+  enemyLevel = 1,
+  enemyBoss?: BossBattleRules
+): BattleState {
   return {
     phase: "choosing",
     round: 1,
     player: createCombatant(playerPal, playerLevel),
-    enemy: createCombatant(enemyPal, enemyLevel),
+    enemy: createCombatant(enemyPal, enemyLevel, enemyBoss),
     log: [`野生的${enemyPal.name.zh}出现了！`],
   };
 }
@@ -161,7 +181,8 @@ function act(attacker: Combatant, defender: Combatant, skill: ActiveSkill, rando
   const result = calculateDamage(attacker, defender, skill, random);
   defender.hp = Math.max(0, defender.hp - result.damage);
   const messages = [result.message];
-  if (result.hit && skill.effect && random() * 100 < skill.effect.chance) {
+  const resistance = skill.effect?.target === "opponent" ? (defender.boss?.statusResistance ?? 0) : 0;
+  if (result.hit && skill.effect && random() * 100 < skill.effect.chance * (1 - resistance / 100)) {
     const target = skill.effect.target === "self" ? attacker : defender;
     const nextStatus: StatusInstance = {
       type: skill.effect.status,
@@ -178,6 +199,26 @@ function act(attacker: Combatant, defender: Combatant, skill: ActiveSkill, rando
     messages.push(`${target.name}获得状态：${STATUS_LABELS[nextStatus.type]}。`);
   }
   return messages;
+}
+
+function triggerBossPhase(fighter: Combatant): string[] {
+  const boss = fighter.boss;
+  if (!boss || boss.phaseTriggered || fighter.hp <= 0 || fighter.hp / fighter.maxHp > boss.phaseThreshold)
+    return [];
+  boss.phaseTriggered = true;
+  for (const boost of [
+    { type: "attack-up" as const, magnitude: boss.phaseAttackBoost },
+    { type: "defense-up" as const, magnitude: boss.phaseDefenseBoost },
+  ]) {
+    const existing = fighter.statuses.find((status) => status.type === boost.type);
+    if (existing) {
+      existing.turns = Math.max(existing.turns, 99);
+      existing.magnitude = Math.max(existing.magnitude, boost.magnitude);
+    } else {
+      fighter.statuses.push({ ...boost, turns: 99 });
+    }
+  }
+  return [`${fighter.name}引动山巅雷云，进入风暴阶段：攻击与防御提升！`];
 }
 
 function tickStatuses(fighter: Combatant): string[] {
@@ -228,12 +269,14 @@ export function resolveTurn(
       elements: [...state.player.elements],
       skillIds: [...state.player.skillIds],
       statuses: state.player.statuses.map((status) => ({ ...status })),
+      boss: state.player.boss ? { ...state.player.boss } : undefined,
     },
     enemy: {
       ...state.enemy,
       elements: [...state.enemy.elements],
       skillIds: [...state.enemy.skillIds],
       statuses: state.enemy.statuses.map((status) => ({ ...status })),
+      boss: state.enemy.boss ? { ...state.enemy.boss } : undefined,
     },
     log: [...state.log, `── 第 ${state.round} 回合 ──`],
   };
@@ -253,6 +296,8 @@ export function resolveTurn(
     if (attacker.hp <= 0 || defender.hp <= 0) continue;
     next.log.push(...act(attacker, defender, skill, random));
   }
+
+  next.log.push(...triggerBossPhase(next.enemy), ...triggerBossPhase(next.player));
 
   if (next.player.hp > 0 && next.enemy.hp > 0) {
     next.log.push(...tickStatuses(next.player), ...tickStatuses(next.enemy));
