@@ -8,7 +8,7 @@ import { filterAndSortPals, paginate, type DexSortKey } from "../dex/dexFilters"
 import { clampScroll, getMinScroll } from "../ui/scroll";
 import { preloadUiAssets, UI_ASSETS } from "../ui/assets";
 import { createTextButton } from "../ui/button";
-import { addEntranceMotion, addSceneTitle, installSceneTheme } from "../ui/theme";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 
 const CARD_W = 200;
 const CARD_H = 96;
@@ -37,7 +37,7 @@ interface Chip {
   txt: Phaser.GameObjects.Text;
 }
 
-const GRID_TOP = 218;
+const GRID_TOP = 250;
 const STORAGE_KEY = "pl_test_filter_state";
 
 interface SavedState {
@@ -147,7 +147,6 @@ export class DexScene extends Phaser.Scene {
 
     this.grid = this.add.container(0, 0);
     this.renderGrid();
-    addEntranceMotion(this, this.grid);
 
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       this.scrollY = clampScroll(this.grid.y, dy, this.scale.height, this.grid.height, GRID_TOP);

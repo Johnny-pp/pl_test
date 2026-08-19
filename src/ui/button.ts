@@ -46,16 +46,33 @@ export function createTextButton(scene: Phaser.Scene, options: TextButtonOptions
     .setOrigin(0.5)
     .setName("ui-theme-native-label");
   if (!options.disabled) {
-    background.on("pointerover", () =>
-      scene.tweens.add({ targets: [background, text], scale: 1.035, duration: 80 })
-    );
-    background.on("pointerout", () =>
-      scene.tweens.add({ targets: [background, text], scale: 1, duration: 80 })
-    );
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!reducedMotion) {
+      background.on("pointerover", () =>
+        scene.tweens.add({ targets: [background, text], scale: 1.035, duration: 80 })
+      );
+      background.on("pointerout", () =>
+        scene.tweens.add({ targets: [background, text], scale: 1, duration: 80 })
+      );
+    }
     background.on("pointerdown", () => {
-      scene.tweens.add({ targets: [background, text], scale: 0.96, yoyo: true, duration: 60 });
+      if (!reducedMotion)
+        scene.tweens.add({ targets: [background, text], scale: 0.96, yoyo: true, duration: 60 });
       options.onPress();
     });
   }
   return scene.add.container(0, 0, [background, text]);
+}
+
+export function createBackButton(scene: Phaser.Scene, label: string, onPress: () => void) {
+  return createTextButton(scene, {
+    x: 76,
+    y: 28,
+    width: 126,
+    height: 30,
+    label: `‹ ${label}`,
+    variant: "muted",
+    fontSize: "13px",
+    onPress,
+  }).setDepth(10);
 }

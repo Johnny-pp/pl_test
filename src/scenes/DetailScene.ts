@@ -8,7 +8,8 @@ import { getEffectiveness, getStatusLabel } from "../battle/battleEngine";
 import type { ElementType } from "../types/pal";
 import { startScene } from "./sceneLoader";
 import { preloadUiAssets, UI_ASSETS } from "../ui/assets";
-import { addEntranceMotion, addSceneTitle, installSceneTheme } from "../ui/theme";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
+import { createBackButton } from "../ui/button";
 
 const ALL_ELEMENTS = Object.keys(ELEMENT_LABELS) as ElementType[];
 
@@ -29,14 +30,7 @@ export class DetailScene extends Phaser.Scene {
     const pal = pals.find((p) => p.id === data.palId);
     const width = this.scale.width;
 
-    const back = this.add
-      .text(20, 18, "< 返回", {
-        fontFamily: "sans-serif",
-        fontSize: "20px",
-        color: "#4fc3f7",
-      })
-      .setInteractive({ useHandCursor: true });
-    back.on("pointerdown", () => void startScene(this, "DexScene"));
+    createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
 
     if (!pal) {
       this.add.text(width / 2, 200, "未找到该幻兽", { fontSize: "24px", color: "#fff" }).setOrigin(0.5);
@@ -53,7 +47,6 @@ export class DetailScene extends Phaser.Scene {
     }
 
     this.content = this.add.container(0, 0);
-    addEntranceMotion(this, this.content);
     this.content.add(addPalPortrait(this, pal.id, width - 125, 145, 190));
     let y = 70;
     const x = 40;

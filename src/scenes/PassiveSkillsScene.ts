@@ -10,7 +10,8 @@ import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 import { filterPassiveSkills, type PassiveCategoryFilter } from "../passives/passiveFilters";
 import { clampScroll } from "../ui/scroll";
-import { installSceneTheme } from "../ui/theme";
+import { createBackButton } from "../ui/button";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 
 const CATEGORIES: PassiveCategoryFilter[] = [
   "all",
@@ -36,14 +37,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
 
   create() {
     installSceneTheme(this);
-    const width = this.scale.width;
-    this.add
-      .text(width / 2, 28, "被动技能（全局）", {
-        fontFamily: "sans-serif",
-        fontSize: "28px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    addSceneTitle(this, "被动技能（全局）");
 
     this.makeBackButton();
     this.makeChips();
@@ -57,14 +51,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
   }
 
   private makeBackButton() {
-    const btn = this.add
-      .text(16, 24, "← 返回图鉴", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#9aa0c0",
-      })
-      .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => void startScene(this, "DexScene"));
+    createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
   }
 
   private makeChips() {

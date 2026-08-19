@@ -210,6 +210,10 @@ try {
     status: "幻兽图鉴。可搜索、筛选并前往战斗、队伍、地图、基地、任务或配种。",
     loadingVisible: false,
   });
+  await waitUntil(
+    sessionId,
+    "return window.__PL_TEST__.game.scene.getScene('DexScene').children.list.length > 10"
+  );
   await captureScreenshot(sessionId, "dex-desktop");
 
   await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [

@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { installSceneTheme } from "../ui/theme";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import {
   CRAFT_RECIPES,
@@ -14,7 +14,7 @@ import { loadGame, saveGame, type BaseJob, type FacilityId, type GameSave } from
 import { startScene } from "./sceneLoader";
 import { recordQuestEvent } from "../quests/questSystem";
 import { clampScroll } from "../ui/scroll";
-import { createTextButton } from "../ui/button";
+import { createBackButton, createTextButton } from "../ui/button";
 
 const speciesById = new Map(pals.map((pal) => [pal.id, pal]));
 const JOB_LABELS: Record<BaseJob, string> = {
@@ -45,21 +45,8 @@ export class BaseScene extends Phaser.Scene {
     installSceneTheme(this);
     this.save = simulateProduction(loadGame(localStorage), speciesById);
     saveGame(localStorage, this.save);
-    this.add
-      .text(18, 18, "< 返回图鉴", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#4fc3f7",
-      })
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => void startScene(this, "DexScene"));
-    this.add
-      .text(450, 28, "远征基地", {
-        fontFamily: "sans-serif",
-        fontSize: "30px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
+    addSceneTitle(this, "远征基地");
     this.content = this.add.container(0, 0);
     this.render();
     this.time.addEvent({ delay: 5000, loop: true, callback: () => this.settleProduction() });

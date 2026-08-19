@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { preloadUiAssets } from "../ui/assets";
-import { installSceneTheme } from "../ui/theme";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import { passiveSkills, passiveSkillsById } from "../data/loadPassiveSkills";
 import { BREEDING_FOOD_COST, breed, hatchEgg, previewOffspring } from "../breeding/breedingSystem";
@@ -9,7 +9,7 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 import { clampScroll } from "../ui/scroll";
-import { createTextButton } from "../ui/button";
+import { createBackButton, createTextButton } from "../ui/button";
 
 const QUALITY_LABELS: Record<EggQuality, string> = { common: "普通", fine: "优良", radiant: "辉光" };
 const QUALITY_COLORS: Record<EggQuality, number> = { common: 0x9aa0c0, fine: 0x4fc3f7, radiant: 0xffb300 };
@@ -33,21 +33,8 @@ export class BreedingScene extends Phaser.Scene {
   create() {
     installSceneTheme(this);
     this.save = loadGame(localStorage);
-    this.add
-      .text(18, 18, "< 返回图鉴", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#4fc3f7",
-      })
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => void startScene(this, "DexScene"));
-    this.add
-      .text(450, 28, "共鸣孵化所", {
-        fontFamily: "sans-serif",
-        fontSize: "30px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
+    addSceneTitle(this, "共鸣孵化所");
     this.content = this.add.container(0, 0);
     this.render();
     this.time.addEvent({ delay: 1000, loop: true, callback: () => this.render() });

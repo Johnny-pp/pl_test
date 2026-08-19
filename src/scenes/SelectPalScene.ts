@@ -1,11 +1,12 @@
 import Phaser from "phaser";
 import { preloadUiAssets } from "../ui/assets";
-import { installSceneTheme } from "../ui/theme";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import type { Pal } from "../types/pal";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
+import { createBackButton } from "../ui/button";
 
 const CARD_W = 190;
 const CARD_H = 105;
@@ -25,22 +26,8 @@ export class SelectPalScene extends Phaser.Scene {
   create() {
     installSceneTheme(this);
     const width = this.scale.width;
-    this.add
-      .text(18, 18, "< 返回图鉴", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#4fc3f7",
-      })
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => void startScene(this, "DexScene"));
-
-    this.add
-      .text(width / 2, 28, "选择出战幻兽", {
-        fontFamily: "sans-serif",
-        fontSize: "30px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
+    addSceneTitle(this, "选择出战幻兽");
     this.add
       .text(width / 2, 66, "选择后将随机遭遇一只野生幻兽", {
         fontFamily: "sans-serif",

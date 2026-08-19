@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { preloadUiAssets } from "../ui/assets";
-import { addEntranceMotion, installSceneTheme } from "../ui/theme";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import {
   TEAM_LIMIT,
@@ -20,7 +20,7 @@ import { getProgressionStats, getTotalExperienceForLevel, MAX_PAL_LEVEL } from "
 import { passiveSkillsById } from "../data/loadPassiveSkills";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 import { clampScroll } from "../ui/scroll";
-import { createTextButton } from "../ui/button";
+import { createBackButton, createTextButton } from "../ui/button";
 
 const GRID_TOP = 190;
 
@@ -41,24 +41,10 @@ export class TeamScene extends Phaser.Scene {
   create() {
     installSceneTheme(this);
     this.save = loadGame(localStorage);
-    this.add
-      .text(18, 18, "< 返回图鉴", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#4fc3f7",
-      })
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => void startScene(this, "DexScene"));
-    this.add
-      .text(450, 28, "我的幻兽队伍", {
-        fontFamily: "sans-serif",
-        fontSize: "30px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
+    addSceneTitle(this, "我的幻兽队伍");
 
     this.content = this.add.container(0, 0);
-    addEntranceMotion(this, this.content);
     this.render();
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       const rows = Math.ceil(this.save.ownedPals.length / 3);

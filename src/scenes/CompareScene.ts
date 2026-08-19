@@ -5,7 +5,8 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import type { Pal } from "../types/pal";
 import { startScene } from "./sceneLoader";
 import { preloadUiAssets } from "../ui/assets";
-import { installSceneTheme } from "../ui/theme";
+import { createBackButton } from "../ui/button";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 
 const STAT_ROWS: Array<[string, (pal: Pal) => number]> = [
   ["HP", (pal) => pal.stats.hp],
@@ -37,21 +38,8 @@ export class CompareScene extends Phaser.Scene {
     const initial = pals.findIndex((pal) => pal.id === data.palId);
     this.leftIndex = initial >= 0 ? initial : 0;
     this.rightIndex = (this.leftIndex + 1) % pals.length;
-    this.add
-      .text(18, 18, "< 返回图鉴", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#4fc3f7",
-      })
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => void startScene(this, "DexScene"));
-    this.add
-      .text(450, 28, "幻兽属性对比", {
-        fontFamily: "sans-serif",
-        fontSize: "30px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
+    addSceneTitle(this, "幻兽属性对比");
     this.content = this.add.container(0, 0);
     this.render();
   }

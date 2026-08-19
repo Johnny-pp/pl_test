@@ -2,7 +2,8 @@ import Phaser from "phaser";
 import { loadGame, saveGame, type GameSave } from "../player/playerState";
 import { claimQuestReward, getQuestViews, type QuestView } from "../quests/questSystem";
 import { startScene } from "./sceneLoader";
-import { installSceneTheme } from "../ui/theme";
+import { createBackButton, createTextButton } from "../ui/button";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 
 const STATUS_LABELS = {
   locked: "未激活",
@@ -23,21 +24,8 @@ export class QuestScene extends Phaser.Scene {
   create() {
     installSceneTheme(this);
     this.save = loadGame(localStorage);
-    this.add
-      .text(18, 18, "< 返回图鉴", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#4fc3f7",
-      })
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => void startScene(this, "DexScene"));
-    this.add
-      .text(450, 28, "远征任务", {
-        fontFamily: "sans-serif",
-        fontSize: "30px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
+    addSceneTitle(this, "远征任务");
     this.content = this.add.container(0, 0);
     this.render();
   }
@@ -108,18 +96,18 @@ export class QuestScene extends Phaser.Scene {
     });
     this.content.add([panel, title, status, description, goals, reward]);
     if (view.status === "complete") {
-      const button = this.add
-        .rectangle(745, y + 38, 120, 32, 0x6d5b18)
-        .setInteractive({ useHandCursor: true });
-      const label = this.add
-        .text(745, y + 38, "领取奖励", {
-          fontFamily: "sans-serif",
+      this.content.add(
+        createTextButton(this, {
+          x: 745,
+          y: y + 38,
+          width: 120,
+          height: 32,
+          label: "领取奖励",
+          variant: "accent",
           fontSize: "14px",
-          color: "#ffffff",
+          onPress: () => this.claim(view.definition.id),
         })
-        .setOrigin(0.5);
-      button.on("pointerdown", () => this.claim(view.definition.id));
-      this.content.add([button, label]);
+      );
     }
   }
 

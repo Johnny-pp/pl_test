@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { preloadUiAssets } from "../ui/assets";
-import { installSceneTheme } from "../ui/theme";
+import { addSceneTitle, installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import { activeSkillsById } from "../data/loadActiveSkills";
 import {
@@ -32,7 +32,7 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { bossesById } from "../battle/bosses";
 import { recordBossVictory, recordQuestEvent } from "../quests/questSystem";
-import { createTextButton } from "../ui/button";
+import { createBackButton, createTextButton } from "../ui/button";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 
 interface BattleSceneData {
@@ -128,21 +128,8 @@ export class BattleScene extends Phaser.Scene {
       this.state = createBattle(player, enemy, 1, this.enemyLevel, boss?.rules);
     }
     if (boss) this.state.enemy.name = boss.name;
-    this.add
-      .text(18, 18, "< 退出战斗", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#4fc3f7",
-      })
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.leaveBattle());
-    this.add
-      .text(450, 28, boss ? "区域首领战" : "幻兽对决", {
-        fontFamily: "sans-serif",
-        fontSize: "30px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    createBackButton(this, "退出战斗", () => this.leaveBattle());
+    addSceneTitle(this, boss ? "区域首领战" : "幻兽对决");
     this.roundText = this.add
       .text(450, 66, "", {
         fontFamily: "sans-serif",
