@@ -85,6 +85,13 @@
 - `src/passives/passiveEffects.ts` 是战斗和基地共享的唯一被动数值映射层，统一执行去重、叠加上限和冲突顺序。
 - 已实装攻击、防御、速度、承伤、能耗、元素增伤/抗性、工作速度和资源产量；其余被动保留展示与配种继承并在界面明确标注。
 
+## 长期循环与工程验收
+- `src/balance/balanceBaseline.ts` 记录首领推荐等级、目标战斗场数和孵化时长基线；自动化测试从全新存档模拟任务奖励、高地解锁、采集制造和首领奖励。
+- 规模测试使用 500 条模拟物种和 500 条模拟技能反复执行筛选与分页，并验证 500 个玩家个体的备份小于 1 MB且可恢复。
+- 图鉴筛选/排序/分页、长列表滚动和常用文本按钮已从场景中抽取到 `src/dex/` 与 `src/ui/`，供后续区域和内容扩展复用。
+- `npm run test:browser` 使用 Geckodriver 和无头 Firefox 验收任务、基地、探索、战斗升级和存档恢复，同时检查键盘、屏幕方向键、390×844 移动端画布和场景状态播报。
+- 浏览器测试桥接仅在 `?e2e=1` 时启用；常规首屏仍只加载图鉴场景，Phaser 引擎和其他场景保持独立异步块。
+
 ## 被动技能全局表
 - 文件：`data/passive-skills.json`，对应 Schema：`schema/passive-skill.schema.json`（draft 2020-12）。
 - 字段：`id`(slug)、`name{zh,en}`、`category`(attack/defense/work/move/element/resource/other)、`description`(效果描述)、`tier`(common/rare/legendary)。
