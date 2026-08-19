@@ -4,8 +4,11 @@ import { activeSkillsById } from "../data/loadActiveSkills";
 import {
   chooseEnemySkill,
   createBattle,
+  createPartyBattle,
+  getSkillEnergyCost,
   getStatusLabel,
   resolveTurn,
+  switchPlayer,
   type BattleState,
   type Combatant,
 } from "../battle/battleEngine";
@@ -27,6 +30,7 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { bossesById } from "../battle/bosses";
 import { recordBossVictory, recordQuestEvent } from "../quests/questSystem";
+import { describePassiveBonuses } from "../passives/passiveEffects";
 
 interface BattleSceneData {
   playerId: number;
@@ -57,6 +61,11 @@ export class BattleScene extends Phaser.Scene {
   private enemyLevel = 1;
   private progressionMessage = "";
   private bossId?: string;
+  private partyUids: string[] = [];
+  private participatedUids = new Set<string>();
+  private choosingSwitch = false;
+  private playerPanel?: Phaser.GameObjects.Container;
+  private displayedPlayerIndex = -1;
 
   constructor() {
     super("BattleScene");
@@ -70,6 +79,10 @@ export class BattleScene extends Phaser.Scene {
     this.captureAttempted = false;
     this.captureMessage = "";
     this.progressionMessage = "";
+    this.partyUids = [];
+    this.participatedUids.clear();
+    this.choosingSwitch = false;
+    this.displayedPlayerIndex = -1;
     this.returnTo = data.returnTo;
     this.playerUid = data.playerUid;
     this.enemyLevel = Math.max(1, Math.min(50, Math.floor(data.enemyLevel ?? 1)));
@@ -87,11 +100,29 @@ export class BattleScene extends Phaser.Scene {
     const instance = this.playerUid
       ? currentSave.ownedPals.find((pal) => pal.uid === this.playerUid && pal.speciesId === player.id)
       : undefined;
-    this.state = createBattle(player, enemy, instance?.level ?? 1, this.enemyLevel, boss?.rules);
-    if (boss) this.state.enemy.name = boss.name;
-    if (this.playerUid) {
-      if (instance) this.state.player.hp = Math.max(1, Math.min(this.state.player.maxHp, instance.currentHp));
+    if (instance) {
+      const orderedUids = [instance.uid, ...currentSave.teamIds.filter((uid) => uid !== instance.uid)];
+      const members = orderedUids.flatMap((uid) => {
+        const owned = currentSave.ownedPals.find((pal) => pal.uid === uid);
+        const species = owned ? pals.find((pal) => pal.id === owned.speciesId) : undefined;
+        if (!owned || !species) return [];
+        this.partyUids.push(owned.uid);
+        return [
+          {
+            pal: species,
+            level: owned.level,
+            currentHp: owned.currentHp,
+            passiveSkillIds: owned.passiveSkillIds,
+          },
+        ];
+      });
+      this.state = createPartyBattle(members, enemy, this.enemyLevel, boss?.rules);
+      const activeUid = this.partyUids[this.state.activePlayerIndex];
+      if (activeUid) this.participatedUids.add(activeUid);
+    } else {
+      this.state = createBattle(player, enemy, 1, this.enemyLevel, boss?.rules);
     }
+    if (boss) this.state.enemy.name = boss.name;
     this.add
       .text(18, 18, "< 退出战斗", {
         fontFamily: "sans-serif",
@@ -116,7 +147,8 @@ export class BattleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.makeCombatantPanel(655, 150, this.state.enemy, false);
-    this.makeCombatantPanel(245, 330, this.state.player, true);
+    this.playerPanel = this.makeCombatantPanel(245, 330, this.state.player, true);
+    this.displayedPlayerIndex = this.state.activePlayerIndex;
 
     this.add.rectangle(450, 470, 840, 128, 0x0f1830).setStrokeStyle(1, 0x0f3460);
     this.logText = this.add.text(48, 416, "", {
@@ -130,12 +162,19 @@ export class BattleScene extends Phaser.Scene {
     this.render();
   }
 
-  private makeCombatantPanel(x: number, y: number, fighter: Combatant, player: boolean) {
+  private makeCombatantPanel(
+    x: number,
+    y: number,
+    fighter: Combatant,
+    player: boolean
+  ): Phaser.GameObjects.Container {
     const element = fighter.elements[0] ?? "neutral";
     const contentX = player ? x - 55 : x - 145;
-    this.add.rectangle(x, y, 350, 130, 0x16213e).setStrokeStyle(2, ELEMENT_COLORS[element]);
-    addPalPortrait(this, fighter.id, x + (player ? -120 : 120), y + 8, 110);
-    this.add.text(
+    const background = this.add
+      .rectangle(x, y, 350, 130, 0x16213e)
+      .setStrokeStyle(2, ELEMENT_COLORS[element]);
+    const portrait = addPalPortrait(this, fighter.id, x + (player ? -120 : 120), y + 8, 110);
+    const name = this.add.text(
       contentX,
       y - 48,
       `${fighter.name} Lv.${fighter.level}  ·  ${fighter.elements.map((e) => ELEMENT_LABELS[e]).join("/")}`,
@@ -145,7 +184,7 @@ export class BattleScene extends Phaser.Scene {
         color: "#ffffff",
       }
     );
-    this.add.rectangle(contentX, y, 200, 16, 0x301f38).setOrigin(0, 0.5);
+    const hpBackground = this.add.rectangle(contentX, y, 200, 16, 0x301f38).setOrigin(0, 0.5);
     const hp = this.add.rectangle(contentX, y, 200, 16, 0x66bb6a).setOrigin(0, 0.5);
     const status = this.add.text(contentX, y + 18, "", {
       fontFamily: "sans-serif",
@@ -159,10 +198,16 @@ export class BattleScene extends Phaser.Scene {
       this.enemyHp = hp;
       this.enemyStatus = status;
     }
+    return this.add.container(0, 0, [background, portrait, name, hpBackground, hp, status]);
   }
 
   private render() {
     if (!this.state) return;
+    if (this.displayedPlayerIndex !== this.state.activePlayerIndex) {
+      this.playerPanel?.destroy(true);
+      this.playerPanel = this.makeCombatantPanel(245, 330, this.state.player, true);
+      this.displayedPlayerIndex = this.state.activePlayerIndex;
+    }
     this.roundText.setText(`第 ${this.state.round} 回合`);
     this.updateFighter(this.state.player, this.playerHp, this.playerStatus);
     this.updateFighter(this.state.enemy, this.enemyHp, this.enemyStatus);
@@ -178,8 +223,9 @@ export class BattleScene extends Phaser.Scene {
     hpBar.displayWidth = 200 * (fighter.hp / fighter.maxHp);
     hpBar.setFillStyle(fighter.hp / fighter.maxHp > 0.35 ? 0x66bb6a : 0xef5350);
     const statusNames = fighter.statuses.map((effect) => getStatusLabel(effect.type)).join("、");
+    const passiveText = describePassiveBonuses(fighter.passiveSkillIds).slice(0, 2).join("、");
     status.setText(
-      `HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100${statusNames ? `    ${statusNames}` : ""}`
+      `HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100${statusNames ? `    ${statusNames}` : ""}${passiveText ? `\n被动：${passiveText}` : ""}`
     );
   }
 
@@ -248,18 +294,31 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
 
+    if (this.state.phase === "switching" || this.choosingSwitch) {
+      this.renderPartyChoices(this.state.phase === "switching");
+      return;
+    }
+
     const label = this.add.text(42, 548, "选择技能", {
       fontFamily: "sans-serif",
       fontSize: "18px",
       color: "#ffffff",
     });
     this.actionLayer.add(label);
+    if (this.state.playerParty.length > 1) {
+      const switchButton = this.makeNavButton(820, 548, "更换队员", () => {
+        this.choosingSwitch = true;
+        this.renderActions();
+      });
+      this.actionLayer.add(switchButton);
+    }
     const skills = this.state.player.skillIds
       .map((id) => activeSkillsById.get(id))
       .filter((skill): skill is ActiveSkill => Boolean(skill));
     skills.forEach((skill, index) => {
       const x = 150 + index * 185;
-      const affordable = this.state ? this.state.player.energy >= skill.energyCost : false;
+      const cost = this.state ? getSkillEnergyCost(this.state.player, skill) : skill.energyCost;
+      const affordable = this.state ? this.state.player.energy >= cost : false;
       const bg = this.add
         .rectangle(x, 594, 165, 58, affordable ? 0x20345c : 0x29293b)
         .setStrokeStyle(1, ELEMENT_COLORS[skill.element])
@@ -272,7 +331,7 @@ export class BattleScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
       const stats = this.add
-        .text(x, 606, `威力 ${skill.power} · 能量 ${skill.energyCost}`, {
+        .text(x, 606, `威力 ${skill.power} · 能量 ${cost}`, {
           fontFamily: "sans-serif",
           fontSize: "12px",
           color: "#9aa0c0",
@@ -283,41 +342,109 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
+  private renderPartyChoices(forced: boolean) {
+    if (!this.state) return;
+    const label = this.add.text(42, 535, forced ? "当前队员倒下，请选择替补" : "更换队员将占用本回合", {
+      fontFamily: "sans-serif",
+      fontSize: "17px",
+      color: forced ? "#ff8a80" : "#ffffff",
+    });
+    this.actionLayer.add(label);
+    this.state.playerParty.forEach((fighter, index) => {
+      const active = index === this.state?.activePlayerIndex;
+      const available = fighter.hp > 0 && !active;
+      const x = 82 + index * 145;
+      const bg = this.add
+        .rectangle(x, 590, 132, 58, available ? 0x203f5c : 0x29293b)
+        .setStrokeStyle(1, active ? 0xffd54f : 0x4f6280);
+      if (available) bg.setInteractive({ useHandCursor: true }).on("pointerdown", () => this.switchTo(index));
+      const name = this.add
+        .text(x, 580, `${active ? "[出战] " : ""}${fighter.name}`, {
+          fontFamily: "sans-serif",
+          fontSize: "13px",
+          color: available || active ? "#ffffff" : "#777b8d",
+        })
+        .setOrigin(0.5);
+      const hp = this.add
+        .text(x, 603, `Lv.${fighter.level} · HP ${fighter.hp}/${fighter.maxHp}`, {
+          fontFamily: "sans-serif",
+          fontSize: "11px",
+          color: fighter.hp > 0 ? "#9ccc65" : "#ff8a80",
+        })
+        .setOrigin(0.5);
+      this.actionLayer.add([bg, name, hp]);
+    });
+    if (!forced) {
+      const cancel = this.makeNavButton(820, 535, "取消", () => {
+        this.choosingSwitch = false;
+        this.renderActions();
+      });
+      this.actionLayer.add(cancel);
+    }
+  }
+
   private takeTurn(playerSkill: ActiveSkill) {
     if (!this.state || this.busy || this.state.phase !== "choosing") return;
     const enemySkill = chooseEnemySkill(this.state.enemy, activeSkillsById);
     if (!enemySkill) return;
     this.busy = true;
     this.state = resolveTurn(this.state, playerSkill, enemySkill);
-    let save = loadGame(localStorage);
-    if (this.playerUid) save = updatePalCurrentHp(save, this.playerUid, this.state.player.hp);
+    let save = this.persistPartyHealth(loadGame(localStorage));
     if (this.state.phase === "victory") {
       save = recordBattleWin(save);
       save = recordQuestEvent(save, { type: "battle-win" });
       if (this.bossId) save = recordBossVictory(save, this.bossId);
-      const playerSpecies = pals.find((pal) => pal.id === this.state?.player.id);
       const enemySpecies = pals.find((pal) => pal.id === this.state?.enemy.id);
-      if (this.playerUid && playerSpecies && enemySpecies) {
-        const result = applyExperienceAward(
-          save.ownedPals,
-          this.playerUid,
-          playerSpecies,
-          this.enemyLevel,
-          enemySpecies.rarity
-        );
-        if (result.award) {
+      if (enemySpecies) {
+        const messages: string[] = [];
+        for (const uid of this.participatedUids) {
+          const owned = save.ownedPals.find((pal) => pal.uid === uid);
+          const playerSpecies = owned ? pals.find((pal) => pal.id === owned.speciesId) : undefined;
+          if (!owned || !playerSpecies) continue;
+          const result = applyExperienceAward(
+            save.ownedPals,
+            uid,
+            playerSpecies,
+            this.enemyLevel,
+            enemySpecies.rarity
+          );
+          if (!result.award) continue;
           save = { ...save, ownedPals: result.ownedPals };
-          const levelText = result.award.levelsGained > 0 ? ` · 升至 Lv.${result.award.newLevel}` : "";
-          const nextText = result.award.nextLevelExperience
-            ? ` · 下级还需 ${result.award.nextLevelExperience - result.award.instance.experience}`
-            : " · 已满级";
-          this.progressionMessage = `获得 ${result.award.gained} 经验${levelText}${nextText}`;
+          messages.push(
+            `${playerSpecies.name.zh} +${result.award.gained}${result.award.levelsGained > 0 ? ` → Lv.${result.award.newLevel}` : ""}`
+          );
         }
+        this.progressionMessage = messages.length > 0 ? `经验：${messages.join(" · ")}` : "";
       }
     }
     saveGame(localStorage, save);
     this.render();
     this.busy = false;
+  }
+
+  private switchTo(index: number) {
+    if (!this.state || this.busy) return;
+    const forced = this.state.phase === "switching";
+    const enemySkill = forced ? undefined : chooseEnemySkill(this.state.enemy, activeSkillsById);
+    if (!forced && !enemySkill) return;
+    const next = switchPlayer(this.state, index, enemySkill);
+    if (next === this.state) return;
+    this.state = next;
+    this.choosingSwitch = false;
+    const activeUid = this.partyUids[this.state.activePlayerIndex];
+    if (activeUid) this.participatedUids.add(activeUid);
+    saveGame(localStorage, this.persistPartyHealth(loadGame(localStorage)));
+    this.render();
+  }
+
+  private persistPartyHealth(save: ReturnType<typeof loadGame>) {
+    if (!this.state) return save;
+    let next = save;
+    this.state.playerParty.forEach((fighter, index) => {
+      const uid = this.partyUids[index];
+      if (uid) next = updatePalCurrentHp(next, uid, fighter.hp);
+    });
+    return next;
   }
 
   private captureEnemy(enemyPal: (typeof pals)[number]) {

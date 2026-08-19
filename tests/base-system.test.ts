@@ -42,6 +42,21 @@ test("时间生产受适性和工作速度影响并更新结算时间", () => {
   assert.equal(produced.base.lastUpdatedAt, 60 * 60_000);
 });
 
+test("工作与资源被动会按统一规则提高基地实际产量", () => {
+  const normalInstance = createPalInstance(worker, () => "normal-worker");
+  const passiveInstance = createPalInstance(worker, () => "passive-worker", undefined, [
+    "master_crafter",
+    "trail_sense",
+  ]);
+  let normal = addCapturedPal(createEmptySave(0), normalInstance);
+  let boosted = addCapturedPal(createEmptySave(0), passiveInstance);
+  normal = assignWorker(normal, normalInstance.uid, "planting", species);
+  boosted = assignWorker(boosted, passiveInstance.uid, "planting", species);
+  const normalFood = simulateProduction(normal, species, 60 * 60_000).base.resources.food;
+  const boostedFood = simulateProduction(boosted, species, 60 * 60_000).base.resources.food;
+  assert.ok(boostedFood > normalFood);
+});
+
 test("制造物品会消耗资源并增加库存", () => {
   const save = createEmptySave(0);
   save.base.resources.crystal = 10;

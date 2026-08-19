@@ -1,11 +1,12 @@
 import type { ActiveSkill, StatusEffectType } from "../types/activeSkill";
 import type { ElementType, Pal } from "../types/pal";
 import { getProgressionStats } from "../progression/progression.ts";
+import { getPassiveBonuses, type PassiveBonuses } from "../passives/passiveEffects.ts";
 
 export const MAX_ENERGY = 100;
 export const ROUND_ENERGY_RECOVERY = 14;
 
-export type BattlePhase = "choosing" | "resolving" | "victory" | "defeat";
+export type BattlePhase = "choosing" | "switching" | "resolving" | "victory" | "defeat";
 
 export interface Combatant {
   id: number;
@@ -20,6 +21,8 @@ export interface Combatant {
   energy: number;
   skillIds: string[];
   statuses: StatusInstance[];
+  passiveSkillIds: string[];
+  passiveBonuses: PassiveBonuses;
   boss?: BossCombatState;
 }
 
@@ -45,8 +48,17 @@ export interface BattleState {
   phase: BattlePhase;
   round: number;
   player: Combatant;
+  playerParty: Combatant[];
+  activePlayerIndex: number;
   enemy: Combatant;
   log: string[];
+}
+
+export interface PartyMemberInput {
+  pal: Pal;
+  level: number;
+  currentHp?: number;
+  passiveSkillIds?: string[];
 }
 
 export interface SkillResult {
@@ -86,8 +98,14 @@ export function getStatusLabel(status: StatusEffectType): string {
   return STATUS_LABELS[status];
 }
 
-export function createCombatant(pal: Pal, level = 1, bossRules?: BossBattleRules): Combatant {
+export function createCombatant(
+  pal: Pal,
+  level = 1,
+  bossRules?: BossBattleRules,
+  passiveSkillIds: string[] = []
+): Combatant {
   const stats = getProgressionStats(pal, level);
+  const passiveBonuses = getPassiveBonuses(passiveSkillIds);
   return {
     id: pal.id,
     name: pal.name.zh,
@@ -95,12 +113,14 @@ export function createCombatant(pal: Pal, level = 1, bossRules?: BossBattleRules
     elements: [...pal.elements],
     maxHp: stats.maxHp,
     hp: stats.maxHp,
-    attack: stats.attack,
-    defense: stats.defense,
-    speed: pal.stats.moveSpeed,
+    attack: Math.max(1, Math.round(stats.attack * (1 + passiveBonuses.attackPercent / 100))),
+    defense: Math.max(1, Math.round(stats.defense * (1 + passiveBonuses.defensePercent / 100))),
+    speed: Math.max(1, Math.round(pal.stats.moveSpeed * (1 + passiveBonuses.speedPercent / 100))),
     energy: MAX_ENERGY,
     skillIds: [...(pal.activeSkills ?? [])],
     statuses: [],
+    passiveSkillIds: [...new Set(passiveSkillIds)],
+    passiveBonuses,
     boss: bossRules ? { ...bossRules, phaseTriggered: false } : undefined,
   };
 }
@@ -112,12 +132,35 @@ export function createBattle(
   enemyLevel = 1,
   enemyBoss?: BossBattleRules
 ): BattleState {
+  return createPartyBattle([{ pal: playerPal, level: playerLevel }], enemyPal, enemyLevel, enemyBoss);
+}
+
+export function createPartyBattle(
+  members: PartyMemberInput[],
+  enemyPal: Pal,
+  enemyLevel = 1,
+  enemyBoss?: BossBattleRules
+): BattleState {
+  const playerParty = members.map((member) => {
+    const fighter = createCombatant(member.pal, member.level, undefined, member.passiveSkillIds);
+    if (member.currentHp !== undefined)
+      fighter.hp = Math.max(0, Math.min(fighter.maxHp, Math.floor(member.currentHp)));
+    return fighter;
+  });
+  const activePlayerIndex = Math.max(
+    0,
+    playerParty.findIndex((fighter) => fighter.hp > 0)
+  );
+  const player = playerParty[activePlayerIndex] ?? createCombatant(enemyPal, 1);
+  const canBattle = playerParty.some((fighter) => fighter.hp > 0);
   return {
-    phase: "choosing",
+    phase: canBattle ? "choosing" : "defeat",
     round: 1,
-    player: createCombatant(playerPal, playerLevel),
+    player,
+    playerParty: playerParty.length > 0 ? playerParty : [player],
+    activePlayerIndex,
     enemy: createCombatant(enemyPal, enemyLevel, enemyBoss),
-    log: [`野生的${enemyPal.name.zh}出现了！`],
+    log: [`野生的${enemyPal.name.zh}出现了！`, ...(canBattle ? [] : ["队伍中没有可以战斗的幻兽。"])],
   };
 }
 
@@ -153,7 +196,15 @@ export function calculateDamage(
   const attack = attacker.attack * (1 + attackBoost / 100);
   const defense = Math.max(1, defender.defense * (1 + defenseBoost / 100));
   const base = 2 + (attack * skill.power) / (defense * 2);
-  const damage = Math.max(1, Math.floor(base * sameTypeBonus * effectiveness * variance));
+  const elementBonus = 1 + (attacker.passiveBonuses.elementDamagePercent[skill.element] ?? 0) / 100;
+  const elementResistance = 1 - (defender.passiveBonuses.elementResistancePercent[skill.element] ?? 0) / 100;
+  const damageTaken = 1 + defender.passiveBonuses.damageTakenPercent / 100;
+  const damage = Math.max(
+    1,
+    Math.floor(
+      base * sameTypeBonus * effectiveness * variance * elementBonus * elementResistance * damageTaken
+    )
+  );
   const effectText = effectiveness > 1 ? "效果绝佳！" : effectiveness < 1 ? "效果不佳。" : "";
 
   return {
@@ -162,6 +213,10 @@ export function calculateDamage(
     effectiveness,
     message: `${attacker.name}使用${skill.name.zh}，造成 ${damage} 点伤害。${effectText}`,
   };
+}
+
+export function getSkillEnergyCost(fighter: Combatant, skill: ActiveSkill): number {
+  return Math.max(0, Math.ceil(skill.energyCost * (1 + fighter.passiveBonuses.energyCostPercent / 100)));
 }
 
 function act(attacker: Combatant, defender: Combatant, skill: ActiveSkill, random: RandomSource): string[] {
@@ -173,11 +228,12 @@ function act(attacker: Combatant, defender: Combatant, skill: ActiveSkill, rando
   if (!attacker.skillIds.includes(skill.id)) {
     return [`${attacker.name}尚未学会${skill.name.zh}。`];
   }
-  if (attacker.energy < skill.energyCost) {
+  const energyCost = getSkillEnergyCost(attacker, skill);
+  if (attacker.energy < energyCost) {
     return [`${attacker.name}的能量不足，行动失败。`];
   }
 
-  attacker.energy -= skill.energyCost;
+  attacker.energy -= energyCost;
   const result = calculateDamage(attacker, defender, skill, random);
   defender.hp = Math.max(0, defender.hp - result.damage);
   const messages = [result.message];
@@ -235,6 +291,50 @@ function tickStatuses(fighter: Combatant): string[] {
   return messages;
 }
 
+function cloneCombatant(fighter: Combatant): Combatant {
+  return {
+    ...fighter,
+    elements: [...fighter.elements],
+    skillIds: [...fighter.skillIds],
+    statuses: fighter.statuses.map((status) => ({ ...status })),
+    passiveSkillIds: [...fighter.passiveSkillIds],
+    passiveBonuses: {
+      ...fighter.passiveBonuses,
+      elementDamagePercent: { ...fighter.passiveBonuses.elementDamagePercent },
+      elementResistancePercent: { ...fighter.passiveBonuses.elementResistancePercent },
+    },
+    boss: fighter.boss ? { ...fighter.boss } : undefined,
+  };
+}
+
+function cloneBattleState(state: BattleState): BattleState {
+  const playerParty = state.playerParty.map(cloneCombatant);
+  return {
+    ...state,
+    playerParty,
+    player: playerParty[state.activePlayerIndex],
+    enemy: cloneCombatant(state.enemy),
+    log: [...state.log],
+  };
+}
+
+function finishRound(next: BattleState): BattleState {
+  if (next.enemy.hp <= 0) {
+    next.phase = "victory";
+    next.log.push(`战斗胜利！${next.enemy.name}失去了战斗能力。`);
+  } else if (next.player.hp <= 0) {
+    next.log.push(`${next.player.name}失去了战斗能力。`);
+    next.phase = next.playerParty.some((fighter) => fighter.hp > 0) ? "switching" : "defeat";
+    if (next.phase === "switching") next.log.push("请选择一名仍可战斗的队员继续出战。");
+  } else {
+    next.phase = "choosing";
+    next.round += 1;
+    next.player.energy = Math.min(MAX_ENERGY, next.player.energy + ROUND_ENERGY_RECOVERY);
+    next.enemy.energy = Math.min(MAX_ENERGY, next.enemy.energy + ROUND_ENERGY_RECOVERY);
+  }
+  return next;
+}
+
 function goesFirst(
   player: Combatant,
   enemy: Combatant,
@@ -261,25 +361,9 @@ export function resolveTurn(
 ): BattleState {
   if (state.phase !== "choosing") return state;
 
-  const next: BattleState = {
-    ...state,
-    phase: "resolving",
-    player: {
-      ...state.player,
-      elements: [...state.player.elements],
-      skillIds: [...state.player.skillIds],
-      statuses: state.player.statuses.map((status) => ({ ...status })),
-      boss: state.player.boss ? { ...state.player.boss } : undefined,
-    },
-    enemy: {
-      ...state.enemy,
-      elements: [...state.enemy.elements],
-      skillIds: [...state.enemy.skillIds],
-      statuses: state.enemy.statuses.map((status) => ({ ...status })),
-      boss: state.enemy.boss ? { ...state.enemy.boss } : undefined,
-    },
-    log: [...state.log, `── 第 ${state.round} 回合 ──`],
-  };
+  const next = cloneBattleState(state);
+  next.phase = "resolving";
+  next.log.push(`── 第 ${state.round} 回合 ──`);
 
   const playerFirst = goesFirst(next.player, next.enemy, playerSkill, enemySkill, random);
   const actions: Array<[Combatant, Combatant, ActiveSkill]> = playerFirst
@@ -303,20 +387,41 @@ export function resolveTurn(
     next.log.push(...tickStatuses(next.player), ...tickStatuses(next.enemy));
   }
 
-  if (next.enemy.hp <= 0) {
-    next.phase = "victory";
-    next.log.push(`战斗胜利！${next.enemy.name}失去了战斗能力。`);
-  } else if (next.player.hp <= 0) {
-    next.phase = "defeat";
-    next.log.push(`${next.player.name}失去了战斗能力。`);
-  } else {
+  return finishRound(next);
+}
+
+export function switchPlayer(
+  state: BattleState,
+  nextIndex: number,
+  enemySkill?: ActiveSkill,
+  random: RandomSource = Math.random
+): BattleState {
+  if (state.phase !== "choosing" && state.phase !== "switching") return state;
+  if (
+    nextIndex === state.activePlayerIndex ||
+    nextIndex < 0 ||
+    nextIndex >= state.playerParty.length ||
+    state.playerParty[nextIndex].hp <= 0
+  )
+    return state;
+  const forced = state.phase === "switching";
+  const next = cloneBattleState(state);
+  const previousName = next.player.name;
+  next.activePlayerIndex = nextIndex;
+  next.player = next.playerParty[nextIndex];
+  next.log.push(`${previousName}退回队伍，${next.player.name}上场！`);
+  if (forced) {
     next.phase = "choosing";
-    next.round += 1;
-    next.player.energy = Math.min(MAX_ENERGY, next.player.energy + ROUND_ENERGY_RECOVERY);
-    next.enemy.energy = Math.min(MAX_ENERGY, next.enemy.energy + ROUND_ENERGY_RECOVERY);
+    return next;
   }
 
-  return next;
+  next.phase = "resolving";
+  next.log.push(`── 第 ${state.round} 回合：更换队员 ──`);
+  if (enemySkill && next.enemy.hp > 0) next.log.push(...act(next.enemy, next.player, enemySkill, random));
+  next.log.push(...triggerBossPhase(next.enemy), ...triggerBossPhase(next.player));
+  if (next.player.hp > 0 && next.enemy.hp > 0)
+    next.log.push(...tickStatuses(next.player), ...tickStatuses(next.enemy));
+  return finishRound(next);
 }
 
 export function chooseEnemySkill(
@@ -326,7 +431,9 @@ export function chooseEnemySkill(
 ): ActiveSkill | undefined {
   const affordable = enemy.skillIds
     .map((id) => skillsById.get(id))
-    .filter((skill): skill is ActiveSkill => skill !== undefined && skill.energyCost <= enemy.energy);
+    .filter(
+      (skill): skill is ActiveSkill => skill !== undefined && getSkillEnergyCost(enemy, skill) <= enemy.energy
+    );
   const fallback = enemy.skillIds
     .map((id) => skillsById.get(id))
     .find((skill): skill is ActiveSkill => Boolean(skill));

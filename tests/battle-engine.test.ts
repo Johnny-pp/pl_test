@@ -4,9 +4,12 @@ import {
   calculateDamage,
   createBattle,
   createCombatant,
+  createPartyBattle,
   ELEMENT_ADVANTAGES,
   getEffectiveness,
+  getSkillEnergyCost,
   resolveTurn,
+  switchPlayer,
 } from "../src/battle/battleEngine.ts";
 import type { ActiveSkill } from "../src/types/activeSkill.ts";
 import type { Pal } from "../src/types/pal.ts";
@@ -40,6 +43,63 @@ test("元素克制同时支持优势与抗性", () => {
   assert.equal(getEffectiveness("fire", ["grass"]), 2);
   assert.equal(getEffectiveness("grass", ["fire"]), 0.5);
   assert.equal(getEffectiveness("neutral", ["fire"]), 1);
+});
+
+test("战斗被动会统一影响伤害、承伤和技能能耗", () => {
+  const source = pal(1, "攻击方", "fire");
+  const target = pal(2, "防守方", "neutral");
+  const normal = createCombatant(source);
+  const boosted = createCombatant(source, 1, undefined, ["sharp_focus", "flame_attuned", "overcharge"]);
+  const defender = createCombatant(target);
+  const guarded = createCombatant(target, 1, undefined, ["stonehide", "flexible_guard", "emberproof"]);
+  const normalDamage = calculateDamage(normal, defender, skill, () => 0).damage;
+  const boostedDamage = calculateDamage(boosted, defender, skill, () => 0).damage;
+  const guardedDamage = calculateDamage(normal, guarded, skill, () => 0).damage;
+  assert.ok(boostedDamage > normalDamage);
+  assert.ok(guardedDamage < normalDamage);
+  assert.equal(getSkillEnergyCost(boosted, skill), 22);
+});
+
+test("主动换宠占用回合且新上场队员承受敌方行动", () => {
+  const first = pal(1, "一号", "fire", 100);
+  const second = pal(2, "二号", "water", 120);
+  const enemy = pal(3, "敌人", "grass", 80);
+  const state = createPartyBattle(
+    [
+      { pal: first, level: 1 },
+      { pal: second, level: 1 },
+    ],
+    enemy
+  );
+  const switched = switchPlayer(state, 1, skill, () => 0);
+  assert.equal(switched.activePlayerIndex, 1);
+  assert.equal(switched.phase, "choosing");
+  assert.equal(switched.round, 2);
+  assert.ok(switched.player.hp < switched.player.maxHp);
+  assert.equal(state.activePlayerIndex, 0);
+});
+
+test("当前队员倒下后强制换宠不额外受击，全队倒下才判负", () => {
+  const first = pal(1, "一号", "fire", 100);
+  const second = pal(2, "二号", "water", 100);
+  const enemy = pal(3, "高速敌人", "grass", 300);
+  let state = createPartyBattle(
+    [
+      { pal: first, level: 1, currentHp: 1 },
+      { pal: second, level: 1, currentHp: 1 },
+    ],
+    enemy
+  );
+  state = resolveTurn(state, skill, skill, () => 0);
+  assert.equal(state.phase, "switching");
+  const enemyHp = state.enemy.hp;
+  state = switchPlayer(state, 1, skill, () => 0);
+  assert.equal(state.phase, "choosing");
+  assert.equal(state.player.hp, 1);
+  assert.equal(state.enemy.hp, enemyHp);
+  state = resolveTurn(state, skill, skill, () => 0);
+  assert.equal(state.phase, "defeat");
+  assert.ok(state.playerParty.every((fighter) => fighter.hp === 0));
 });
 
 test("冻结会阻止目标本回合行动", () => {

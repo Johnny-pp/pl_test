@@ -1,5 +1,6 @@
 import type { Pal } from "../types/pal";
 import type { BaseJob, FacilityId, GameSave } from "../player/playerState";
+import { getPassiveBonuses } from "../passives/passiveEffects.ts";
 
 export type ResourceId = keyof GameSave["base"]["resources"];
 export type CraftableItem = "capture-orb" | "healing-tonic";
@@ -74,13 +75,22 @@ export function simulateProduction(
   for (const assignment of save.base.assignments) {
     const instance = save.ownedPals.find((pal) => pal.uid === assignment.palUid);
     const species = instance ? speciesById.get(instance.speciesId) : undefined;
-    if (!species) continue;
+    if (!instance || !species) continue;
     const level = suitabilityLevel(species, assignment.job);
     if (level <= 0) continue;
     const facilityLevel =
       assignment.job === "planting" ? save.base.facilities.farm : save.base.facilities.workshop;
     const facilityMultiplier = 1 + (facilityLevel - 1) * 0.15;
-    const ratePerMinute = level * (species.stats.workSpeed / 100) * facilityMultiplier * 0.25;
+    const passive = getPassiveBonuses(instance.passiveSkillIds, { hour: new Date(now).getHours() });
+    const passiveMultiplier = 1 + passive.workSpeedPercent / 100;
+    const yieldMultiplier = 1 + passive.resourceYieldPercent / 100;
+    const ratePerMinute =
+      level *
+      (species.stats.workSpeed / 100) *
+      facilityMultiplier *
+      passiveMultiplier *
+      yieldMultiplier *
+      0.25;
     const resource = JOB_RESOURCE[assignment.job];
     resources[resource] = Math.min(capacity, resources[resource] + ratePerMinute * elapsedMinutes);
   }

@@ -5,6 +5,7 @@ import { BREEDING_FOOD_COST, breed, hatchEgg, previewOffspring } from "../breedi
 import { loadGame, saveGame, type EggQuality, type GameSave, type PalInstance } from "../player/playerState";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
+import { describePassiveBonuses } from "../passives/passiveEffects";
 
 const QUALITY_LABELS: Record<EggQuality, string> = { common: "普通", fine: "优良", radiant: "辉光" };
 const QUALITY_COLORS: Record<EggQuality, number> = { common: 0x9aa0c0, fine: 0x4fc3f7, radiant: 0xffb300 };
@@ -147,7 +148,8 @@ export class BreedingScene extends Phaser.Scene {
       );
       const inherited =
         egg.passiveSkillIds.map((id) => passiveSkillsById.get(id)?.name.zh ?? id).join("、") || "无继承被动";
-      const info = this.add.text(596, y - 9, inherited, {
+      const inheritedEffect = describePassiveBonuses(egg.passiveSkillIds).join("、");
+      const info = this.add.text(596, y - 9, `${inherited}${inheritedEffect ? `｜${inheritedEffect}` : ""}`, {
         fontFamily: "sans-serif",
         fontSize: "12px",
         color: "#9aa0c0",
@@ -181,7 +183,8 @@ export class BreedingScene extends Phaser.Scene {
     );
     const passives =
       instance.passiveSkillIds.map((id) => passiveSkillsById.get(id)?.name.zh ?? id).join("、") || "无被动";
-    const detail = this.add.text(x - 56, y + 3, passives, {
+    const effects = describePassiveBonuses(instance.passiveSkillIds).join("、");
+    const detail = this.add.text(x - 56, y + 3, `${passives}${effects ? `｜${effects}` : ""}`, {
       fontFamily: "sans-serif",
       fontSize: "12px",
       color: "#9aa0c0",

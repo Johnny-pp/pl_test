@@ -8,6 +8,7 @@ import {
   type PassiveCategory,
 } from "../types/passiveSkill";
 import { startScene } from "./sceneLoader";
+import { describePassiveBonuses } from "../passives/passiveEffects";
 
 const CATEGORIES: (PassiveCategory | "all")[] = [
   "all",
@@ -19,7 +20,7 @@ const CATEGORIES: (PassiveCategory | "all")[] = [
   "resource",
   "other",
 ];
-const ROW_H = 54;
+const ROW_H = 66;
 const ROW_GAP = 8;
 const LIST_TOP = 112;
 
@@ -106,27 +107,38 @@ export class PassiveSkillsScene extends Phaser.Scene {
       const stripe = this.add
         .rectangle(0, 0, 6, ROW_H, PASSIVE_CATEGORY_COLORS[s.category])
         .setOrigin(0, 0.5);
-      const zh = this.add.text(20, -10, s.name.zh, {
+      const zh = this.add.text(20, -17, s.name.zh, {
         fontFamily: "sans-serif",
         fontSize: "18px",
         color: "#ffffff",
       });
-      const en = this.add.text(20, 12, s.name.en, {
+      const en = this.add.text(20, 7, s.name.en, {
         fontFamily: "sans-serif",
         fontSize: "12px",
         color: "#9aa0c0",
       });
-      const cat = this.add.text(160, -10, PASSIVE_CATEGORY_LABELS[s.category], {
+      const cat = this.add.text(160, -17, PASSIVE_CATEGORY_LABELS[s.category], {
         fontFamily: "sans-serif",
         fontSize: "13px",
         color: "#" + PASSIVE_CATEGORY_COLORS[s.category].toString(16).padStart(6, "0"),
       });
-      const desc = this.add.text(160, 12, s.description, {
+      const desc = this.add.text(160, 3, s.description, {
         fontFamily: "sans-serif",
         fontSize: "12px",
         color: "#c0c4e0",
         wordWrap: { width: rowW - 320 },
       });
+      const implemented = describePassiveBonuses([s.id]).join("、");
+      const actual = this.add.text(
+        160,
+        20,
+        implemented ? `当前实装：${implemented}` : "当前范围：展示/继承",
+        {
+          fontFamily: "sans-serif",
+          fontSize: "11px",
+          color: implemented ? "#80deea" : "#68718e",
+        }
+      );
       const tier = s.tier ?? "common";
       const tierColor = "#" + PASSIVE_TIER_COLORS[tier].toString(16).padStart(6, "0");
       const tierText = this.add
@@ -136,7 +148,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
           color: tierColor,
         })
         .setOrigin(1, 0.5);
-      row.add([bg, stripe, zh, en, cat, desc, tierText]);
+      row.add([bg, stripe, zh, en, cat, desc, actual, tierText]);
       this.list.add(row);
     });
   }
