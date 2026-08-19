@@ -51,10 +51,10 @@
 ## 帕鲁数据模型 Schema
 - 已定义 JSON Schema：`schema/pal.schema.json`（draft 2020-12），覆盖身份/元素/属性/工作适性/技能/掉落/分布/配种字段，`additionalProperties:false`。
 - 新增幻兽数据时应符合该 Schema；外部资料仅用于理解常见字段维度，内容与数值必须原创设计。
-- 当前数据：`data/pals.json`（12 个原创物种）；校验脚本：`scripts/validate-pals.mjs`（依赖 ajv）。
+- 当前数据：`data/pals.json`（18 个原创物种）；校验脚本：`scripts/validate-pals.mjs`（依赖 ajv）。
 
 ## 原创幻兽数据
-- 12 个物种的中英文名称、描述、属性、成长、工作适性、伙伴技能、掉落物和栖息地均为本项目原创设计。
+- 18 个物种的中英文名称、描述、属性、成长、工作适性、伙伴技能、掉落物和栖息地均为本项目原创设计。
 - 图鉴编号沿用原型阶段的内部编号，以兼容已有 localStorage 存档和遭遇表引用；编号本身不代表外部作品内容。
 - `catchRate`、`growth`、稀有度、移动/骑行速度等字段已纳入 Schema，不再依赖抓取脚本或站点数据。
 - 主动技能独立存放于 `data/active-skills.json`，物种通过稳定 ID 引用。
@@ -65,7 +65,13 @@
 - `growth.experienceCurve` 的 `fast`、`medium`、`slow` 使用不同累计经验阈值；战斗奖励由敌方等级和稀有度共同决定。
 - 个体的 `level`、`experience` 和 `currentHp` 保存在玩家存档中；物种基础属性与每级成长值仍保留在静态数据中。
 - 等级会提高最大 HP、攻击和防御，并直接参与后续战斗。升级时当前 HP 按最大 HP 增量补充，但不会复活已倒下个体。
-- 当前存档版本为 v4，旧存档会迁移并清理非法等级、负经验和负生命值。
+- 当前存档版本为 v5，旧存档会迁移并清理非法等级、负经验、负生命值和无效区域标识。
+
+## 世界地区与解锁
+- 第一地区“晴风边境”包含晴风原野和回声遗迹；第二地区“云脊高地”包含雾瀑台地和风暴山脊。
+- 地区配置与解锁规则位于 `src/world/regions.ts`，地图生成和昼夜遭遇分别位于 `worldMap.ts` 与 `encounters.ts`。
+- 云脊高地需要胜利 3 场、捕获 2 只，并消耗木材 30、石材 20、晶体 5；解锁只扣费一次并写入 v5 存档。
+- 六只高地物种使用独立的 `public/assets/pal-portraits-highland.png` 原创头像图集，不增加新的 Phaser 场景或首屏依赖。
 
 ## 被动技能全局表
 - 文件：`data/passive-skills.json`，对应 Schema：`schema/passive-skill.schema.json`（draft 2020-12）。
