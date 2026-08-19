@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { preloadUiAssets } from "../ui/assets";
+import { installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import { activeSkillsById } from "../data/loadActiveSkills";
 import {
@@ -74,9 +76,11 @@ export class BattleScene extends Phaser.Scene {
 
   preload() {
     preloadPalPortraits(this);
+    preloadUiAssets(this);
   }
 
   create(data: BattleSceneData) {
+    installSceneTheme(this);
     this.captureAttempted = false;
     this.captureMessage = "";
     this.progressionMessage = "";

@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { preloadUiAssets } from "../ui/assets";
+import { installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import { loadGame, saveGame } from "../player/playerState";
 import {
@@ -105,7 +107,12 @@ export class WorldScene extends Phaser.Scene {
     super("WorldScene");
   }
 
+  preload() {
+    preloadUiAssets(this);
+  }
+
   create(data: WorldSceneData = {}) {
+    installSceneTheme(this);
     this.encounterLocked = false;
     this.gathered = data.gathered ?? 0;
     this.collected = new Set(data.collectedResourceIds ?? []);

@@ -1,11 +1,13 @@
 import { spawn } from "node:child_process";
 import assert from "node:assert/strict";
+import { mkdirSync, writeFileSync } from "node:fs";
 
 const WEB_PORT = 4173;
 const DRIVER_PORT = 4444;
 const BASE_URL = `http://127.0.0.1:${WEB_PORT}`;
 const DRIVER_URL = `http://127.0.0.1:${DRIVER_PORT}`;
 const children = [];
+const screenshotDir = process.env.UI_SCREENSHOT_DIR;
 
 function start(command, args, env = {}) {
   const child = spawn(command, args, {
@@ -53,6 +55,14 @@ async function executeAsync(sessionId, script, args = []) {
 
 async function navigate(sessionId, url) {
   await webdriver("POST", `/session/${sessionId}/url`, { url });
+}
+
+async function captureScreenshot(sessionId, name) {
+  if (!screenshotDir) return;
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  mkdirSync(screenshotDir, { recursive: true });
+  const encoded = await webdriver("GET", `/session/${sessionId}/screenshot`);
+  writeFileSync(`${screenshotDir}/${name}.png`, Buffer.from(encoded, "base64"));
 }
 
 async function waitUntil(sessionId, script, timeoutMs = 15_000, args = []) {
@@ -200,6 +210,7 @@ try {
     status: "幻兽图鉴。可搜索、筛选并前往战斗、队伍、地图、基地、任务或配种。",
     loadingVisible: false,
   });
+  await captureScreenshot(sessionId, "dex-desktop");
 
   await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [
     seededSave,
@@ -209,8 +220,8 @@ try {
 
   await clickCanvasUntil(
     sessionId,
-    640,
-    22,
+    830,
+    68,
     "return document.querySelector('#game-status').textContent.includes('远征任务')"
   );
   await clickCanvas(sessionId, 745, 188);
@@ -226,8 +237,8 @@ try {
   );
   await clickCanvasUntil(
     sessionId,
-    330,
-    22,
+    590,
+    68,
     "return document.querySelector('#game-status').textContent.includes('远征基地')"
   );
   const orbsBefore = await execute(
@@ -289,6 +300,7 @@ try {
   );
   assert.ok(mobileCanvas.width <= mobileCanvas.viewportWidth);
   assert.ok(mobileCanvas.height <= mobileCanvas.viewportHeight);
+  await captureScreenshot(sessionId, "world-mobile");
   const touchStartX = await execute(
     sessionId,
     "return window.__PL_TEST__.game.scene.getScene('WorldScene').player.x"
@@ -318,6 +330,7 @@ try {
     sessionId,
     "return document.querySelector('#game-status').textContent.includes('回合战斗')"
   );
+  await captureScreenshot(sessionId, "battle-desktop");
   for (let turn = 0; turn < 6; turn += 1) {
     await clickCanvas(sessionId, 150, 594);
     await new Promise((resolve) => setTimeout(resolve, 120));

@@ -7,6 +7,8 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { getEffectiveness, getStatusLabel } from "../battle/battleEngine";
 import type { ElementType } from "../types/pal";
 import { startScene } from "./sceneLoader";
+import { preloadUiAssets, UI_ASSETS } from "../ui/assets";
+import { addEntranceMotion, addSceneTitle, installSceneTheme } from "../ui/theme";
 
 const ALL_ELEMENTS = Object.keys(ELEMENT_LABELS) as ElementType[];
 
@@ -19,9 +21,11 @@ export class DetailScene extends Phaser.Scene {
 
   preload() {
     preloadPalPortraits(this);
+    preloadUiAssets(this);
   }
 
   create(data: { palId: number }) {
+    installSceneTheme(this);
     const pal = pals.find((p) => p.id === data.palId);
     const width = this.scale.width;
 
@@ -39,7 +43,17 @@ export class DetailScene extends Phaser.Scene {
       return;
     }
 
+    addSceneTitle(this, "幻兽档案");
+    if (this.textures.exists(UI_ASSETS.panel)) {
+      this.add
+        .image(width / 2, 345, UI_ASSETS.panel)
+        .setDisplaySize(width - 34, 570)
+        .setAlpha(0.96)
+        .setDepth(-1);
+    }
+
     this.content = this.add.container(0, 0);
+    addEntranceMotion(this, this.content);
     this.content.add(addPalPortrait(this, pal.id, width - 125, 145, 190));
     let y = 70;
     const x = 40;

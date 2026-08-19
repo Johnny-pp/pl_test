@@ -6,6 +6,9 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { filterAndSortPals, paginate, type DexSortKey } from "../dex/dexFilters";
 import { clampScroll, getMinScroll } from "../ui/scroll";
+import { preloadUiAssets, UI_ASSETS } from "../ui/assets";
+import { createTextButton } from "../ui/button";
+import { addEntranceMotion, addSceneTitle, installSceneTheme } from "../ui/theme";
 
 const CARD_W = 200;
 const CARD_H = 96;
@@ -34,7 +37,7 @@ interface Chip {
   txt: Phaser.GameObjects.Text;
 }
 
-const GRID_TOP = 170;
+const GRID_TOP = 218;
 const STORAGE_KEY = "pl_test_filter_state";
 
 interface SavedState {
@@ -72,22 +75,18 @@ export class DexScene extends Phaser.Scene {
 
   preload() {
     preloadPalPortraits(this);
+    preloadUiAssets(this);
   }
 
   create() {
+    installSceneTheme(this);
     const width = this.scale.width;
     this.loadState();
     this.elementChips.clear();
     this.workChips.clear();
     this.sortButtons.clear();
 
-    this.add
-      .text(width / 2, 22, "幻兽图鉴", {
-        fontFamily: "sans-serif",
-        fontSize: "30px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    addSceneTitle(this, "幻兽图鉴");
 
     this.makePassiveButton(width);
     this.makeBattleButton();
@@ -105,21 +104,21 @@ export class DexScene extends Phaser.Scene {
     this.applyStateToUI();
 
     this.countText = this.add
-      .text(280, 60, "", {
+      .text(280, 108, "", {
         fontFamily: "sans-serif",
         fontSize: "15px",
         color: "#9aa0c0",
       })
       .setOrigin(0, 0.5);
     this.pageText = this.add
-      .text(342, 60, "", {
+      .text(342, 108, "", {
         fontFamily: "sans-serif",
         fontSize: "13px",
         color: "#68718e",
       })
       .setOrigin(0, 0.5);
     this.previousPage = this.add
-      .text(385, 60, "‹", {
+      .text(385, 108, "‹", {
         fontFamily: "sans-serif",
         fontSize: "24px",
         color: "#4fc3f7",
@@ -128,7 +127,7 @@ export class DexScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
     this.previousPage.on("pointerdown", () => this.changePage(-1));
     this.nextPage = this.add
-      .text(405, 60, "›", {
+      .text(405, 108, "›", {
         fontFamily: "sans-serif",
         fontSize: "24px",
         color: "#4fc3f7",
@@ -148,6 +147,7 @@ export class DexScene extends Phaser.Scene {
 
     this.grid = this.add.container(0, 0);
     this.renderGrid();
+    addEntranceMotion(this, this.grid);
 
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       this.scrollY = clampScroll(this.grid.y, dy, this.scale.height, this.grid.height, GRID_TOP);
@@ -166,15 +166,16 @@ export class DexScene extends Phaser.Scene {
       height: "30px",
       padding: "0 8px",
       fontSize: "14px",
-      color: "#ffffff",
-      backgroundColor: "#0f1830",
-      border: "1px solid #0f3460",
-      borderRadius: "6px",
+      color: "#17334d",
+      backgroundColor: "#fffbeb",
+      border: "2px solid #71b5aa",
+      borderRadius: "10px",
+      boxShadow: "0 3px 0 rgba(23, 143, 145, .22)",
       outline: "none",
-      fontFamily: "sans-serif",
+      fontFamily: '"Trebuchet MS", "Microsoft YaHei", sans-serif',
       pointerEvents: "auto",
     });
-    this.add.dom(16, 60, input).setOrigin(0, 0.5);
+    this.add.dom(16, 108, input).setOrigin(0, 0.5);
     input.addEventListener("input", () => {
       this.searchText = input.value;
       this.page = 0;
@@ -186,7 +187,7 @@ export class DexScene extends Phaser.Scene {
   // ---- 排序按钮 ----
   private buildSortButtons() {
     const startX = 420;
-    const y = 60;
+    const y = 108;
     const w = 60;
     const gap = 6;
     let x = startX;
@@ -207,7 +208,7 @@ export class DexScene extends Phaser.Scene {
     const eTotal = ELEMENTS.length * (64 + 6) - 6;
     let ex = (width - eTotal) / 2 + 32;
     ELEMENTS.forEach((e) => {
-      const chip = this.makeChip(ex, 102, 64, 26, ELEMENT_LABELS[e], () => {
+      const chip = this.makeChip(ex, 150, 64, 28, ELEMENT_LABELS[e], () => {
         if (this.activeElements.has(e)) this.activeElements.delete(e);
         else this.activeElements.add(e);
         this.page = 0;
@@ -221,7 +222,7 @@ export class DexScene extends Phaser.Scene {
     const wTotal = WORKS.length * (54 + 6) - 6;
     let wx = (width - wTotal) / 2 + 27;
     WORKS.forEach((w) => {
-      const chip = this.makeChip(wx, 138, 54, 24, WORK_LABELS[w], () => {
+      const chip = this.makeChip(wx, 184, 54, 26, WORK_LABELS[w], () => {
         if (this.activeWorks.has(w)) this.activeWorks.delete(w);
         else this.activeWorks.add(w);
         this.page = 0;
@@ -235,7 +236,7 @@ export class DexScene extends Phaser.Scene {
 
   private buildClearButton(width: number) {
     const compare = this.add
-      .text(width - 126, 60, "属性对比", {
+      .text(width - 126, 108, "属性对比", {
         fontFamily: "sans-serif",
         fontSize: "15px",
         color: "#80deea",
@@ -244,7 +245,7 @@ export class DexScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
     compare.on("pointerdown", () => void startScene(this, "CompareScene"));
     const btn = this.add
-      .text(width - 16, 60, "清除", {
+      .text(width - 16, 108, "清除", {
         fontFamily: "sans-serif",
         fontSize: "16px",
         color: "#9aa0c0",
@@ -398,7 +399,9 @@ export class DexScene extends Phaser.Scene {
 
   private makeCard(pal: Pal): Phaser.GameObjects.Container {
     const c = this.add.container(0, 0);
-    const bg = this.add.rectangle(0, 0, CARD_W, CARD_H, 0x16213e).setStrokeStyle(2, 0x0f3460);
+    const bg = this.textures.exists(UI_ASSETS.panel)
+      ? this.add.image(0, 0, UI_ASSETS.panel).setDisplaySize(CARD_W, CARD_H)
+      : this.add.rectangle(0, 0, CARD_W, CARD_H, 0x16213e).setStrokeStyle(2, 0x0f3460);
     const elem = pal.elements[0] ?? "neutral";
     const portrait = addPalPortrait(this, pal.id, -CARD_W / 2 + 42, 0, 76);
     const idText = this.add.text(-CARD_W / 2 + 82, -CARD_H / 2 + 10, `#${pal.id}`, {
@@ -426,91 +429,55 @@ export class DexScene extends Phaser.Scene {
     c.add([bg, portrait, idText, nameText, enText, elemText]);
 
     bg.setInteractive({ useHandCursor: true });
+    bg.on("pointerover", () => this.tweens.add({ targets: c, scale: 1.035, duration: 90 }));
+    bg.on("pointerout", () => this.tweens.add({ targets: c, scale: 1, duration: 90 }));
     bg.on("pointerdown", () => void startScene(this, "DetailScene", { palId: pal.id }));
     return c;
   }
 
   private makePassiveButton(width: number) {
-    const btn = this.add
-      .text(width - 16, 22, "被动技能", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#9aa0c0",
-      })
-      .setOrigin(1, 0.5)
-      .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => void startScene(this, "PassiveSkillsScene"));
+    this.makeNavButton(width - 70, "被动", "PassiveSkillsScene");
   }
 
   private makeBattleButton() {
-    const btn = this.add
-      .text(16, 22, "开始战斗", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#ffd54f",
-      })
-      .setOrigin(0, 0.5)
-      .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => void startScene(this, "SelectPalScene"));
+    this.makeNavButton(70, "战斗", "SelectPalScene", "accent");
   }
 
   private makeTeamButton() {
-    const btn = this.add
-      .text(128, 22, "我的队伍", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#80deea",
-      })
-      .setOrigin(0, 0.5)
-      .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => void startScene(this, "TeamScene"));
+    this.makeNavButton(190, "队伍", "TeamScene");
   }
 
   private makeWorldButton() {
-    const btn = this.add
-      .text(226, 22, "探索地图", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#9ccc65",
-      })
-      .setOrigin(0, 0.5)
-      .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => void startScene(this, "WorldScene"));
+    this.makeNavButton(310, "探索", "WorldScene");
   }
 
   private makeBaseButton() {
-    const btn = this.add
-      .text(316, 22, "基地", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#ffb74d",
-      })
-      .setOrigin(0, 0.5)
-      .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => void startScene(this, "BaseScene"));
+    this.makeNavButton(590, "基地", "BaseScene");
   }
 
   private makeBreedingButton() {
-    const btn = this.add
-      .text(710, 22, "配种孵化", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#f48fb1",
-      })
-      .setOrigin(0, 0.5)
-      .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => void startScene(this, "BreedingScene"));
+    this.makeNavButton(710, "孵化", "BreedingScene");
   }
 
   private makeQuestButton() {
-    const btn = this.add
-      .text(625, 22, "任务", {
-        fontFamily: "sans-serif",
-        fontSize: "18px",
-        color: "#ce93d8",
-      })
-      .setOrigin(0, 0.5)
-      .setInteractive({ useHandCursor: true });
-    btn.on("pointerdown", () => void startScene(this, "QuestScene"));
+    this.makeNavButton(830, "任务", "QuestScene");
+  }
+
+  private makeNavButton(
+    x: number,
+    label: string,
+    sceneKey: string,
+    variant: "primary" | "accent" = "primary"
+  ) {
+    return createTextButton(this, {
+      x,
+      y: 68,
+      width: 102,
+      height: 32,
+      label,
+      variant,
+      fontSize: "14px",
+      onPress: () => void startScene(this, sceneKey),
+    });
   }
 }

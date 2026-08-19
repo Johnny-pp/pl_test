@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { loadGame, saveGame, type GameSave } from "../player/playerState";
 import { claimQuestReward, getQuestViews, type QuestView } from "../quests/questSystem";
 import { startScene } from "./sceneLoader";
+import { installSceneTheme } from "../ui/theme";
 
 const STATUS_LABELS = {
   locked: "未激活",
@@ -20,6 +21,7 @@ export class QuestScene extends Phaser.Scene {
   }
 
   create() {
+    installSceneTheme(this);
     this.save = loadGame(localStorage);
     this.add
       .text(18, 18, "< 返回图鉴", {

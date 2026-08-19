@@ -1,4 +1,6 @@
 import type Phaser from "phaser";
+import { UI_ASSETS } from "./assets";
+import { UI_THEME } from "./theme";
 
 interface TextButtonOptions {
   x: number;
@@ -9,19 +11,51 @@ interface TextButtonOptions {
   onPress: () => void;
   backgroundColor?: number;
   fontSize?: string;
+  variant?: "primary" | "accent" | "muted" | "danger";
+  disabled?: boolean;
 }
 
 export function createTextButton(scene: Phaser.Scene, options: TextButtonOptions) {
-  const background = scene.add
-    .rectangle(options.x, options.y, options.width, options.height, options.backgroundColor ?? 0x0f4660)
-    .setInteractive({ useHandCursor: true });
+  const canUseTexture = scene.textures.exists(UI_ASSETS.buttonPrimary);
+  const variant = options.variant ?? "primary";
+  const tint =
+    options.backgroundColor ??
+    (variant === "danger"
+      ? UI_THEME.colors.danger
+      : variant === "muted"
+        ? 0x8aabb0
+        : variant === "accent"
+          ? 0xffffff
+          : 0xffffff);
+  const background = canUseTexture
+    ? scene.add
+        .image(options.x, options.y, variant === "accent" ? UI_ASSETS.buttonAccent : UI_ASSETS.buttonPrimary)
+        .setDisplaySize(options.width, options.height)
+        .setTint(tint)
+    : scene.add.rectangle(options.x, options.y, options.width, options.height, tint);
+  background.setName("ui-theme-native-button");
+  if (!options.disabled) background.setInteractive({ useHandCursor: true });
+  else background.setAlpha(0.55);
   const text = scene.add
     .text(options.x, options.y, options.label, {
-      fontFamily: "sans-serif",
+      fontFamily: UI_THEME.fontFamily,
       fontSize: options.fontSize ?? "13px",
-      color: "#ffffff",
+      color: variant === "accent" ? "#5a3b00" : "#ffffff",
+      fontStyle: "bold",
     })
-    .setOrigin(0.5);
-  background.on("pointerdown", options.onPress);
+    .setOrigin(0.5)
+    .setName("ui-theme-native-label");
+  if (!options.disabled) {
+    background.on("pointerover", () =>
+      scene.tweens.add({ targets: [background, text], scale: 1.035, duration: 80 })
+    );
+    background.on("pointerout", () =>
+      scene.tweens.add({ targets: [background, text], scale: 1, duration: 80 })
+    );
+    background.on("pointerdown", () => {
+      scene.tweens.add({ targets: [background, text], scale: 0.96, yoyo: true, duration: 60 });
+      options.onPress();
+    });
+  }
   return scene.add.container(0, 0, [background, text]);
 }

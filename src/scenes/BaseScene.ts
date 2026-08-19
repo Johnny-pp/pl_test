@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import {
   CRAFT_RECIPES,
@@ -41,6 +42,7 @@ export class BaseScene extends Phaser.Scene {
   }
 
   create() {
+    installSceneTheme(this);
     this.save = simulateProduction(loadGame(localStorage), speciesById);
     saveGame(localStorage, this.save);
     this.add

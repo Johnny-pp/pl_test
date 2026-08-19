@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { preloadUiAssets } from "../ui/assets";
+import { installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import { passiveSkills, passiveSkillsById } from "../data/loadPassiveSkills";
 import { BREEDING_FOOD_COST, breed, hatchEgg, previewOffspring } from "../breeding/breedingSystem";
@@ -25,9 +27,11 @@ export class BreedingScene extends Phaser.Scene {
 
   preload() {
     preloadPalPortraits(this);
+    preloadUiAssets(this);
   }
 
   create() {
+    installSceneTheme(this);
     this.save = loadGame(localStorage);
     this.add
       .text(18, 18, "< 返回图鉴", {

@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { preloadUiAssets } from "../ui/assets";
+import { installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import type { Pal } from "../types/pal";
@@ -17,9 +19,11 @@ export class SelectPalScene extends Phaser.Scene {
 
   preload() {
     preloadPalPortraits(this);
+    preloadUiAssets(this);
   }
 
   create() {
+    installSceneTheme(this);
     const width = this.scale.width;
     this.add
       .text(18, 18, "< 返回图鉴", {

@@ -4,6 +4,8 @@ import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import type { Pal } from "../types/pal";
 import { startScene } from "./sceneLoader";
+import { preloadUiAssets } from "../ui/assets";
+import { installSceneTheme } from "../ui/theme";
 
 const STAT_ROWS: Array<[string, (pal: Pal) => number]> = [
   ["HP", (pal) => pal.stats.hp],
@@ -27,9 +29,11 @@ export class CompareScene extends Phaser.Scene {
 
   preload() {
     preloadPalPortraits(this);
+    preloadUiAssets(this);
   }
 
   create(data: { palId?: number } = {}) {
+    installSceneTheme(this);
     const initial = pals.findIndex((pal) => pal.id === data.palId);
     this.leftIndex = initial >= 0 ? initial : 0;
     this.rightIndex = (this.leftIndex + 1) % pals.length;

@@ -10,6 +10,7 @@ import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 import { filterPassiveSkills, type PassiveCategoryFilter } from "../passives/passiveFilters";
 import { clampScroll } from "../ui/scroll";
+import { installSceneTheme } from "../ui/theme";
 
 const CATEGORIES: PassiveCategoryFilter[] = [
   "all",
@@ -34,6 +35,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
   }
 
   create() {
+    installSceneTheme(this);
     const width = this.scale.width;
     this.add
       .text(width / 2, 28, "被动技能（全局）", {

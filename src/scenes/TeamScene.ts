@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { preloadUiAssets } from "../ui/assets";
+import { addEntranceMotion, installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
 import {
   TEAM_LIMIT,
@@ -33,9 +35,11 @@ export class TeamScene extends Phaser.Scene {
 
   preload() {
     preloadPalPortraits(this);
+    preloadUiAssets(this);
   }
 
   create() {
+    installSceneTheme(this);
     this.save = loadGame(localStorage);
     this.add
       .text(18, 18, "< 返回图鉴", {
@@ -54,6 +58,7 @@ export class TeamScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.content = this.add.container(0, 0);
+    addEntranceMotion(this, this.content);
     this.render();
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       const rows = Math.ceil(this.save.ownedPals.length / 3);

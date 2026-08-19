@@ -5,16 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>幻兽远征</title>
     <style>
-      html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: #080d1a; overflow: hidden; }
-      body { display: flex; align-items: center; justify-content: center; touch-action: none; overscroll-behavior: none; color: #e8eaf6; font-family: sans-serif; }
-      #game { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
-      canvas { max-width: 100%; max-height: 100%; }
-      .game-loading { color: #80deea; font-size: 1.1rem; letter-spacing: .08em; }
-      .fatal-error { max-width: 34rem; margin: 1rem; padding: 1.5rem; border: 1px solid #ef5350; border-radius: .75rem; background: #161b2e; text-align: center; }
-      .fatal-error h1 { color: #ff8a80; }
-      .fatal-error button { padding: .65rem 1rem; border: 0; border-radius: .4rem; background: #00acc1; color: white; cursor: pointer; }
-      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-      canvas:focus-visible { outline: 3px solid #80deea; outline-offset: -3px; }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: #79cbd1;
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: none;
+        overscroll-behavior: none;
+        color: #17334d;
+        font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif;
+      }
+      #game {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      canvas {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .game-loading {
+        color: #0d6f76;
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+      .fatal-error {
+        max-width: 34rem;
+        margin: 1rem;
+        padding: 1.5rem;
+        border: 3px solid #c44555;
+        border-radius: 1.2rem;
+        background: #fffbeb;
+        box-shadow: 0 0.8rem 2rem rgba(23, 51, 77, 0.22);
+        text-align: center;
+      }
+      .fatal-error h1 {
+        color: #a62f42;
+      }
+      .fatal-error button {
+        padding: 0.7rem 1.2rem;
+        border: 0;
+        border-radius: 0.8rem;
+        background: #178f91;
+        box-shadow: 0 0.25rem 0 #0d6f76;
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      canvas {
+        border-radius: clamp(0px, 1.6vw, 18px);
+        box-shadow: 0 1.2rem 3rem rgba(23, 51, 77, 0.28);
+      }
+      canvas:focus-visible {
+        outline: 4px solid #fff4b8;
+        outline-offset: -4px;
+      }
     </style>
   </head>
   <body>

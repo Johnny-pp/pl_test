@@ -1,0 +1,9 @@
+UI pack by Kenney Vleugels (www.kenney.nl)
+
+License: CC0 1.0 Universal
+https://creativecommons.org/publicdomain/zero/1.0/
+
+These graphics may be used in personal and commercial projects.
+Credit is appreciated but not mandatory.
+
+Selected from https://github.com/ereborstudios/kenney-ui-pack

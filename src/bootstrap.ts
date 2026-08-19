@@ -21,7 +21,7 @@ export async function startGame(): Promise<Phaser.Game> {
       width: 900,
       height: 640,
     },
-    backgroundColor: "#1a1a2e",
+    backgroundColor: "#79cbd1",
     physics: {
       default: "arcade",
       arcade: { debug: false },
