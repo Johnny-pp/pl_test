@@ -47,6 +47,7 @@ const activeSkills = JSON.parse(readFileSync("data/active-skills.json", "utf-8")
 const passiveSkills = JSON.parse(readFileSync("data/passive-skills.json", "utf-8"));
 const skillIds = new Set(activeSkills.map((skill) => skill.id));
 const passiveIds = new Set(passiveSkills.map((skill) => skill.id));
+const palReferences = new Set(pals.flatMap((pal) => [String(pal.id), pal.name.zh, pal.name.en]));
 ok = checkUnique(pals, (pal) => pal.id, "幻兽 ID") && ok;
 ok = checkUnique(pals, (pal) => pal.name.zh, "幻兽中文名") && ok;
 ok = checkUnique(pals, (pal) => pal.name.en.toLowerCase(), "幻兽英文名") && ok;
@@ -71,6 +72,14 @@ for (const pal of pals) {
   if (new Set(workTypes).size !== workTypes.length) {
     ok = false;
     console.error(`✗ 幻兽 ${pal.id} 存在重复工作适性`);
+  }
+  for (const parents of pal.breeding?.parents ?? []) {
+    for (const parent of parents) {
+      if (!palReferences.has(parent)) {
+        ok = false;
+        console.error(`✗ 幻兽 ${pal.id} 的配种组合引用了不存在的父代: ${parent}`);
+      }
+    }
   }
 }
 process.exit(ok ? 0 : 1);

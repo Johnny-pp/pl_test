@@ -142,5 +142,77 @@
     "activeSkills": ["quick-strike", "ember-dart", "flame-burst", "dragon-comet"], "passiveSkills": [],
     "drops": [{ "item": "星烬翼膜", "rate": 22 }, { "item": "龙息晶核", "rate": 12 }], "spawnLocations": ["回声遗迹（夜）"],
     "breeding": { "power": 88, "parents": [] }
+  },
+  {
+    "id": 34, "name": { "zh": "云帆獭", "en": "Cloudsail Otter" },
+    "description": "耳鳍会像小帆一样捕捉山风，常沿云脊滑行，把迷路旅人的气味送回营地。",
+    "rarity": 2, "size": "small", "elements": ["wind", "water"], "catchRate": 37, "foodAmount": 4,
+    "stats": { "hp": 86, "attack": 78, "defense": 70, "workSpeed": 112, "moveSpeed": 445, "rideSprintSpeed": 0, "price": 310 },
+    "growth": { "hpPerLevel": 4.4, "attackPerLevel": 3.6, "defensePerLevel": 3.0, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "watering", "level": 1 }, { "type": "transport", "level": 2 }, { "type": "gathering", "level": 1 }],
+    "partnerSkill": { "name": "顺风领航", "description": "展开耳帆辨认气流，使队伍在开阔地带移动更轻快。", "ranks": [] },
+    "activeSkills": ["quick-strike", "water-jet", "gale-shear"], "passiveSkills": [],
+    "drops": [{ "item": "浮云软绒", "rate": 44 }, { "item": "轻帆耳膜", "rate": 24 }], "spawnLocations": ["云脊高地（白昼）"],
+    "breeding": { "power": 48, "parents": [["斑尾灵", "冰蹼仔"]] }
+  },
+  {
+    "id": 35, "name": { "zh": "晶背螈", "en": "Crysteft" },
+    "description": "背部晶簇会记录地脉震动；暴雨前，它会把晶片贴在洞口提醒邻居搬离低处。",
+    "rarity": 3, "size": "medium", "elements": ["rock", "water"], "catchRate": 29, "foodAmount": 5,
+    "stats": { "hp": 108, "attack": 87, "defense": 96, "workSpeed": 106, "moveSpeed": 300, "rideSprintSpeed": 0, "price": 430 },
+    "growth": { "hpPerLevel": 5.6, "attackPerLevel": 4.0, "defensePerLevel": 4.6, "experienceCurve": "slow" },
+    "workSuitability": [{ "type": "mining", "level": 2 }, { "type": "watering", "level": 1 }, { "type": "cooling", "level": 1 }],
+    "partnerSkill": { "name": "晶脉听诊", "description": "感知地下矿脉的细微震动，提高高地采矿时发现晶材的机会。", "ranks": [] },
+    "activeSkills": ["water-jet", "stone-shard", "crystal-bulwark"], "passiveSkills": [],
+    "drops": [{ "item": "鸣振晶片", "rate": 35 }, { "item": "湿润岩膜", "rate": 28 }], "spawnLocations": ["云脊高地·晶谷"],
+    "breeding": { "power": 66, "parents": [["泉壶兽", "岩脊豚"]] }
+  },
+  {
+    "id": 36, "name": { "zh": "钟岩犀", "en": "Bellcrag" },
+    "description": "中空角在奔跑时发出低沉钟鸣，雾中商队会循着回声判断悬崖与道路的距离。",
+    "rarity": 3, "size": "large", "elements": ["rock", "ground"], "catchRate": 25, "foodAmount": 7,
+    "stats": { "hp": 126, "attack": 96, "defense": 111, "workSpeed": 92, "moveSpeed": 335, "rideSprintSpeed": 505, "price": 510 },
+    "growth": { "hpPerLevel": 6.4, "attackPerLevel": 4.5, "defensePerLevel": 5.2, "experienceCurve": "slow" },
+    "workSuitability": [{ "type": "mining", "level": 3 }, { "type": "transport", "level": 2 }],
+    "partnerSkill": { "name": "回声载行", "description": "允许骑乘；角鸣能标出浓雾中的坚固路径，减少绕行。", "ranks": [] },
+    "activeSkills": ["earth-hammer", "stone-shard", "crystal-bulwark"], "passiveSkills": [],
+    "drops": [{ "item": "钟鸣角环", "rate": 26 }, { "item": "致密黑岩", "rate": 48 }], "spawnLocations": ["云脊高地·鸣钟坡"],
+    "breeding": { "power": 74, "parents": [["岩脊豚", "赤角鹿"]] }
+  },
+  {
+    "id": 37, "name": { "zh": "雾绡蛾", "en": "Veilsilk Moth" },
+    "description": "宽翼会把露水铺成轻薄雾绡，月光穿过翼纹时能显出山间隐藏的安全落脚点。",
+    "rarity": 2, "size": "small", "elements": ["ice", "wind"], "catchRate": 35, "foodAmount": 3,
+    "stats": { "hp": 75, "attack": 84, "defense": 64, "workSpeed": 120, "moveSpeed": 470, "rideSprintSpeed": 0, "price": 335 },
+    "growth": { "hpPerLevel": 3.8, "attackPerLevel": 4.1, "defensePerLevel": 2.7, "experienceCurve": "medium" },
+    "workSuitability": [{ "type": "cooling", "level": 2 }, { "type": "medicine", "level": 1 }, { "type": "gathering", "level": 1 }],
+    "partnerSkill": { "name": "月雾显径", "description": "夜间展开雾翼，令附近隐蔽采集物更容易辨认。", "ranks": [] },
+    "activeSkills": ["frost-shard", "gale-shear", "mist-wing"], "passiveSkills": [],
+    "drops": [{ "item": "雾纹翼粉", "rate": 46 }, { "item": "冷光绡丝", "rate": 31 }], "spawnLocations": ["云脊高地（夜晚）"],
+    "breeding": { "power": 54, "parents": [["暮铃魅", "冰蹼仔"]] }
+  },
+  {
+    "id": 38, "name": { "zh": "潮镜蟹", "en": "Tideglass Crab" },
+    "description": "圆壳像一面盛水的镜子，会映出数刻后的云影，因此总能赶在骤雨前躲进石隙。",
+    "rarity": 3, "size": "medium", "elements": ["water", "rock"], "catchRate": 27, "foodAmount": 5,
+    "stats": { "hp": 114, "attack": 82, "defense": 108, "workSpeed": 116, "moveSpeed": 275, "rideSprintSpeed": 0, "price": 475 },
+    "growth": { "hpPerLevel": 5.9, "attackPerLevel": 3.7, "defensePerLevel": 5.0, "experienceCurve": "slow" },
+    "workSuitability": [{ "type": "watering", "level": 2 }, { "type": "mining", "level": 1 }, { "type": "sorting", "level": 2 }],
+    "partnerSkill": { "name": "潮相预见", "description": "观察镜壳中的云潮变化，使采集队更早避开恶劣天气。", "ranks": [] },
+    "activeSkills": ["water-jet", "stone-shard", "tide-mirror"], "passiveSkills": [],
+    "drops": [{ "item": "潮镜壳片", "rate": 30 }, { "item": "回流水珠", "rate": 42 }], "spawnLocations": ["云脊高地·镜泉台"],
+    "breeding": { "power": 69, "parents": [["泉壶兽", "晶背螈"]] }
+  },
+  {
+    "id": 39, "name": { "zh": "岚角羚", "en": "Galehorn Ibex" },
+    "description": "弯角周围终年缠着细小雷云，族群会用角尖电光在山脊之间传递迁徙信号。",
+    "rarity": 4, "size": "large", "elements": ["electric", "wind"], "catchRate": 18, "foodAmount": 7,
+    "stats": { "hp": 118, "attack": 112, "defense": 92, "workSpeed": 124, "moveSpeed": 545, "rideSprintSpeed": 760, "price": 720 },
+    "growth": { "hpPerLevel": 6.0, "attackPerLevel": 5.3, "defensePerLevel": 4.1, "experienceCurve": "slow" },
+    "workSuitability": [{ "type": "electricity", "level": 3 }, { "type": "transport", "level": 2 }, { "type": "gathering", "level": 2 }],
+    "partnerSkill": { "name": "岚脊飞驰", "description": "允许骑乘；沿高地风道冲刺时会积蓄雷能并提高速度。", "ranks": [] },
+    "activeSkills": ["spark-arc", "gale-shear", "storm-horn"], "passiveSkills": [],
+    "drops": [{ "item": "岚电角屑", "rate": 25 }, { "item": "云纹硬绒", "rate": 38 }], "spawnLocations": ["云脊高地·风暴脊（夜晚）"],
+    "breeding": { "power": 86, "parents": [["闪针团", "钟岩犀"]] }
   }
 ]
