@@ -30,6 +30,7 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { bossesById } from "../battle/bosses";
 import { recordBossVictory, recordQuestEvent } from "../quests/questSystem";
+import { createTextButton } from "../ui/button";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 
 interface BattleSceneData {
@@ -487,16 +488,15 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private makeNavButton(x: number, y: number, label: string, action: () => void) {
-    const bg = this.add.rectangle(x, y, 145, 38, 0x0f3460).setInteractive({ useHandCursor: true });
-    const text = this.add
-      .text(x, y, label, {
-        fontFamily: "sans-serif",
-        fontSize: "16px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
-    bg.on("pointerdown", action);
-    const container = this.add.container(0, 0, [bg, text]);
-    return container;
+    return createTextButton(this, {
+      x,
+      y,
+      width: 145,
+      height: 38,
+      label,
+      onPress: action,
+      backgroundColor: 0x0f3460,
+      fontSize: "16px",
+    });
   }
 }

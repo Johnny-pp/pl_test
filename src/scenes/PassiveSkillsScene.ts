@@ -5,13 +5,13 @@ import {
   PASSIVE_CATEGORY_COLORS,
   PASSIVE_TIER_COLORS,
   PASSIVE_TIER_LABELS,
-  type PassiveCategory,
 } from "../types/passiveSkill";
 import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
+import { filterPassiveSkills, type PassiveCategoryFilter } from "../passives/passiveFilters";
 import { clampScroll } from "../ui/scroll";
 
-const CATEGORIES: (PassiveCategory | "all")[] = [
+const CATEGORIES: PassiveCategoryFilter[] = [
   "all",
   "attack",
   "defense",
@@ -27,7 +27,7 @@ const LIST_TOP = 112;
 
 export class PassiveSkillsScene extends Phaser.Scene {
   private list!: Phaser.GameObjects.Container;
-  private selected: PassiveCategory | "all" = "all";
+  private selected: PassiveCategoryFilter = "all";
 
   constructor() {
     super("PassiveSkillsScene");
@@ -98,7 +98,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
     this.list.removeAll(true);
     const width = this.scale.width;
     const rowW = width - 60;
-    const items = passiveSkills.filter((s) => this.selected === "all" || s.category === this.selected);
+    const items = filterPassiveSkills(passiveSkills, this.selected);
     items.forEach((s, i) => {
       const y = LIST_TOP + i * (ROW_H + ROW_GAP);
       const row = this.add.container(30, y);

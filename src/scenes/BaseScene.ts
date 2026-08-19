@@ -13,6 +13,7 @@ import { loadGame, saveGame, type BaseJob, type FacilityId, type GameSave } from
 import { startScene } from "./sceneLoader";
 import { recordQuestEvent } from "../quests/questSystem";
 import { clampScroll } from "../ui/scroll";
+import { createTextButton } from "../ui/button";
 
 const speciesById = new Map(pals.map((pal) => [pal.id, pal]));
 const JOB_LABELS: Record<BaseJob, string> = {
@@ -249,16 +250,7 @@ export class BaseScene extends Phaser.Scene {
   }
 
   private makeButton(x: number, y: number, width: number, label: string, action: () => void) {
-    const bg = this.add.rectangle(x, y, width, 32, 0x0f4660).setInteractive({ useHandCursor: true });
-    const text = this.add
-      .text(x, y, label, {
-        fontFamily: "sans-serif",
-        fontSize: "12px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
-    bg.on("pointerdown", action);
-    return this.add.container(0, 0, [bg, text]);
+    return createTextButton(this, { x, y, width, height: 32, label, onPress: action, fontSize: "12px" });
   }
 
   private addToContent(...objects: Phaser.GameObjects.GameObject[]) {

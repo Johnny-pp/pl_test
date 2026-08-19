@@ -11,8 +11,13 @@ import {
 } from "../src/player/playerState.ts";
 import { BALANCE_BASELINE } from "../src/balance/balanceBaseline.ts";
 import type { Pal } from "../src/types/pal.ts";
+import type { PassiveSkill } from "../src/types/passiveSkill.ts";
+import { filterPassiveSkills } from "../src/passives/passiveFilters.ts";
 
 const pals = JSON.parse(readFileSync(new URL("../data/pals.json", import.meta.url), "utf-8")) as Pal[];
+const passiveSkills = JSON.parse(
+  readFileSync(new URL("../data/passive-skills.json", import.meta.url), "utf-8")
+) as PassiveSkill[];
 
 function simulatedPals(count: number): Pal[] {
   return Array.from({ length: count }, (_, index) => {
@@ -47,6 +52,25 @@ test("500 条模拟图鉴可稳定筛选、排序和分页", () => {
   assert.equal(page.items.length, 20);
   assert.equal(page.pageCount, 21);
   assert.ok(elapsed < 1_000, `筛选耗时 ${elapsed.toFixed(1)}ms`);
+});
+
+test("500 条模拟技能可稳定加载与分类筛选", () => {
+  const skills = Array.from({ length: BALANCE_BASELINE.simulatedDexEntries }, (_, index) => {
+    const source = passiveSkills[index % passiveSkills.length];
+    return {
+      ...source,
+      id: `simulated-passive-${index}`,
+      name: { zh: `模拟被动${index}`, en: `Simulated Passive ${index}` },
+    };
+  });
+  const started = performance.now();
+  let result: PassiveSkill[] = [];
+  for (let index = 0; index < 100; index += 1) {
+    result = filterPassiveSkills(skills, "work");
+  }
+  assert.ok(result.length > 0);
+  assert.ok(result.every((skill) => skill.category === "work"));
+  assert.ok(performance.now() - started < 1_000);
 });
 
 test("500 个个体的存档可在容量基线内导出并完整恢复", () => {

@@ -18,6 +18,7 @@ import { getProgressionStats, getTotalExperienceForLevel, MAX_PAL_LEVEL } from "
 import { passiveSkillsById } from "../data/loadPassiveSkills";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 import { clampScroll } from "../ui/scroll";
+import { createTextButton } from "../ui/button";
 
 const GRID_TOP = 190;
 
@@ -127,12 +128,17 @@ export class TeamScene extends Phaser.Scene {
   }
 
   private makeBackupButton(x: number, y: number, label: string, action: () => void) {
-    const background = this.add.rectangle(x, y, 98, 30, 0x354a68).setInteractive({ useHandCursor: true });
-    const text = this.add
-      .text(x, y, label, { fontFamily: "sans-serif", fontSize: "13px", color: "#ffffff" })
-      .setOrigin(0.5);
-    background.on("pointerdown", action);
-    this.content.add([background, text]);
+    this.content.add(
+      createTextButton(this, {
+        x,
+        y,
+        width: 98,
+        height: 30,
+        label,
+        onPress: action,
+        backgroundColor: 0x354a68,
+      })
+    );
   }
 
   private downloadBackup() {

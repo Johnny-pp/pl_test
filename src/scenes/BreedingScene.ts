@@ -7,6 +7,7 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 import { clampScroll } from "../ui/scroll";
+import { createTextButton } from "../ui/button";
 
 const QUALITY_LABELS: Record<EggQuality, string> = { common: "普通", fine: "优良", radiant: "辉光" };
 const QUALITY_COLORS: Record<EggQuality, number> = { common: 0x9aa0c0, fine: 0x4fc3f7, radiant: 0xffb300 };
@@ -246,16 +247,7 @@ export class BreedingScene extends Phaser.Scene {
   }
 
   private makeButton(x: number, y: number, width: number, label: string, action: () => void) {
-    const bg = this.add.rectangle(x, y, width, 30, 0x0f4660).setInteractive({ useHandCursor: true });
-    const text = this.add
-      .text(x, y, label, {
-        fontFamily: "sans-serif",
-        fontSize: "13px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
-    bg.on("pointerdown", action);
-    return this.add.container(0, 0, [bg, text]);
+    return createTextButton(this, { x, y, width, height: 30, label, onPress: action });
   }
 
   private addContent(...objects: Phaser.GameObjects.GameObject[]) {
