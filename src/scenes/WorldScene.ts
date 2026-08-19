@@ -341,12 +341,17 @@ export class WorldScene extends Phaser.Scene {
     if (tile?.index !== TILE_ENCOUNTER || Math.random() >= 0.16) return;
     const enemyId = pickEncounter(zone, period);
     if (!enemyId) return;
+    const save = loadGame(localStorage);
+    const leaderLevel = save.ownedPals.find((pal) => pal.uid === this.leaderUid)?.level ?? 1;
+    const zoneFloor = zone === "echo-ruins" ? 3 : 1;
+    const enemyLevel = Math.max(zoneFloor, Math.min(50, leaderLevel + Math.floor(Math.random() * 3) - 1));
     this.encounterLocked = true;
     this.player.setVelocity(0, 0);
     void startScene(this, "BattleScene", {
       playerId: this.leader.id,
       playerUid: this.leaderUid,
       enemyId,
+      enemyLevel,
       returnTo: {
         scene: "WorldScene",
         data: {

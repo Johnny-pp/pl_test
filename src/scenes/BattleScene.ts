@@ -21,6 +21,7 @@ import {
   saveGame,
   updatePalCurrentHp,
 } from "../player/playerState";
+import { applyExperienceAward } from "../progression/progression";
 import { consumeCaptureOrb } from "../base/baseSystem";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
@@ -28,6 +29,7 @@ import { startScene } from "./sceneLoader";
 interface BattleSceneData {
   playerId: number;
   enemyId: number;
+  enemyLevel?: number;
   playerUid?: string;
   returnTo?: {
     scene: string;
@@ -49,6 +51,8 @@ export class BattleScene extends Phaser.Scene {
   private captureMessage = "";
   private returnTo?: BattleSceneData["returnTo"];
   private playerUid?: string;
+  private enemyLevel = 1;
+  private progressionMessage = "";
 
   constructor() {
     super("BattleScene");
@@ -61,8 +65,10 @@ export class BattleScene extends Phaser.Scene {
   create(data: BattleSceneData) {
     this.captureAttempted = false;
     this.captureMessage = "";
+    this.progressionMessage = "";
     this.returnTo = data.returnTo;
     this.playerUid = data.playerUid;
+    this.enemyLevel = Math.max(1, Math.min(50, Math.floor(data.enemyLevel ?? 1)));
     const player = pals.find((pal) => pal.id === data.playerId);
     const enemy = pals.find((pal) => pal.id === data.enemyId);
     if (!player || !enemy) {
@@ -71,9 +77,12 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
 
-    this.state = createBattle(player, enemy);
+    const currentSave = loadGame(localStorage);
+    const instance = this.playerUid
+      ? currentSave.ownedPals.find((pal) => pal.uid === this.playerUid && pal.speciesId === player.id)
+      : undefined;
+    this.state = createBattle(player, enemy, instance?.level ?? 1, this.enemyLevel);
     if (this.playerUid) {
-      const instance = loadGame(localStorage).ownedPals.find((pal) => pal.uid === this.playerUid);
       if (instance) this.state.player.hp = Math.max(1, Math.min(this.state.player.maxHp, instance.currentHp));
     }
     this.add
@@ -122,7 +131,7 @@ export class BattleScene extends Phaser.Scene {
     this.add.text(
       contentX,
       y - 48,
-      `${fighter.name}  ·  ${fighter.elements.map((e) => ELEMENT_LABELS[e]).join("/")}`,
+      `${fighter.name} Lv.${fighter.level}  ·  ${fighter.elements.map((e) => ELEMENT_LABELS[e]).join("/")}`,
       {
         fontFamily: "sans-serif",
         fontSize: "21px",
@@ -172,17 +181,24 @@ export class BattleScene extends Phaser.Scene {
     if (!this.state) return;
     if (this.state.phase === "victory" || this.state.phase === "defeat") {
       const title = this.add
-        .text(450, 555, this.state.phase === "victory" ? "战斗胜利" : "战斗失败", {
+        .text(450, 540, this.state.phase === "victory" ? "战斗胜利" : "战斗失败", {
           fontFamily: "sans-serif",
           fontSize: "24px",
           color: this.state.phase === "victory" ? "#ffd54f" : "#ff8a80",
+        })
+        .setOrigin(0.5);
+      const progression = this.add
+        .text(450, 570, this.progressionMessage, {
+          fontFamily: "sans-serif",
+          fontSize: "14px",
+          color: "#80deea",
         })
         .setOrigin(0.5);
       const again = this.makeNavButton(500, 602, this.returnTo ? "返回地图" : "重新选角", () =>
         this.returnTo ? this.leaveBattle() : void startScene(this, "SelectPalScene")
       );
       const dex = this.makeNavButton(665, 602, "返回图鉴", () => void startScene(this, "DexScene"));
-      this.actionLayer.add([title, again, dex]);
+      this.actionLayer.add([title, progression, again, dex]);
       if (this.state.phase === "victory") {
         const currentSave = loadGame(localStorage);
         const enemyPal = pals.find((pal) => pal.id === this.state?.enemy.id);
@@ -268,7 +284,28 @@ export class BattleScene extends Phaser.Scene {
     this.state = resolveTurn(this.state, playerSkill, enemySkill);
     let save = loadGame(localStorage);
     if (this.playerUid) save = updatePalCurrentHp(save, this.playerUid, this.state.player.hp);
-    if (this.state.phase === "victory") save = recordBattleWin(save);
+    if (this.state.phase === "victory") {
+      save = recordBattleWin(save);
+      const playerSpecies = pals.find((pal) => pal.id === this.state?.player.id);
+      const enemySpecies = pals.find((pal) => pal.id === this.state?.enemy.id);
+      if (this.playerUid && playerSpecies && enemySpecies) {
+        const result = applyExperienceAward(
+          save.ownedPals,
+          this.playerUid,
+          playerSpecies,
+          this.enemyLevel,
+          enemySpecies.rarity
+        );
+        if (result.award) {
+          save = { ...save, ownedPals: result.ownedPals };
+          const levelText = result.award.levelsGained > 0 ? ` · 升至 Lv.${result.award.newLevel}` : "";
+          const nextText = result.award.nextLevelExperience
+            ? ` · 下级还需 ${result.award.nextLevelExperience - result.award.instance.experience}`
+            : " · 已满级";
+          this.progressionMessage = `获得 ${result.award.gained} 经验${levelText}${nextText}`;
+        }
+      }
+    }
     saveGame(localStorage, save);
     this.render();
     this.busy = false;

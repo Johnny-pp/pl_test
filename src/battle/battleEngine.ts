@@ -1,5 +1,6 @@
 import type { ActiveSkill, StatusEffectType } from "../types/activeSkill";
 import type { ElementType, Pal } from "../types/pal";
+import { getProgressionStats } from "../progression/progression.ts";
 
 export const MAX_ENERGY = 100;
 export const ROUND_ENERGY_RECOVERY = 14;
@@ -9,6 +10,7 @@ export type BattlePhase = "choosing" | "resolving" | "victory" | "defeat";
 export interface Combatant {
   id: number;
   name: string;
+  level: number;
   elements: ElementType[];
   maxHp: number;
   hp: number;
@@ -71,15 +73,17 @@ export function getStatusLabel(status: StatusEffectType): string {
   return STATUS_LABELS[status];
 }
 
-export function createCombatant(pal: Pal): Combatant {
+export function createCombatant(pal: Pal, level = 1): Combatant {
+  const stats = getProgressionStats(pal, level);
   return {
     id: pal.id,
     name: pal.name.zh,
+    level: Math.max(1, Math.min(50, Math.floor(level))),
     elements: [...pal.elements],
-    maxHp: pal.stats.hp,
-    hp: pal.stats.hp,
-    attack: pal.stats.attack,
-    defense: pal.stats.defense,
+    maxHp: stats.maxHp,
+    hp: stats.maxHp,
+    attack: stats.attack,
+    defense: stats.defense,
     speed: pal.stats.moveSpeed,
     energy: MAX_ENERGY,
     skillIds: [...(pal.activeSkills ?? [])],
@@ -87,12 +91,12 @@ export function createCombatant(pal: Pal): Combatant {
   };
 }
 
-export function createBattle(playerPal: Pal, enemyPal: Pal): BattleState {
+export function createBattle(playerPal: Pal, enemyPal: Pal, playerLevel = 1, enemyLevel = 1): BattleState {
   return {
     phase: "choosing",
     round: 1,
-    player: createCombatant(playerPal),
-    enemy: createCombatant(enemyPal),
+    player: createCombatant(playerPal, playerLevel),
+    enemy: createCombatant(enemyPal, enemyLevel),
     log: [`野生的${enemyPal.name.zh}出现了！`],
   };
 }

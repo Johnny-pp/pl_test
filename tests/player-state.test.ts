@@ -64,7 +64,7 @@ test("损坏存档回退为空存档，旧字段会迁移并清理无效队伍�
   assert.equal(loadGame(memoryStorage("not-json")).ownedPals.length, 0);
   const old = JSON.stringify({ version: 0, ownedPals: [], teamIds: ["missing"] });
   const migrated = loadGame(memoryStorage(old));
-  assert.equal(migrated.version, 3);
+  assert.equal(migrated.version, 4);
   assert.deepEqual(migrated.teamIds, []);
 });
 
@@ -86,7 +86,21 @@ test("存档备份可导出、迁移后导入，并拒绝无关 JSON", () => {
   assert.deepEqual(restored, save);
 
   const oldBackup = JSON.stringify({ version: 1, ownedPals: [], teamIds: [] });
-  assert.equal(importSaveBackup(oldBackup)?.version, 3);
+  assert.equal(importSaveBackup(oldBackup)?.version, 4);
   assert.equal(importSaveBackup('{"hello":"world"}'), undefined);
   assert.equal(importSaveBackup("not-json"), undefined);
+});
+
+test("旧存档迁移会修复损坏的等级、经验和生命值", () => {
+  const damaged = createPalInstance(species, () => "damaged-pal");
+  damaged.level = -8;
+  damaged.experience = -100;
+  damaged.currentHp = -20;
+  const migrated = loadGame(
+    memoryStorage(JSON.stringify({ version: 3, ownedPals: [damaged], teamIds: [damaged.uid] }))
+  );
+  assert.equal(migrated.version, 4);
+  assert.equal(migrated.ownedPals[0].level, 1);
+  assert.equal(migrated.ownedPals[0].experience, 0);
+  assert.equal(migrated.ownedPals[0].currentHp, 0);
 });

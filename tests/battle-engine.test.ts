@@ -93,3 +93,13 @@ test("回合结算不会修改传入状态", () => {
   assert.equal(initial.player.hp, 100);
   assert.notEqual(next, initial);
 });
+
+test("个体等级成长会真实影响战斗属性", () => {
+  const species = pal(1, "成长兽", "neutral");
+  const levelOne = createCombatant(species, 1);
+  const levelTen = createCombatant(species, 10);
+  assert.equal(levelTen.level, 10);
+  assert.ok(levelTen.maxHp > levelOne.maxHp);
+  assert.ok(levelTen.attack > levelOne.attack);
+  assert.ok(levelTen.defense > levelOne.defense);
+});

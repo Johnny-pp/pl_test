@@ -14,6 +14,7 @@ import { ELEMENT_COLORS, ELEMENT_LABELS } from "../types/elements";
 import { useHealingTonic } from "../base/baseSystem";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
+import { getProgressionStats, getTotalExperienceForLevel, MAX_PAL_LEVEL } from "../progression/progression";
 
 const GRID_TOP = 190;
 
@@ -180,6 +181,12 @@ export class TeamScene extends Phaser.Scene {
     const y = GRID_TOP + 48 + row * 120;
     const inTeam = this.save.teamIds.includes(instance.uid);
     const element = species.elements[0] ?? "neutral";
+    const stats = getProgressionStats(species, instance.level);
+    const levelStart = getTotalExperienceForLevel(instance.level, species.growth.experienceCurve);
+    const nextLevel =
+      instance.level < MAX_PAL_LEVEL
+        ? getTotalExperienceForLevel(instance.level + 1, species.growth.experienceCurve)
+        : undefined;
     const bg = this.add.rectangle(x, y, 250, 96, 0x16213e).setStrokeStyle(2, ELEMENT_COLORS[element]);
     const portrait = addPalPortrait(this, species.id, x - 88, y, 76);
     const name = this.add.text(x - 45, y - 34, `${species.name.zh}  Lv.${instance.level}`, {
@@ -190,7 +197,7 @@ export class TeamScene extends Phaser.Scene {
     const detail = this.add.text(
       x - 45,
       y - 7,
-      `${species.elements.map((e) => ELEMENT_LABELS[e]).join("/")} · HP ${instance.currentHp}/${species.stats.hp}`,
+      `${species.elements.map((e) => ELEMENT_LABELS[e]).join("/")} · HP ${instance.currentHp}/${stats.maxHp} · 攻 ${stats.attack} 防 ${stats.defense}`,
       { fontFamily: "sans-serif", fontSize: "13px", color: "#9aa0c0" }
     );
     const button = this.add
@@ -211,7 +218,16 @@ export class TeamScene extends Phaser.Scene {
       this.render();
     });
     this.content.add([bg, portrait, name, detail, button, buttonText]);
-    if (instance.currentHp < species.stats.hp) {
+    const experienceText = this.add.text(
+      x - 45,
+      y + 12,
+      nextLevel
+        ? `经验 ${Math.max(0, instance.experience - levelStart)}/${nextLevel - levelStart}`
+        : "经验 MAX",
+      { fontFamily: "sans-serif", fontSize: "12px", color: "#80deea" }
+    );
+    this.content.add(experienceText);
+    if (instance.currentHp < stats.maxHp) {
       const heal = this.add
         .rectangle(x - 65, y + 25, 100, 30, 0x49743f)
         .setInteractive({ useHandCursor: true });
@@ -223,7 +239,7 @@ export class TeamScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
       heal.on("pointerdown", () => {
-        const next = useHealingTonic(this.save, instance.uid, species.stats.hp);
+        const next = useHealingTonic(this.save, instance.uid, stats.maxHp);
         if (next === this.save) return;
         this.save = next;
         saveGame(localStorage, this.save);

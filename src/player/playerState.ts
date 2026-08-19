@@ -1,6 +1,6 @@
 import type { Pal } from "../types/pal";
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -127,6 +127,16 @@ function isPalInstance(value: unknown): value is PalInstance {
   );
 }
 
+function normalizePalInstance(pal: PalInstance): PalInstance {
+  return {
+    ...pal,
+    level: Math.max(1, Math.min(50, Math.floor(pal.level))),
+    experience: Math.max(0, Math.floor(pal.experience)),
+    currentHp: Math.max(0, Math.floor(pal.currentHp)),
+    passiveSkillIds: pal.passiveSkillIds.filter((id): id is string => typeof id === "string"),
+  };
+}
+
 function finiteCount(value: unknown, fallback = 0): number {
   return Number.isFinite(value) ? Math.max(0, Math.floor(value as number)) : fallback;
 }
@@ -138,7 +148,9 @@ function finiteAmount(value: unknown, fallback = 0): number {
 function migrateSave(value: unknown, now = Date.now()): GameSave {
   if (!value || typeof value !== "object") return createEmptySave(now);
   const raw = value as Record<string, unknown>;
-  const ownedPals = Array.isArray(raw.ownedPals) ? raw.ownedPals.filter(isPalInstance) : [];
+  const ownedPals = Array.isArray(raw.ownedPals)
+    ? raw.ownedPals.filter(isPalInstance).map(normalizePalInstance)
+    : [];
   const ownedIds = new Set(ownedPals.map((pal) => pal.uid));
   const teamIds = Array.isArray(raw.teamIds)
     ? raw.teamIds
