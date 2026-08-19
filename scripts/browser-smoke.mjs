@@ -191,12 +191,14 @@ try {
     sessionId,
     `const canvas = document.querySelector('#game canvas');
      return { role: canvas.getAttribute('role'), label: canvas.getAttribute('aria-label'),
-       status: document.querySelector('#game-status').textContent };`
+       status: document.querySelector('#game-status').textContent,
+       loadingVisible: Boolean(document.querySelector('#game > .game-loading')) };`
   );
   assert.deepEqual(accessibility, {
     role: "application",
     label: "幻兽远征游戏画布",
     status: "幻兽图鉴。可搜索、筛选并前往战斗、队伍、地图、基地、任务或配种。",
+    loadingVisible: false,
   });
 
   await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [

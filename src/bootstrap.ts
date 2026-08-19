@@ -8,6 +8,7 @@ export async function startGame(): Promise<Phaser.Game> {
   const start = search.get("start");
   const firstScene = start === "world" ? await loadScene("WorldScene") : DexScene;
   const scenes = firstScene === DexScene ? [DexScene] : [firstScene, DexScene];
+  document.querySelector("#game > .game-loading")?.remove();
 
   const game = new Phaser.Game({
     type: search.get("renderer") === "canvas" ? Phaser.CANVAS : Phaser.AUTO,
