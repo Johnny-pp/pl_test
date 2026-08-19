@@ -60,6 +60,13 @@
 - 主动技能独立存放于 `data/active-skills.json`，物种通过稳定 ID 引用。
 - 数据校验会检查物种/技能的 Schema、ID 与名称唯一性、主动/被动跨表引用和重复工作适性。
 
+## 等级、经验与属性成长
+- 成长规则位于 `src/progression/progression.ts`，与 Phaser 场景解耦，最高等级为 50。
+- `growth.experienceCurve` 的 `fast`、`medium`、`slow` 使用不同累计经验阈值；战斗奖励由敌方等级和稀有度共同决定。
+- 个体的 `level`、`experience` 和 `currentHp` 保存在玩家存档中；物种基础属性与每级成长值仍保留在静态数据中。
+- 等级会提高最大 HP、攻击和防御，并直接参与后续战斗。升级时当前 HP 按最大 HP 增量补充，但不会复活已倒下个体。
+- 当前存档版本为 v4，旧存档会迁移并清理非法等级、负经验和负生命值。
+
 ## 被动技能全局表
 - 文件：`data/passive-skills.json`，对应 Schema：`schema/passive-skill.schema.json`（draft 2020-12）。
 - 字段：`id`(slug)、`name{zh,en}`、`category`(attack/defense/work/move/element/resource/other)、`description`(效果描述)、`tier`(common/rare/legendary)。
