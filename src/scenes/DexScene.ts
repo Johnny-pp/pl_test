@@ -4,6 +4,8 @@ import { ELEMENT_COLORS, ELEMENT_LABELS, WORK_LABELS } from "../types/elements";
 import type { ElementType, WorkType, Pal } from "../types/pal";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
+import { filterAndSortPals, paginate, type DexSortKey } from "../dex/dexFilters";
+import { clampScroll, getMinScroll } from "../ui/scroll";
 
 const CARD_W = 200;
 const CARD_H = 96;
@@ -15,7 +17,7 @@ const ELEMENTS = Object.keys(ELEMENT_LABELS) as ElementType[];
 const WORKS = Object.keys(WORK_LABELS) as WorkType[];
 
 interface SortOpt {
-  key: "id" | "name" | "rarity" | "hp" | "attack";
+  key: DexSortKey;
   label: string;
 }
 
@@ -148,8 +150,7 @@ export class DexScene extends Phaser.Scene {
     this.renderGrid();
 
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
-      const maxScroll = Math.min(0, this.scale.height - this.grid.height - GRID_TOP);
-      this.scrollY = Phaser.Math.Clamp(this.grid.y - dy * 0.5, maxScroll, 0);
+      this.scrollY = clampScroll(this.grid.y, dy, this.scale.height, this.grid.height, GRID_TOP);
       this.grid.y = this.scrollY;
       this.saveState();
     });
@@ -348,43 +349,12 @@ export class DexScene extends Phaser.Scene {
 
   // ---- 过滤 + 排序 ----
   private getFilteredPals(): Pal[] {
-    const q = this.searchText.trim().toLowerCase();
-    let list = pals.filter((p) => {
-      if (q) {
-        const hay = [
-          String(p.id),
-          p.name.zh,
-          p.name.en,
-          ...p.elements.map((e) => ELEMENT_LABELS[e]),
-          ...p.workSuitability.map((w) => WORK_LABELS[w.type]),
-          ...(p.spawnLocations ?? []),
-        ]
-          .join(" ")
-          .toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      if (this.activeElements.size > 0 && !p.elements.some((e) => this.activeElements.has(e))) return false;
-      if (this.activeWorks.size > 0 && !p.workSuitability.some((w) => this.activeWorks.has(w.type)))
-        return false;
-      return true;
+    return filterAndSortPals(pals, {
+      searchText: this.searchText,
+      elements: this.activeElements,
+      works: this.activeWorks,
+      sortKey: this.sortKey,
     });
-
-    const k = this.sortKey;
-    list = [...list].sort((a, b) => {
-      switch (k) {
-        case "id":
-          return a.id - b.id;
-        case "name":
-          return a.name.zh.localeCompare(b.name.zh, "zh");
-        case "rarity":
-          return b.rarity - a.rarity;
-        case "hp":
-          return b.stats.hp - a.stats.hp;
-        case "attack":
-          return b.stats.attack - a.stats.attack;
-      }
-    });
-    return list;
   }
 
   // ---- 渲染网格 ----
@@ -393,9 +363,10 @@ export class DexScene extends Phaser.Scene {
     const list = this.getFilteredPals();
     this.countText.setText(`共 ${list.length} 只`);
     this.emptyText.setVisible(list.length === 0);
-    const pageCount = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
-    this.page = Phaser.Math.Clamp(this.page, 0, pageCount - 1);
-    const pageItems = list.slice(this.page * PAGE_SIZE, (this.page + 1) * PAGE_SIZE);
+    const pageResult = paginate(list, this.page, PAGE_SIZE);
+    const pageCount = pageResult.pageCount;
+    this.page = pageResult.page;
+    const pageItems = pageResult.items;
     this.pageText.setText(`${this.page + 1}/${pageCount}`);
     this.previousPage.setAlpha(this.page > 0 ? 1 : 0.25);
     this.nextPage.setAlpha(this.page < pageCount - 1 ? 1 : 0.25);
@@ -411,7 +382,7 @@ export class DexScene extends Phaser.Scene {
       card.setPosition(startX + col * (CARD_W + GAP), GRID_TOP + row * (CARD_H + GAP));
       this.grid.add(card);
     });
-    const maxScroll = Math.min(0, this.scale.height - this.grid.height - GRID_TOP);
+    const maxScroll = getMinScroll(this.scale.height, this.grid.height, GRID_TOP);
     this.grid.y = Phaser.Math.Clamp(this.scrollY, maxScroll, 0);
     this.saveState();
   }

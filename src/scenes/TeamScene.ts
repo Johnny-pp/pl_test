@@ -17,6 +17,7 @@ import { startScene } from "./sceneLoader";
 import { getProgressionStats, getTotalExperienceForLevel, MAX_PAL_LEVEL } from "../progression/progression";
 import { passiveSkillsById } from "../data/loadPassiveSkills";
 import { describePassiveBonuses } from "../passives/passiveEffects";
+import { clampScroll } from "../ui/scroll";
 
 const GRID_TOP = 190;
 
@@ -56,8 +57,7 @@ export class TeamScene extends Phaser.Scene {
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       const rows = Math.ceil(this.save.ownedPals.length / 3);
       const contentHeight = GRID_TOP + rows * 138;
-      const minY = Math.min(0, this.scale.height - contentHeight - 20);
-      this.content.y = Phaser.Math.Clamp(this.content.y - dy * 0.5, minY, 0);
+      this.content.y = clampScroll(this.content.y, dy, this.scale.height, contentHeight, 20);
     });
   }
 

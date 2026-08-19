@@ -13,10 +13,13 @@
       .fatal-error { max-width: 34rem; margin: 1rem; padding: 1.5rem; border: 1px solid #ef5350; border-radius: .75rem; background: #161b2e; text-align: center; }
       .fatal-error h1 { color: #ff8a80; }
       .fatal-error button { padding: .65rem 1rem; border: 0; border-radius: .4rem; background: #00acc1; color: white; cursor: pointer; }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+      canvas:focus-visible { outline: 3px solid #80deea; outline-offset: -3px; }
     </style>
   </head>
   <body>
     <div id="game"></div>
+    <div id="game-status" class="sr-only" role="status" aria-live="polite"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

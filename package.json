@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "node --test --experimental-strip-types tests/*.test.ts",
+    "test:browser": "npm run build && node scripts/browser-smoke.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src tests scripts/*.mjs vite.config.mjs eslint.config.js",
     "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts' 'scripts/**/*.mjs' '*.mjs' '*.js'",

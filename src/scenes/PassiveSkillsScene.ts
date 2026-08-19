@@ -9,6 +9,7 @@ import {
 } from "../types/passiveSkill";
 import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
+import { clampScroll } from "../ui/scroll";
 
 const CATEGORIES: (PassiveCategory | "all")[] = [
   "all",
@@ -49,8 +50,7 @@ export class PassiveSkillsScene extends Phaser.Scene {
     this.renderList();
 
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
-      const maxScroll = Math.min(0, this.scale.height - this.list.height - LIST_TOP);
-      this.list.y = Phaser.Math.Clamp(this.list.y - dy * 0.5, maxScroll, 0);
+      this.list.y = clampScroll(this.list.y, dy, this.scale.height, this.list.height, LIST_TOP);
     });
   }
 

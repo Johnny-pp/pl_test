@@ -1,4 +1,5 @@
 import type Phaser from "phaser";
+import { announceScene } from "../ui/accessibility";
 
 type SceneLoader = () => Promise<typeof Phaser.Scene>;
 
@@ -27,5 +28,6 @@ export async function startScene(current: Phaser.Scene, key: string, data?: obje
     const SceneClass = await loadScene(key);
     current.scene.add(key, SceneClass, false);
   }
+  announceScene(key);
   current.scene.start(key, data);
 }

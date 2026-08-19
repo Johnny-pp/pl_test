@@ -6,6 +6,7 @@ import { loadGame, saveGame, type EggQuality, type GameSave, type PalInstance } 
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
+import { clampScroll } from "../ui/scroll";
 
 const QUALITY_LABELS: Record<EggQuality, string> = { common: "普通", fine: "优良", radiant: "辉光" };
 const QUALITY_COLORS: Record<EggQuality, number> = { common: 0x9aa0c0, fine: 0x4fc3f7, radiant: 0xffb300 };
@@ -47,8 +48,7 @@ export class BreedingScene extends Phaser.Scene {
     this.time.addEvent({ delay: 1000, loop: true, callback: () => this.render() });
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       const rows = Math.ceil(this.save.ownedPals.length / 2);
-      const minY = Math.min(0, this.scale.height - (150 + rows * 100) - 20);
-      this.content.y = Phaser.Math.Clamp(this.content.y - dy * 0.5, minY, 0);
+      this.content.y = clampScroll(this.content.y, dy, this.scale.height, 150 + rows * 100, 20);
     });
   }
 

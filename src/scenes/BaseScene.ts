@@ -12,6 +12,7 @@ import {
 import { loadGame, saveGame, type BaseJob, type FacilityId, type GameSave } from "../player/playerState";
 import { startScene } from "./sceneLoader";
 import { recordQuestEvent } from "../quests/questSystem";
+import { clampScroll } from "../ui/scroll";
 
 const speciesById = new Map(pals.map((pal) => [pal.id, pal]));
 const JOB_LABELS: Record<BaseJob, string> = {
@@ -61,8 +62,7 @@ export class BaseScene extends Phaser.Scene {
     this.time.addEvent({ delay: 5000, loop: true, callback: () => this.settleProduction() });
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       const rows = Math.ceil(this.save.ownedPals.length / 2);
-      const minY = Math.min(0, this.scale.height - (300 + rows * 130) - 20);
-      this.content.y = Phaser.Math.Clamp(this.content.y - dy * 0.5, minY, 0);
+      this.content.y = clampScroll(this.content.y, dy, this.scale.height, 300 + rows * 130, 20);
     });
   }
 
