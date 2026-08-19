@@ -1,7 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { ENCOUNTER_TABLES, getTimePeriod, getZoneAtTile, pickEncounter } from "../src/world/encounters.ts";
+import {
+  ENCOUNTER_TABLES,
+  getEncounterLevelFloor,
+  getTimePeriod,
+  getZoneAtTile,
+  pickEncounter,
+} from "../src/world/encounters.ts";
 import { TILE_WALL, WORLD_COLS, WORLD_ROWS, createWorldMap } from "../src/world/worldMap.ts";
 
 test("昼夜边界按 6 点和 18 点切换", () => {
@@ -24,6 +30,21 @@ test("地图左右区域使用不同遭遇表", () => {
   );
 });
 
+test("云脊高地拥有独立昼夜遭遇与等级下限", () => {
+  assert.equal(getZoneAtTile(19, "cloudridge-highlands"), "mist-terrace");
+  assert.equal(getZoneAtTile(20, "cloudridge-highlands"), "storm-ridge");
+  assert.equal(
+    pickEncounter("mist-terrace", "day", () => 0),
+    34
+  );
+  assert.equal(
+    pickEncounter("storm-ridge", "night", () => 0.999),
+    36
+  );
+  assert.equal(getEncounterLevelFloor("mist-terrace"), 6);
+  assert.equal(getEncounterLevelFloor("storm-ridge"), 9);
+});
+
 test("瓦片地图四周均为不可通行边界", () => {
   const map = createWorldMap();
   assert.equal(map.length, WORLD_ROWS);
@@ -31,6 +52,15 @@ test("瓦片地图四周均为不可通行边界", () => {
   assert.ok(map[0].every((tile) => tile === TILE_WALL));
   assert.ok(map[WORLD_ROWS - 1].every((tile) => tile === TILE_WALL));
   assert.ok(map.every((row) => row[0] === TILE_WALL && row[WORLD_COLS - 1] === TILE_WALL));
+});
+
+test("第二地区使用不同的障碍与遭遇区地图", () => {
+  const frontier = createWorldMap("frontier");
+  const highland = createWorldMap("cloudridge-highlands");
+  assert.notDeepEqual(highland, frontier);
+  assert.ok(highland[0].every((tile) => tile === TILE_WALL));
+  assert.ok(highland[WORLD_ROWS - 1].every((tile) => tile === TILE_WALL));
+  assert.ok(highland.every((row) => row[0] === TILE_WALL && row[WORLD_COLS - 1] === TILE_WALL));
 });
 
 test("所有遭遇表只引用存在的物种", () => {

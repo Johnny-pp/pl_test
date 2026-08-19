@@ -1,7 +1,13 @@
 import Phaser from "phaser";
 import { pals } from "../data/loadPals";
-import { loadGame } from "../player/playerState";
-import { getTimePeriod, getZoneAtTile, pickEncounter, type WorldZone } from "../world/encounters";
+import { loadGame, saveGame } from "../player/playerState";
+import {
+  getEncounterLevelFloor,
+  getTimePeriod,
+  getZoneAtTile,
+  pickEncounter,
+  type WorldZone,
+} from "../world/encounters";
 import {
   TILE_ENCOUNTER,
   TILE_SIZE,
@@ -12,8 +18,17 @@ import {
 } from "../world/worldMap";
 import type { Pal } from "../types/pal";
 import { startScene } from "./sceneLoader";
+import {
+  getHighlandUnlockStatus,
+  HIGHLAND_REGION,
+  isWorldRegion,
+  STARTING_REGION,
+  unlockHighlandRegion,
+  type WorldRegion,
+} from "../world/regions";
 
 interface WorldSceneData {
+  region?: WorldRegion;
   playerX?: number;
   playerY?: number;
   leaderId?: number;
@@ -30,16 +45,31 @@ interface ResourceNode {
   label: string;
 }
 
-const RESOURCES: ResourceNode[] = [
-  { id: "wood-1", x: 7 * TILE_SIZE, y: 12 * TILE_SIZE, label: "轻木" },
-  { id: "stone-1", x: 17 * TILE_SIZE, y: 21 * TILE_SIZE, label: "碎石" },
-  { id: "crystal-1", x: 32 * TILE_SIZE, y: 13 * TILE_SIZE, label: "微光晶" },
-  { id: "wood-2", x: 35 * TILE_SIZE, y: 23 * TILE_SIZE, label: "轻木" },
-];
+const REGION_RESOURCES: Record<WorldRegion, ResourceNode[]> = {
+  frontier: [
+    { id: "frontier-wood-1", x: 7 * TILE_SIZE, y: 12 * TILE_SIZE, label: "轻木" },
+    { id: "frontier-stone-1", x: 17 * TILE_SIZE, y: 21 * TILE_SIZE, label: "碎石" },
+    { id: "frontier-crystal-1", x: 32 * TILE_SIZE, y: 13 * TILE_SIZE, label: "微光晶" },
+    { id: "frontier-wood-2", x: 35 * TILE_SIZE, y: 23 * TILE_SIZE, label: "轻木" },
+  ],
+  "cloudridge-highlands": [
+    { id: "highland-silk-1", x: 4 * TILE_SIZE, y: 8 * TILE_SIZE, label: "雾绡草" },
+    { id: "highland-crystal-1", x: 16 * TILE_SIZE, y: 22 * TILE_SIZE, label: "鸣振晶" },
+    { id: "highland-stone-1", x: 25 * TILE_SIZE, y: 14 * TILE_SIZE, label: "浮岩" },
+    { id: "highland-dew-1", x: 35 * TILE_SIZE, y: 22 * TILE_SIZE, label: "云露" },
+  ],
+};
 
 const ZONE_LABELS: Record<WorldZone, string> = {
   "sunlit-meadow": "晴风原野",
   "echo-ruins": "回声遗迹",
+  "mist-terrace": "雾瀑台地",
+  "storm-ridge": "风暴山脊",
+};
+
+const REGION_LABELS: Record<WorldRegion, string> = {
+  frontier: "晴风边境",
+  "cloudridge-highlands": "云脊高地",
 };
 
 export class WorldScene extends Phaser.Scene {
@@ -67,6 +97,7 @@ export class WorldScene extends Phaser.Scene {
   private nextEncounterCheck = 0;
   private touchDirection = { up: false, down: false, left: false, right: false };
   private touchInteractRequested = false;
+  private region: WorldRegion = STARTING_REGION;
 
   constructor() {
     super("WorldScene");
@@ -76,17 +107,24 @@ export class WorldScene extends Phaser.Scene {
     this.encounterLocked = false;
     this.gathered = data.gathered ?? 0;
     this.collected = new Set(data.collectedResourceIds ?? []);
+    const save = loadGame(localStorage);
+    const requestedRegion = isWorldRegion(data.region) ? data.region : STARTING_REGION;
+    this.region =
+      requestedRegion === HIGHLAND_REGION && !save.progress.unlockedRegions.includes(HIGHLAND_REGION)
+        ? STARTING_REGION
+        : requestedRegion;
     const leader = this.resolveLeader(data.leaderId, data.leaderUid);
     this.leader = leader.species;
     this.leaderUid = leader.uid;
     this.createTextures();
 
     const map = this.make.tilemap({
-      data: createWorldMap(),
+      data: createWorldMap(this.region),
       tileWidth: TILE_SIZE,
       tileHeight: TILE_SIZE,
     });
-    const tileset = map.addTilesetImage("world-tiles", "world-tiles", TILE_SIZE, TILE_SIZE, 0, 0, 0);
+    const textureKey = `world-tiles-${this.region}`;
+    const tileset = map.addTilesetImage(textureKey, textureKey, TILE_SIZE, TILE_SIZE, 0, 0, 0);
     if (!tileset) throw new Error("无法创建世界地图图块集");
     const layer = map.createLayer(0, tileset, 0, 0);
     if (!layer) throw new Error("无法创建世界地图图层");
@@ -115,6 +153,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setZoom(1);
 
     this.createResources();
+    this.createPortal();
     this.createHud();
     this.encounterCooldownUntil = this.time.now + (data.encounterCooldown ? 2200 : 800);
   }
@@ -129,17 +168,23 @@ export class WorldScene extends Phaser.Scene {
     this.player.setVelocity(direction.x, direction.y);
 
     const tileX = Math.floor(this.player.x / TILE_SIZE);
-    const zone = getZoneAtTile(tileX);
+    const zone = getZoneAtTile(tileX, this.region);
     const period = getTimePeriod(new Date().getHours());
     this.zoneText.setText(
-      `${ZONE_LABELS[zone]} · ${period === "day" ? "白昼" : "夜晚"} · 领队 ${this.leader.name.zh}`
+      `${REGION_LABELS[this.region]} / ${ZONE_LABELS[zone]} · ${period === "day" ? "白昼" : "夜晚"} · 领队 ${this.leader.name.zh}`
     );
 
     const nearest = this.findNearbyResource();
-    this.promptText.setVisible(Boolean(nearest));
-    if (nearest) this.promptText.setText(`按 E 采集 ${nearest.label}`);
-    if (nearest && (Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested))
-      this.gatherResource(nearest);
+    const nearPortal = this.isNearPortal();
+    const interactRequested = Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested;
+    this.promptText.setVisible(Boolean(nearest) || nearPortal);
+    if (nearest) {
+      this.promptText.setText(`按 E 采集 ${nearest.label}`);
+      if (interactRequested) this.gatherResource(nearest);
+    } else if (nearPortal) {
+      this.promptText.setText(this.getPortalPrompt());
+      if (interactRequested) this.usePortal();
+    }
     this.touchInteractRequested = false;
 
     if (direction.lengthSq() > 0) this.tryEncounter(zone, period);
@@ -166,15 +211,20 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private createTextures() {
-    if (!this.textures.exists("world-tiles")) {
+    const textureKey = `world-tiles-${this.region}`;
+    if (!this.textures.exists(textureKey)) {
       const graphics = this.make.graphics({ x: 0, y: 0 });
-      [0x315d3c, 0x263447, 0x477c4d, 0x8a795e].forEach((color, index) => {
+      const palette =
+        this.region === HIGHLAND_REGION
+          ? [0x426a70, 0x30384f, 0x668c91, 0x8c96aa]
+          : [0x315d3c, 0x263447, 0x477c4d, 0x8a795e];
+      palette.forEach((color, index) => {
         graphics.fillStyle(color);
         graphics.fillRect(index * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE);
         graphics.lineStyle(1, 0x1f2a37, 0.25);
         graphics.strokeRect(index * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE);
       });
-      graphics.generateTexture("world-tiles", TILE_SIZE * 4, TILE_SIZE);
+      graphics.generateTexture(textureKey, TILE_SIZE * 4, TILE_SIZE);
       graphics.destroy();
     }
     if (!this.textures.exists("world-player")) {
@@ -245,7 +295,7 @@ export class WorldScene extends Phaser.Scene {
       .setDepth(22)
       .setInteractive({ useHandCursor: true });
     this.add
-      .text(826, 558, "E\n采集", {
+      .text(826, 558, "E\n交互", {
         fontFamily: "sans-serif",
         fontSize: "14px",
         color: "#ffffff",
@@ -291,7 +341,7 @@ export class WorldScene extends Phaser.Scene {
 
   private createResources() {
     this.resources.clear();
-    for (const resource of RESOURCES) {
+    for (const resource of REGION_RESOURCES[this.region]) {
       if (this.collected.has(resource.id)) continue;
       const node = this.add.circle(resource.x, resource.y, 13, 0x80deea).setStrokeStyle(3, 0xffffff, 0.7);
       const label = this.add
@@ -306,7 +356,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private findNearbyResource(): ResourceNode | undefined {
-    return RESOURCES.find((resource) => {
+    return REGION_RESOURCES[this.region].find((resource) => {
       const object = this.resources.get(resource.id);
       return (
         object?.node.active &&
@@ -329,6 +379,61 @@ export class WorldScene extends Phaser.Scene {
     this.resourceText?.setText(`采集物 ${this.gathered}`);
   }
 
+  private createPortal() {
+    const x = (this.region === STARTING_REGION ? 37 : 3) * TILE_SIZE;
+    const y = 14 * TILE_SIZE;
+    this.add
+      .circle(x, y, 22, this.region === STARTING_REGION ? 0x90caf9 : 0xa5d6a7, 0.78)
+      .setStrokeStyle(4, 0xffffff, 0.8);
+    this.add
+      .text(x, y + 28, this.region === STARTING_REGION ? "高地风门" : "边境风门", {
+        fontFamily: "sans-serif",
+        fontSize: "13px",
+        color: "#ffffff",
+        backgroundColor: "#0b1224",
+        padding: { x: 5, y: 2 },
+      })
+      .setOrigin(0.5, 0);
+  }
+
+  private isNearPortal(): boolean {
+    const x = (this.region === STARTING_REGION ? 37 : 3) * TILE_SIZE;
+    return Phaser.Math.Distance.Between(this.player.x, this.player.y, x, 14 * TILE_SIZE) < 58;
+  }
+
+  private getPortalPrompt(): string {
+    if (this.region === HIGHLAND_REGION) return "按 E 返回晴风边境";
+    const status = getHighlandUnlockStatus(loadGame(localStorage));
+    if (status.unlocked) return "按 E 进入云脊高地";
+    if (status.eligible) return "按 E 消耗木材30、石材20、晶体5，解锁并进入云脊高地";
+    return `云脊高地尚未解锁 · ${status.missing.join(" · ")}`;
+  }
+
+  private usePortal() {
+    if (this.region === STARTING_REGION) {
+      const current = loadGame(localStorage);
+      const next = unlockHighlandRegion(current);
+      if (next !== current && !saveGame(localStorage, next)) return;
+      if (!next.progress.unlockedRegions.includes(HIGHLAND_REGION)) return;
+      this.changeRegion(HIGHLAND_REGION, 3.8 * TILE_SIZE);
+      return;
+    }
+    this.changeRegion(STARTING_REGION, 36.2 * TILE_SIZE);
+  }
+
+  private changeRegion(region: WorldRegion, playerX: number) {
+    void startScene(this, "WorldScene", {
+      region,
+      playerX,
+      playerY: 14 * TILE_SIZE,
+      leaderId: this.leader.id,
+      leaderUid: this.leaderUid,
+      encounterCooldown: true,
+      gathered: this.gathered,
+      collectedResourceIds: [...this.collected],
+    });
+  }
+
   private tryEncounter(zone: WorldZone, period: "day" | "night") {
     if (
       this.encounterLocked ||
@@ -343,7 +448,7 @@ export class WorldScene extends Phaser.Scene {
     if (!enemyId) return;
     const save = loadGame(localStorage);
     const leaderLevel = save.ownedPals.find((pal) => pal.uid === this.leaderUid)?.level ?? 1;
-    const zoneFloor = zone === "echo-ruins" ? 3 : 1;
+    const zoneFloor = getEncounterLevelFloor(zone);
     const enemyLevel = Math.max(zoneFloor, Math.min(50, leaderLevel + Math.floor(Math.random() * 3) - 1));
     this.encounterLocked = true;
     this.player.setVelocity(0, 0);
@@ -355,6 +460,7 @@ export class WorldScene extends Phaser.Scene {
       returnTo: {
         scene: "WorldScene",
         data: {
+          region: this.region,
           playerX: this.player.x,
           playerY: this.player.y,
           leaderId: this.leader.id,

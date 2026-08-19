@@ -1,4 +1,6 @@
-export type WorldZone = "sunlit-meadow" | "echo-ruins";
+import { HIGHLAND_REGION, type WorldRegion } from "./regions.ts";
+
+export type WorldZone = "sunlit-meadow" | "echo-ruins" | "mist-terrace" | "storm-ridge";
 export type TimePeriod = "day" | "night";
 
 export interface EncounterEntry {
@@ -35,6 +37,34 @@ export const ENCOUNTER_TABLES: Record<WorldZone, Record<TimePeriod, EncounterEnt
       { speciesId: 30, weight: 15 },
     ],
   },
+  "mist-terrace": {
+    day: [
+      { speciesId: 34, weight: 38 },
+      { speciesId: 35, weight: 25 },
+      { speciesId: 38, weight: 22 },
+      { speciesId: 36, weight: 15 },
+    ],
+    night: [
+      { speciesId: 37, weight: 42 },
+      { speciesId: 35, weight: 24 },
+      { speciesId: 38, weight: 21 },
+      { speciesId: 39, weight: 13 },
+    ],
+  },
+  "storm-ridge": {
+    day: [
+      { speciesId: 36, weight: 34 },
+      { speciesId: 34, weight: 26 },
+      { speciesId: 35, weight: 24 },
+      { speciesId: 39, weight: 16 },
+    ],
+    night: [
+      { speciesId: 37, weight: 31 },
+      { speciesId: 39, weight: 29 },
+      { speciesId: 38, weight: 23 },
+      { speciesId: 36, weight: 17 },
+    ],
+  },
 };
 
 export function getTimePeriod(hour: number): TimePeriod {
@@ -42,8 +72,15 @@ export function getTimePeriod(hour: number): TimePeriod {
   return normalized >= 6 && normalized < 18 ? "day" : "night";
 }
 
-export function getZoneAtTile(tileX: number): WorldZone {
+export function getZoneAtTile(tileX: number, region: WorldRegion = "frontier"): WorldZone {
+  if (region === HIGHLAND_REGION) return tileX < 20 ? "mist-terrace" : "storm-ridge";
   return tileX < 20 ? "sunlit-meadow" : "echo-ruins";
+}
+
+export function getEncounterLevelFloor(zone: WorldZone): number {
+  if (zone === "mist-terrace") return 6;
+  if (zone === "storm-ridge") return 9;
+  return zone === "echo-ruins" ? 3 : 1;
 }
 
 export function pickEncounter(

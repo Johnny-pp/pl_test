@@ -1,6 +1,7 @@
 import type { Pal } from "../types/pal";
+import { isWorldRegion, STARTING_REGION, type WorldRegion } from "../world/regions.ts";
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -17,6 +18,7 @@ export interface PalInstance {
 export interface GameProgress {
   battlesWon: number;
   captures: number;
+  unlockedRegions: WorldRegion[];
 }
 
 export type BaseJob = "planting" | "mining" | "lumbering" | "generating";
@@ -84,7 +86,7 @@ export function createEmptySave(now = Date.now()): GameSave {
     version: SAVE_VERSION,
     ownedPals: [],
     teamIds: [],
-    progress: { battlesWon: 0, captures: 0 },
+    progress: { battlesWon: 0, captures: 0, unlockedRegions: [STARTING_REGION] },
     inventory: { captureOrbs: 3, healingTonics: 0 },
     base: {
       resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0 },
@@ -210,6 +212,14 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
       captures: Number.isFinite(progress.captures)
         ? Math.max(0, Math.floor(progress.captures!))
         : ownedPals.length,
+      unlockedRegions: [
+        STARTING_REGION,
+        ...new Set(
+          (Array.isArray(progress.unlockedRegions) ? progress.unlockedRegions : []).filter(
+            (region): region is WorldRegion => isWorldRegion(region) && region !== STARTING_REGION
+          )
+        ),
+      ],
     },
     inventory: {
       captureOrbs: finiteCount(inventory.captureOrbs, 3),
