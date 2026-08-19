@@ -79,6 +79,12 @@
 - 风暴领主配置位于 `src/battle/bosses.ts`；首领状态抗性和半血强化由通用战斗引擎执行，不依赖 Phaser。
 - 奖励领取、首领胜利和能力解锁均保存于 v6 存档并保证幂等。
 
+## 队伍战斗与被动规则
+- `battleEngine.ts` 支持六只队伍、主动换宠、倒下后强制替补和全队败北；换宠与回合规则保持与 Phaser 解耦。
+- 主动换宠占用回合并先于敌方行动，强制替补不额外耗回合；每名队员的 HP 与参战经验分别持久化。
+- `src/passives/passiveEffects.ts` 是战斗和基地共享的唯一被动数值映射层，统一执行去重、叠加上限和冲突顺序。
+- 已实装攻击、防御、速度、承伤、能耗、元素增伤/抗性、工作速度和资源产量；其余被动保留展示与配种继承并在界面明确标注。
+
 ## 被动技能全局表
 - 文件：`data/passive-skills.json`，对应 Schema：`schema/passive-skill.schema.json`（draft 2020-12）。
 - 字段：`id`(slug)、`name{zh,en}`、`category`(attack/defense/work/move/element/resource/other)、`description`(效果描述)、`tier`(common/rare/legendary)。
