@@ -1,14 +1,21 @@
 import type { GameSave } from "../player/playerState";
 
-export type WorldRegion = "frontier" | "cloudridge-highlands";
+export type WorldRegion = "frontier" | "cloudridge-highlands" | "startide-archipelago";
 
 export const STARTING_REGION: WorldRegion = "frontier";
 export const HIGHLAND_REGION: WorldRegion = "cloudridge-highlands";
+export const STARTIDE_REGION: WorldRegion = "startide-archipelago";
 
 export const HIGHLAND_UNLOCK_REQUIREMENTS = {
   battlesWon: 3,
   captures: 2,
   resources: { wood: 30, stone: 20, crystal: 5 },
+} as const;
+
+export const STARTIDE_UNLOCK_REQUIREMENTS = {
+  battlesWon: 10,
+  requiredAbility: "storm-forging",
+  resources: { food: 40, stone: 35, crystal: 20 },
 } as const;
 
 export interface RegionUnlockStatus {
@@ -18,7 +25,7 @@ export interface RegionUnlockStatus {
 }
 
 export function isWorldRegion(value: unknown): value is WorldRegion {
-  return value === STARTING_REGION || value === HIGHLAND_REGION;
+  return value === STARTING_REGION || value === HIGHLAND_REGION || value === STARTIDE_REGION;
 }
 
 export function getHighlandUnlockStatus(save: GameSave): RegionUnlockStatus {
@@ -56,6 +63,50 @@ export function unlockHighlandRegion(save: GameSave): GameSave {
       resources: {
         ...save.base.resources,
         wood: save.base.resources.wood - costs.wood,
+        stone: save.base.resources.stone - costs.stone,
+        crystal: save.base.resources.crystal - costs.crystal,
+      },
+    },
+  };
+}
+
+export function getStartideUnlockStatus(save: GameSave): RegionUnlockStatus {
+  if (save.progress.unlockedRegions.includes(STARTIDE_REGION)) {
+    return { unlocked: true, eligible: true, missing: [] };
+  }
+  const missing: string[] = [];
+  const requirements = STARTIDE_UNLOCK_REQUIREMENTS;
+  if (!save.progress.unlockedAbilities.includes(requirements.requiredAbility)) {
+    missing.push("完成风暴领主任务并领取岚印锻造");
+  }
+  if (save.progress.battlesWon < requirements.battlesWon) {
+    missing.push(`胜利 ${save.progress.battlesWon}/${requirements.battlesWon}`);
+  }
+  for (const [resource, amount] of Object.entries(requirements.resources)) {
+    const current = save.base.resources[resource as keyof typeof requirements.resources];
+    if (current < amount) {
+      const label = resource === "food" ? "食物" : resource === "stone" ? "石材" : "晶体";
+      missing.push(`${label} ${current}/${amount}`);
+    }
+  }
+  return { unlocked: false, eligible: missing.length === 0, missing };
+}
+
+export function unlockStartideRegion(save: GameSave): GameSave {
+  const status = getStartideUnlockStatus(save);
+  if (status.unlocked || !status.eligible) return save;
+  const costs = STARTIDE_UNLOCK_REQUIREMENTS.resources;
+  return {
+    ...save,
+    progress: {
+      ...save.progress,
+      unlockedRegions: [...save.progress.unlockedRegions, STARTIDE_REGION],
+    },
+    base: {
+      ...save.base,
+      resources: {
+        ...save.base.resources,
+        food: save.base.resources.food - costs.food,
         stone: save.base.resources.stone - costs.stone,
         crystal: save.base.resources.crystal - costs.crystal,
       },

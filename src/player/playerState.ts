@@ -1,7 +1,7 @@
 import type { Pal } from "../types/pal";
 import { isWorldRegion, STARTING_REGION, type WorldRegion } from "../world/regions.ts";
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -22,6 +22,10 @@ export interface GameProgress {
   quests: QuestState[];
   defeatedBossIds: string[];
   unlockedAbilities: string[];
+  discoveredLocationIds: string[];
+  claimedWorldRewardIds: string[];
+  activatedWaypointIds: string[];
+  revealedSectorIds: string[];
 }
 
 export interface QuestState {
@@ -114,6 +118,10 @@ export function createEmptySave(now = Date.now()): GameSave {
       quests: createInitialQuestStates(),
       defeatedBossIds: [],
       unlockedAbilities: [],
+      discoveredLocationIds: [],
+      claimedWorldRewardIds: [],
+      activatedWaypointIds: [],
+      revealedSectorIds: [],
     },
     inventory: { captureOrbs: 3, healingTonics: 0 },
     base: {
@@ -173,6 +181,16 @@ function finiteCount(value: unknown, fallback = 0): number {
 
 function finiteAmount(value: unknown, fallback = 0): number {
   return Number.isFinite(value) ? Math.max(0, Math.floor((value as number) * 10) / 10) : fallback;
+}
+
+function normalizeStringIds(value: unknown): string[] {
+  return [
+    ...new Set(
+      (Array.isArray(value) ? value : []).filter(
+        (id): id is string => typeof id === "string" && id.trim().length > 0
+      )
+    ),
+  ];
 }
 
 function migrateSave(value: unknown, now = Date.now()): GameSave {
@@ -282,6 +300,10 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
           )
         ),
       ],
+      discoveredLocationIds: normalizeStringIds(progress.discoveredLocationIds),
+      claimedWorldRewardIds: normalizeStringIds(progress.claimedWorldRewardIds),
+      activatedWaypointIds: normalizeStringIds(progress.activatedWaypointIds),
+      revealedSectorIds: normalizeStringIds(progress.revealedSectorIds),
     },
     inventory: {
       captureOrbs: finiteCount(inventory.captureOrbs, 3),

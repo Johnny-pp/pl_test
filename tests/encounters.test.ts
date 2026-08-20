@@ -45,6 +45,27 @@ test("云脊高地拥有独立昼夜遭遇与等级下限", () => {
   assert.equal(getEncounterLevelFloor("storm-ridge"), 9);
 });
 
+test("星潮群岛包含安全聚落、湿地和遗迹三个分区", () => {
+  assert.equal(getZoneAtTile(12, "startide-archipelago"), "reedlight-haven");
+  assert.equal(getZoneAtTile(13, "startide-archipelago"), "glowmire-wilds");
+  assert.equal(getZoneAtTile(26, "startide-archipelago"), "glowmire-wilds");
+  assert.equal(getZoneAtTile(27, "startide-archipelago"), "sunken-observatory");
+  assert.equal(
+    pickEncounter("reedlight-haven", "day", () => 0),
+    undefined
+  );
+  assert.equal(
+    pickEncounter("glowmire-wilds", "day", () => 0),
+    34
+  );
+  assert.equal(
+    pickEncounter("sunken-observatory", "night", () => 0.999),
+    38
+  );
+  assert.equal(getEncounterLevelFloor("glowmire-wilds"), 13);
+  assert.equal(getEncounterLevelFloor("sunken-observatory"), 16);
+});
+
 test("瓦片地图四周均为不可通行边界", () => {
   const map = createWorldMap();
   assert.equal(map.length, WORLD_ROWS);
@@ -61,6 +82,17 @@ test("第二地区使用不同的障碍与遭遇区地图", () => {
   assert.ok(highland[0].every((tile) => tile === TILE_WALL));
   assert.ok(highland[WORLD_ROWS - 1].every((tile) => tile === TILE_WALL));
   assert.ok(highland.every((row) => row[0] === TILE_WALL && row[WORLD_COLS - 1] === TILE_WALL));
+});
+
+test("第三地区使用独立地图且聚落一侧保留安全路径", () => {
+  const frontier = createWorldMap("frontier");
+  const highland = createWorldMap("cloudridge-highlands");
+  const startide = createWorldMap("startide-archipelago");
+  assert.notDeepEqual(startide, frontier);
+  assert.notDeepEqual(startide, highland);
+  assert.ok(startide[0].every((tile) => tile === TILE_WALL));
+  assert.ok(startide[WORLD_ROWS - 1].every((tile) => tile === TILE_WALL));
+  assert.ok(startide.every((row) => row[0] === TILE_WALL && row[WORLD_COLS - 1] === TILE_WALL));
 });
 
 test("所有遭遇表只引用存在的物种", () => {

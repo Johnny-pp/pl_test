@@ -22,10 +22,13 @@ import type { Pal } from "../types/pal";
 import { startScene } from "./sceneLoader";
 import {
   getHighlandUnlockStatus,
+  getStartideUnlockStatus,
   HIGHLAND_REGION,
   isWorldRegion,
   STARTING_REGION,
+  STARTIDE_REGION,
   unlockHighlandRegion,
+  unlockStartideRegion,
   type WorldRegion,
 } from "../world/regions";
 import { canChallengeBoss, getQuestViews, recordQuestEvent } from "../quests/questSystem";
@@ -53,6 +56,15 @@ interface ResourceNode {
   label: string;
 }
 
+interface RegionPortal {
+  x: number;
+  y: number;
+  target: WorldRegion;
+  arrivalX: number;
+  label: string;
+  color: number;
+}
+
 const REGION_RESOURCES: Record<WorldRegion, ResourceNode[]> = {
   frontier: [
     { id: "frontier-wood-1", x: 7 * TILE_SIZE, y: 12 * TILE_SIZE, label: "轻木" },
@@ -66,6 +78,12 @@ const REGION_RESOURCES: Record<WorldRegion, ResourceNode[]> = {
     { id: "highland-stone-1", x: 25 * TILE_SIZE, y: 14 * TILE_SIZE, label: "浮岩" },
     { id: "highland-dew-1", x: 35 * TILE_SIZE, y: 22 * TILE_SIZE, label: "云露" },
   ],
+  "startide-archipelago": [
+    { id: "startide-reed-1", x: 7 * TILE_SIZE, y: 9 * TILE_SIZE, label: "灯芯芦" },
+    { id: "startide-pearl-1", x: 16 * TILE_SIZE, y: 6 * TILE_SIZE, label: "潮辉珠" },
+    { id: "startide-moss-1", x: 24 * TILE_SIZE, y: 21 * TILE_SIZE, label: "星沼苔" },
+    { id: "startide-slate-1", x: 35 * TILE_SIZE, y: 22 * TILE_SIZE, label: "沉星板岩" },
+  ],
 };
 
 const ZONE_LABELS: Record<WorldZone, string> = {
@@ -73,16 +91,21 @@ const ZONE_LABELS: Record<WorldZone, string> = {
   "echo-ruins": "回声遗迹",
   "mist-terrace": "雾瀑台地",
   "storm-ridge": "风暴山脊",
+  "reedlight-haven": "芦灯港",
+  "glowmire-wilds": "辉沼湿地",
+  "sunken-observatory": "沉星遗迹",
 };
 
 const REGION_LABELS: Record<WorldRegion, string> = {
   frontier: "晴风边境",
   "cloudridge-highlands": "云脊高地",
+  "startide-archipelago": "星潮群岛",
 };
 
 const REGION_TILE_ASSETS: Record<WorldRegion, string> = {
   frontier: "/assets/world-tiles-frontier.png",
   "cloudridge-highlands": "/assets/world-tiles-cloudridge-highlands.png",
+  "startide-archipelago": "/assets/world-tiles-startide-archipelago.svg",
 };
 
 export class WorldScene extends Phaser.Scene {
@@ -147,10 +170,7 @@ export class WorldScene extends Phaser.Scene {
     this.patrolPath = [];
     const save = loadGame(localStorage);
     const requestedRegion = isWorldRegion(data.region) ? data.region : STARTING_REGION;
-    this.region =
-      requestedRegion === HIGHLAND_REGION && !save.progress.unlockedRegions.includes(HIGHLAND_REGION)
-        ? STARTING_REGION
-        : requestedRegion;
+    this.region = save.progress.unlockedRegions.includes(requestedRegion) ? requestedRegion : STARTING_REGION;
     const leader = this.resolveLeader(data.leaderId, data.leaderUid);
     this.leader = leader.species;
     this.leaderUid = leader.uid;
@@ -192,7 +212,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setZoom(1);
 
     this.createResources();
-    this.createPortal();
+    this.createPortals();
     this.createBossAltar();
     this.createHud();
     this.encounterCooldownUntil = this.time.now + (data.encounterCooldown ? 2200 : 800);
@@ -229,16 +249,16 @@ export class WorldScene extends Phaser.Scene {
     );
 
     const nearest = this.findNearbyResource();
-    const nearPortal = this.isNearPortal();
+    const nearPortal = this.findNearbyPortal();
     const nearBoss = this.isNearBossAltar();
     const interactRequested = Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested;
-    this.promptText.setVisible(Boolean(nearest) || nearPortal || nearBoss);
+    this.promptText.setVisible(Boolean(nearest) || Boolean(nearPortal) || nearBoss);
     if (nearest) {
       this.promptText.setText(`按 E 采集 ${nearest.label}`);
       if (interactRequested || this.autoExploreActive) this.gatherResource(nearest);
     } else if (nearPortal) {
-      this.promptText.setText(this.getPortalPrompt());
-      if (interactRequested) this.usePortal();
+      this.promptText.setText(this.getPortalPrompt(nearPortal));
+      if (interactRequested) this.usePortal(nearPortal);
     } else if (nearBoss) {
       this.promptText.setText(this.getBossPrompt());
       if (interactRequested) this.challengeBoss();
@@ -584,46 +604,100 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
-  private createPortal() {
-    const x = (this.region === STARTING_REGION ? 37 : 3) * TILE_SIZE;
+  private getRegionPortals(): RegionPortal[] {
     const y = 14 * TILE_SIZE;
-    this.add
-      .circle(x, y, 22, this.region === STARTING_REGION ? 0x90caf9 : 0xa5d6a7, 0.78)
-      .setStrokeStyle(4, 0xffffff, 0.8);
-    this.add
-      .text(x, y + 28, this.region === STARTING_REGION ? "高地风门" : "边境风门", {
-        fontFamily: "sans-serif",
-        fontSize: "13px",
-        color: "#ffffff",
-        backgroundColor: "#0b1224",
-        padding: { x: 5, y: 2 },
-      })
-      .setOrigin(0.5, 0);
-  }
-
-  private isNearPortal(): boolean {
-    const x = (this.region === STARTING_REGION ? 37 : 3) * TILE_SIZE;
-    return Phaser.Math.Distance.Between(this.player.x, this.player.y, x, 14 * TILE_SIZE) < 58;
-  }
-
-  private getPortalPrompt(): string {
-    if (this.region === HIGHLAND_REGION) return "按 E 返回晴风边境";
-    const status = getHighlandUnlockStatus(loadGame(localStorage));
-    if (status.unlocked) return "按 E 进入云脊高地";
-    if (status.eligible) return "按 E 消耗木材30、石材20、晶体5，解锁并进入云脊高地";
-    return `云脊高地尚未解锁 · ${status.missing.join(" · ")}`;
-  }
-
-  private usePortal() {
     if (this.region === STARTING_REGION) {
-      const current = loadGame(localStorage);
-      const next = unlockHighlandRegion(current);
-      if (next !== current && !saveGame(localStorage, next)) return;
-      if (!next.progress.unlockedRegions.includes(HIGHLAND_REGION)) return;
-      this.changeRegion(HIGHLAND_REGION, 3.8 * TILE_SIZE);
-      return;
+      return [
+        {
+          x: 37 * TILE_SIZE,
+          y,
+          target: HIGHLAND_REGION,
+          arrivalX: 3.8 * TILE_SIZE,
+          label: "高地风门",
+          color: 0x90caf9,
+        },
+      ];
     }
-    this.changeRegion(STARTING_REGION, 36.2 * TILE_SIZE);
+    if (this.region === HIGHLAND_REGION) {
+      return [
+        {
+          x: 3 * TILE_SIZE,
+          y,
+          target: STARTING_REGION,
+          arrivalX: 36.2 * TILE_SIZE,
+          label: "边境风门",
+          color: 0xa5d6a7,
+        },
+        {
+          x: 37 * TILE_SIZE,
+          y,
+          target: STARTIDE_REGION,
+          arrivalX: 3.8 * TILE_SIZE,
+          label: "星潮渡门",
+          color: 0xce93d8,
+        },
+      ];
+    }
+    return [
+      {
+        x: 3 * TILE_SIZE,
+        y,
+        target: HIGHLAND_REGION,
+        arrivalX: 36.2 * TILE_SIZE,
+        label: "云脊渡门",
+        color: 0x80cbc4,
+      },
+    ];
+  }
+
+  private createPortals() {
+    for (const portal of this.getRegionPortals()) {
+      this.add.circle(portal.x, portal.y, 22, portal.color, 0.78).setStrokeStyle(4, 0xffffff, 0.8);
+      this.add
+        .text(portal.x, portal.y + 28, portal.label, {
+          fontFamily: "sans-serif",
+          fontSize: "13px",
+          color: "#ffffff",
+          backgroundColor: "#0b1224",
+          padding: { x: 5, y: 2 },
+        })
+        .setOrigin(0.5, 0);
+    }
+  }
+
+  private findNearbyPortal(): RegionPortal | undefined {
+    return this.getRegionPortals().find(
+      (portal) => Phaser.Math.Distance.Between(this.player.x, this.player.y, portal.x, portal.y) < 58
+    );
+  }
+
+  private getPortalPrompt(portal: RegionPortal): string {
+    if (portal.target === STARTING_REGION) return "按 E 返回晴风边境";
+    if (portal.target === HIGHLAND_REGION && this.region === STARTIDE_REGION) return "按 E 返回云脊高地";
+    const save = loadGame(localStorage);
+    if (portal.target === HIGHLAND_REGION) {
+      const status = getHighlandUnlockStatus(save);
+      if (status.unlocked) return "按 E 进入云脊高地";
+      if (status.eligible) return "按 E 消耗木材30、石材20、晶体5，解锁并进入云脊高地";
+      return `云脊高地尚未解锁 · ${status.missing.join(" · ")}`;
+    }
+    const status = getStartideUnlockStatus(save);
+    if (status.unlocked) return "按 E 进入星潮群岛";
+    if (status.eligible) return "按 E 消耗食物40、石材35、晶体20，修复渡门并进入星潮群岛";
+    return `星潮群岛尚未解锁 · ${status.missing.join(" · ")}`;
+  }
+
+  private usePortal(portal: RegionPortal) {
+    const current = loadGame(localStorage);
+    const next =
+      portal.target === HIGHLAND_REGION
+        ? unlockHighlandRegion(current)
+        : portal.target === STARTIDE_REGION
+          ? unlockStartideRegion(current)
+          : current;
+    if (next !== current && !saveGame(localStorage, next)) return;
+    if (!next.progress.unlockedRegions.includes(portal.target)) return;
+    this.changeRegion(portal.target, portal.arrivalX);
   }
 
   private changeRegion(region: WorldRegion, playerX: number) {

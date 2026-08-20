@@ -64,7 +64,7 @@ test("损坏存档回退为空存档，旧字段会迁移并清理无效队伍�
   assert.equal(loadGame(memoryStorage("not-json")).ownedPals.length, 0);
   const old = JSON.stringify({ version: 0, ownedPals: [], teamIds: ["missing"] });
   const migrated = loadGame(memoryStorage(old));
-  assert.equal(migrated.version, 6);
+  assert.equal(migrated.version, 7);
   assert.deepEqual(migrated.progress.unlockedRegions, ["frontier"]);
   assert.deepEqual(migrated.teamIds, []);
 });
@@ -87,7 +87,7 @@ test("存档备份可导出、迁移后导入，并拒绝无关 JSON", () => {
   assert.deepEqual(restored, save);
 
   const oldBackup = JSON.stringify({ version: 1, ownedPals: [], teamIds: [] });
-  assert.equal(importSaveBackup(oldBackup)?.version, 6);
+  assert.equal(importSaveBackup(oldBackup)?.version, 7);
   assert.equal(importSaveBackup('{"hello":"world"}'), undefined);
   assert.equal(importSaveBackup("not-json"), undefined);
 });
@@ -100,7 +100,7 @@ test("旧存档迁移会修复损坏的等级、经验和生命值", () => {
   const migrated = loadGame(
     memoryStorage(JSON.stringify({ version: 3, ownedPals: [damaged], teamIds: [damaged.uid] }))
   );
-  assert.equal(migrated.version, 6);
+  assert.equal(migrated.version, 7);
   assert.equal(migrated.ownedPals[0].level, 1);
   assert.equal(migrated.ownedPals[0].experience, 0);
   assert.equal(migrated.ownedPals[0].currentHp, 0);
@@ -114,10 +114,40 @@ test("v5 存档迁移会补齐任务、首领和能力进度", () => {
     progress: { battlesWon: 8, captures: 4, unlockedRegions: ["frontier"] },
   });
   const migrated = loadGame(memoryStorage(old));
-  assert.equal(migrated.version, 6);
+  assert.equal(migrated.version, 7);
   assert.equal(migrated.progress.quests.length, 3);
   assert.equal(migrated.progress.quests[0].progress["battle-win"], 3);
   assert.equal(migrated.progress.quests[0].progress.capture, 2);
   assert.deepEqual(migrated.progress.defeatedBossIds, []);
   assert.deepEqual(migrated.progress.unlockedAbilities, []);
+  assert.deepEqual(migrated.progress.discoveredLocationIds, []);
+  assert.deepEqual(migrated.progress.claimedWorldRewardIds, []);
+  assert.deepEqual(migrated.progress.activatedWaypointIds, []);
+  assert.deepEqual(migrated.progress.revealedSectorIds, []);
+});
+
+test("v6 存档保留第三地区并清理重复或损坏的探索进度", () => {
+  const old = JSON.stringify({
+    version: 6,
+    ownedPals: [],
+    teamIds: [],
+    progress: {
+      unlockedRegions: ["frontier", "cloudridge-highlands", "startide-archipelago", "unknown"],
+      discoveredLocationIds: ["startide-haven", "startide-haven", 3, ""],
+      claimedWorldRewardIds: ["startide-chest-1", null],
+      activatedWaypointIds: ["startide-waypoint"],
+      revealedSectorIds: ["startide-west", "startide-west"],
+    },
+  });
+  const migrated = loadGame(memoryStorage(old));
+  assert.equal(migrated.version, 7);
+  assert.deepEqual(migrated.progress.unlockedRegions, [
+    "frontier",
+    "cloudridge-highlands",
+    "startide-archipelago",
+  ]);
+  assert.deepEqual(migrated.progress.discoveredLocationIds, ["startide-haven"]);
+  assert.deepEqual(migrated.progress.claimedWorldRewardIds, ["startide-chest-1"]);
+  assert.deepEqual(migrated.progress.activatedWaypointIds, ["startide-waypoint"]);
+  assert.deepEqual(migrated.progress.revealedSectorIds, ["startide-west"]);
 });

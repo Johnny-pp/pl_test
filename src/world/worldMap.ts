@@ -39,11 +39,30 @@ function createHighlandTile(x: number, y: number): number {
   return TILE_GROUND;
 }
 
+function createStartideTile(x: number, y: number): number {
+  if (
+    (x >= 11 && x <= 13 && y >= 3 && y <= 11) ||
+    (x >= 18 && x <= 22 && y >= 17 && y <= 24) ||
+    (x >= 29 && x <= 33 && y >= 5 && y <= 18)
+  )
+    return TILE_WALL;
+  if (y === 13 || y === 14 || (x >= 5 && x <= 8 && y >= 8 && y <= 18)) return TILE_PATH;
+  if (
+    (x >= 14 && x <= 26 && y >= 3 && y <= 11) ||
+    (x >= 10 && x <= 17 && y >= 18 && y <= 25) ||
+    (x >= 27 && x <= 37 && y >= 3 && y <= 24)
+  )
+    return TILE_ENCOUNTER;
+  return TILE_GROUND;
+}
+
 export function createWorldMap(region: WorldRegion = "frontier"): number[][] {
   return Array.from({ length: WORLD_ROWS }, (_, y) =>
     Array.from({ length: WORLD_COLS }, (_, x) => {
       if (x === 0 || y === 0 || x === WORLD_COLS - 1 || y === WORLD_ROWS - 1) return TILE_WALL;
-      return region === HIGHLAND_REGION ? createHighlandTile(x, y) : createFrontierTile(x, y);
+      if (region === HIGHLAND_REGION) return createHighlandTile(x, y);
+      if (region === "startide-archipelago") return createStartideTile(x, y);
+      return createFrontierTile(x, y);
     })
   );
 }
