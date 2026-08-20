@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/equipment.schema.json",
+  "title": "原创幻兽装备定义",
+  "description": "可穿戴装备的静态定义：核心/护符/护甲三槽，附魔词条影响构筑数值。",
+  "type": "object",
+  "required": ["id", "name", "description", "slot", "rarity", "affixes"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "装备唯一 ID"
+    },
+    "name": {
+      "type": "object",
+      "description": "名称（多语言）",
+      "required": ["zh", "en"],
+      "additionalProperties": false,
+      "properties": {
+        "zh": { "type": "string" },
+        "en": { "type": "string" }
+      }
+    },
+    "description": { "type": "string", "description": "装备描述" },
+    "slot": { "type": "string", "enum": ["core", "charm", "armor"], "description": "装备槽位" },
+    "rarity": { "type": "string", "enum": ["common", "rare", "legendary"], "description": "稀有度（基础/稀有/传说）" },
+    "affixes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["stat", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "stat": {
+            "type": "string",
+            "enum": [
+              "attackPercent", "defensePercent", "maxHpPercent", "speedPercent",
+              "workSpeedPercent", "resourceYieldPercent", "energyCostPercent", "damageTakenPercent",
+              "maxHpFlat", "attackFlat", "defenseFlat", "moveSpeedFlat", "workSpeedFlat",
+              "elementDamage", "elementResistance"
+            ]
+          },
+          "element": {
+            "type": "string",
+            "enum": [
+              "neutral", "fire", "water", "grass", "electric", "ice",
+              "ground", "wind", "dark", "dragon", "rock", "normal"
+            ]
+          },
+          "value": { "type": "integer", "description": "词条数值（百分比或平值）" }
+        }
+      }
+    }
+  }
+}

@@ -20,6 +20,7 @@ export interface StartideChest {
     resources?: Partial<Record<"wood" | "stone" | "food" | "fiber" | "crystal", number>>;
     captureOrbs?: number;
     healingTonics?: number;
+    equipment?: string[];
   };
 }
 
@@ -73,7 +74,7 @@ export const STARTIDE_CHESTS: StartideChest[] = [
     x: 36 * TILE_SIZE,
     y: 6 * TILE_SIZE,
     label: "沉星宝箱",
-    rewards: { resources: { crystal: 8, fiber: 20 } },
+    rewards: { resources: { crystal: 8, fiber: 20 }, equipment: ["armor-solar-carapace"] },
   },
 ];
 

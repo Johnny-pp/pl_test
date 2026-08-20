@@ -8,6 +8,9 @@ import { loadGame, saveGame, type EggQuality, type GameSave, type PalInstance } 
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
+import { activeSkillsById } from "../data/loadActiveSkills";
+import { equipmentDefinitionsById } from "../data/loadEquipment";
+import { getEquippedSkillIds, getFinalBuildStats, getSpeciesSkillTree } from "../build/buildSystem";
 import { clampScroll } from "../ui/scroll";
 import { createBackButton, createTextButton } from "../ui/button";
 
@@ -181,8 +184,18 @@ export class BreedingScene extends Phaser.Scene {
       fontSize: "12px",
       color: "#9aa0c0",
     });
+    const tree = getSpeciesSkillTree(species, activeSkillsById, passiveSkillsById);
+    const equipped = getEquippedSkillIds(species, instance, tree);
+    const equippedNames = equipped.map((id) => activeSkillsById.get(id)?.name.zh ?? id).join("、");
+    const finalStats = getFinalBuildStats(species, instance, tree, equipmentDefinitionsById, this.save);
+    const buildSummary = this.add.text(
+      x - 56,
+      y + 19,
+      `构筑：技能 ${equippedNames || "无"} · HP ${instance.currentHp}/${finalStats.maxHp} · 攻 ${finalStats.attack} 防 ${finalStats.defense}`,
+      { fontFamily: "sans-serif", fontSize: "11px", color: "#80deea", wordWrap: { width: 210 } }
+    );
     bg.on("pointerdown", () => this.selectParent(instance.uid));
-    this.addContent(bg, portrait, name, detail);
+    this.addContent(bg, portrait, name, detail, buildSummary);
   }
 
   private selectParent(uid: string) {

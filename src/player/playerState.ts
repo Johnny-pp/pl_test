@@ -1,7 +1,8 @@
 import type { Pal } from "../types/pal";
+import type { EquipmentItem, EquipmentSlot } from "../types/skillTree";
 import { isWorldRegion, STARTING_REGION, type WorldRegion } from "../world/regions.ts";
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -13,6 +14,12 @@ export interface PalInstance {
   currentHp: number;
   passiveSkillIds: string[];
   capturedAt: string;
+  /** Skill tree nodes unlocked by spending skill points. */
+  unlockedNodeIds: string[];
+  /** Active skill ids the individual currently has equipped (max 4). */
+  equippedSkillIds: string[];
+  /** Equipped equipment by slot, referencing inventory equipment item uids. */
+  equipment: Partial<Record<EquipmentSlot, string>>;
 }
 
 export interface GameProgress {
@@ -76,6 +83,7 @@ export interface BaseState {
 export interface PlayerInventory {
   captureOrbs: number;
   healingTonics: number;
+  equipment: EquipmentItem[];
 }
 
 export type EggQuality = "common" | "fine" | "radiant";
@@ -129,7 +137,7 @@ export function createEmptySave(now = Date.now()): GameSave {
       activatedWaypointIds: [],
       revealedSectorIds: [],
     },
-    inventory: { captureOrbs: 3, healingTonics: 0 },
+    inventory: { captureOrbs: 3, healingTonics: 0, equipment: [] },
     base: {
       resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0 },
       assignments: [],
@@ -154,6 +162,9 @@ export function createPalInstance(
     currentHp: pal.stats.hp,
     passiveSkillIds: [...passiveSkillIds],
     capturedAt: now(),
+    unlockedNodeIds: [],
+    equippedSkillIds: (pal.activeSkills ?? []).slice(0, 4),
+    equipment: {},
   };
 }
 
@@ -171,6 +182,19 @@ function isPalInstance(value: unknown): value is PalInstance {
   );
 }
 
+const EQUIPMENT_SLOTS: EquipmentSlot[] = ["core", "charm", "armor"];
+
+function normalizeEquipment(value: unknown): Partial<Record<EquipmentSlot, string>> {
+  const equipment: Partial<Record<EquipmentSlot, string>> = {};
+  if (!value || typeof value !== "object") return equipment;
+  const raw = value as Record<string, unknown>;
+  for (const slot of EQUIPMENT_SLOTS) {
+    const uid = raw[slot];
+    if (typeof uid === "string" && uid.length > 0) equipment[slot] = uid;
+  }
+  return equipment;
+}
+
 function normalizePalInstance(pal: PalInstance): PalInstance {
   return {
     ...pal,
@@ -178,6 +202,9 @@ function normalizePalInstance(pal: PalInstance): PalInstance {
     experience: Math.max(0, Math.floor(pal.experience)),
     currentHp: Math.max(0, Math.floor(pal.currentHp)),
     passiveSkillIds: pal.passiveSkillIds.filter((id): id is string => typeof id === "string"),
+    unlockedNodeIds: normalizeStringIds(pal.unlockedNodeIds),
+    equippedSkillIds: normalizeStringIds(pal.equippedSkillIds).slice(0, 4),
+    equipment: normalizeEquipment(pal.equipment),
   };
 }
 
@@ -213,8 +240,14 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
     : [];
   const progress =
     raw.progress && typeof raw.progress === "object" ? (raw.progress as Partial<GameProgress>) : {};
-  const inventory =
+  const rawInventory =
     raw.inventory && typeof raw.inventory === "object" ? (raw.inventory as Partial<PlayerInventory>) : {};
+  const rawEquipment = Array.isArray(rawInventory.equipment) ? rawInventory.equipment : [];
+  const equipmentItems = rawEquipment.filter((item): item is EquipmentItem => {
+    if (!item || typeof item !== "object") return false;
+    const entry = item as Partial<EquipmentItem>;
+    return typeof entry.uid === "string" && typeof entry.equipmentId === "string";
+  });
   const rawBase = raw.base && typeof raw.base === "object" ? (raw.base as Partial<BaseState>) : {};
   const rawResources =
     rawBase.resources && typeof rawBase.resources === "object"
@@ -312,8 +345,9 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
       revealedSectorIds: normalizeStringIds(progress.revealedSectorIds),
     },
     inventory: {
-      captureOrbs: finiteCount(inventory.captureOrbs, 3),
-      healingTonics: finiteCount(inventory.healingTonics),
+      captureOrbs: finiteCount(rawInventory.captureOrbs, 3),
+      healingTonics: finiteCount(rawInventory.healingTonics),
+      equipment: [...new Map(equipmentItems.map((item) => [item.uid, item])).values()],
     },
     base: {
       resources: {

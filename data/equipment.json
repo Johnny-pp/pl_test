@@ -1,0 +1,174 @@
+[
+  {
+    "id": "core-ember-stone",
+    "name": { "zh": "余烬石核", "en": "Emberstone Core" },
+    "description": "温热的核心石材，能缓慢向佩戴者传导暖意。",
+    "slot": "core",
+    "rarity": "common",
+    "affixes": [{ "stat": "maxHpPercent", "value": 5 }, { "stat": "workSpeedPercent", "value": 5 }]
+  },
+  {
+    "id": "core-tide-pearl",
+    "name": { "zh": "潮汐珍珠核", "en": "Tidepearl Core" },
+    "description": "包裹着细密水珠的珠核，行动时如踏潮而行。",
+    "slot": "core",
+    "rarity": "common",
+    "affixes": [{ "stat": "maxHpFlat", "value": 25 }, { "stat": "speedPercent", "value": 4 }]
+  },
+  {
+    "id": "core-grove-moss",
+    "name": { "zh": "林苔芯核", "en": "Grovemoss Core" },
+    "description": "覆满温润苔藓的木质芯核，能小幅提升采集与照料效率。",
+    "slot": "core",
+    "rarity": "common",
+    "affixes": [{ "stat": "workSpeedPercent", "value": 10 }, { "stat": "resourceYieldPercent", "value": 5 }]
+  },
+  {
+    "id": "core-crystal-vein",
+    "name": { "zh": "晶脉核心", "en": "Crystalvein Core" },
+    "description": "内部流动着微光的晶簇核心，强化攻击的传导。",
+    "slot": "core",
+    "rarity": "rare",
+    "affixes": [{ "stat": "attackPercent", "value": 8 }, { "stat": "attackFlat", "value": 6 }]
+  },
+  {
+    "id": "core-storm-battery",
+    "name": { "zh": "雷暴电池核心", "en": "Stormbattery Core" },
+    "description": "贮存电能的钢铁核心，出招时更加果断有力。",
+    "slot": "core",
+    "rarity": "rare",
+    "affixes": [{ "stat": "attackPercent", "value": 6 }, { "stat": "energyCostPercent", "value": -6 }]
+  },
+  {
+    "id": "core-star-mineral",
+    "name": { "zh": "星矿核心", "en": "Starmineral Core" },
+    "description": "携带着星辉余韵的稀有矿核，大幅强化进攻与防御。",
+    "slot": "core",
+    "rarity": "legendary",
+    "affixes": [
+      { "stat": "attackPercent", "value": 12 },
+      { "stat": "defensePercent", "value": 8 },
+      { "stat": "maxHpPercent", "value": 8 }
+    ]
+  },
+  {
+    "id": "charm-bark-token",
+    "name": { "zh": "树皮护符", "en": "Bark Token" },
+    "description": "刻着简单纹样的树皮护符，能抵挡轻微的擦伤。",
+    "slot": "charm",
+    "rarity": "common",
+    "affixes": [{ "stat": "defensePercent", "value": 6 }, { "stat": "defenseFlat", "value": 5 }]
+  },
+  {
+    "id": "charm-frost-seal",
+    "name": { "zh": "霜印护符", "en": "Frostseal Charm" },
+    "description": "凝着寒霜的护符，能削弱冰系攻击带来的伤害。",
+    "slot": "charm",
+    "rarity": "common",
+    "affixes": [{ "stat": "elementResistance", "element": "ice", "value": 8 }, { "stat": "defensePercent", "value": 4 }]
+  },
+  {
+    "id": "charm-ember-guard",
+    "name": { "zh": "余烬护符", "en": "Emberguard Charm" },
+    "description": "在火场中摸爬的护符，对火焰伤害拥有天然抗性。",
+    "slot": "charm",
+    "rarity": "rare",
+    "affixes": [{ "stat": "elementResistance", "element": "fire", "value": 12 }, { "stat": "damageTakenPercent", "value": -6 }]
+  },
+  {
+    "id": "charm-ward-totem",
+    "name": { "zh": "守护图腾符", "en": "Wardtote Charm" },
+    "description": "凝聚岩土之力的图腾护符，让承伤的体魄更加坚固。",
+    "slot": "charm",
+    "rarity": "rare",
+    "affixes": [{ "stat": "defensePercent", "value": 10 }, { "stat": "damageTakenPercent", "value": -8 }]
+  },
+  {
+    "id": "charm-starlight-medallion",
+    "name": { "zh": "星光徽记", "en": "Starlight Medallion" },
+    "description": "映着星空的徽记，同时守护攻击与防御的平衡。",
+    "slot": "charm",
+    "rarity": "legendary",
+    "affixes": [
+      { "stat": "attackPercent", "value": 8 },
+      { "stat": "defensePercent", "value": 8 },
+      { "stat": "damageTakenPercent", "value": -10 }
+    ]
+  },
+  {
+    "id": "armor-reed-plate",
+    "name": { "zh": "苇编护甲", "en": "Reedweave Plate" },
+    "description": "用韧性芦苇编织的轻甲，轻盈且能抵挡潮湿环境的侵蚀。",
+    "slot": "armor",
+    "rarity": "common",
+    "affixes": [{ "stat": "defensePercent", "value": 6 }, { "stat": "workSpeedPercent", "value": 4 }]
+  },
+  {
+    "id": "armor-scale-mantle",
+    "name": { "zh": "鳞纹披甲", "en": "Scalemantle Armor" },
+    "description": "覆满细鳞的披甲，能抵御水与土元素带来的冲击。",
+    "slot": "armor",
+    "rarity": "rare",
+    "affixes": [
+      { "stat": "defensePercent", "value": 8 },
+      { "stat": "elementResistance", "element": "water", "value": 8 },
+      { "stat": "elementResistance", "element": "ground", "value": 8 }
+    ]
+  },
+  {
+    "id": "armor-bulwark-mail",
+    "name": { "zh": "重装壁垒甲", "en": "Bulwark Mail" },
+    "description": "以厚重岩片拼接的铠甲，以速度换取极强防护。",
+    "slot": "armor",
+    "rarity": "rare",
+    "affixes": [{ "stat": "defensePercent", "value": 14 }, { "stat": "speedPercent", "value": -4 }]
+  },
+  {
+    "id": "armor-solar-carapace",
+    "name": { "zh": "日曜坚壳", "en": "Solar Carapace" },
+    "description": "沐浴过星潮光辉的坚壳，同时强化体魄与护甲。",
+    "slot": "armor",
+    "rarity": "legendary",
+    "affixes": [
+      { "stat": "maxHpPercent", "value": 12 },
+      { "stat": "defensePercent", "value": 10 },
+      { "stat": "damageTakenPercent", "value": -12 }
+    ]
+  },
+  {
+    "id": "core-abyssal-heart",
+    "name": { "zh": "渊潮之心", "en": "Abyssal Heart" },
+    "description": "自沉星遗迹深处打捞的心形晶核，蕴含终章首领的余威。",
+    "slot": "core",
+    "rarity": "legendary",
+    "affixes": [
+      { "stat": "attackPercent", "value": 14 },
+      { "stat": "elementDamage", "element": "dark", "value": 12 },
+      { "stat": "energyCostPercent", "value": -8 }
+    ]
+  },
+  {
+    "id": "charm-stormlord-horn",
+    "name": { "zh": "岚主之角", "en": "Stormlord Horn" },
+    "description": "风暴领主遗落的电光角片，佩戴时雷元素伤害显著提升。",
+    "slot": "charm",
+    "rarity": "legendary",
+    "affixes": [
+      { "stat": "elementDamage", "element": "electric", "value": 16 },
+      { "stat": "speedPercent", "value": 10 },
+      { "stat": "attackPercent", "value": 6 }
+    ]
+  },
+  {
+    "id": "armor-colossus-casing",
+    "name": { "zh": "晦曜巨像外壳", "en": "Colossus Casing" },
+    "description": "沉星终章首领的厚壳残片，重而坚固，令人敬畏。",
+    "slot": "armor",
+    "rarity": "legendary",
+    "affixes": [
+      { "stat": "defensePercent", "value": 16 },
+      { "stat": "maxHpPercent", "value": 10 },
+      { "stat": "damageTakenPercent", "value": -14 }
+    ]
+  }
+]

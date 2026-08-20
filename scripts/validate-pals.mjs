@@ -41,12 +41,28 @@ let ok = true;
 ok = check("data/pals.json", "schema/pal.schema.json", "幻兽", "id") && ok;
 ok = check("data/passive-skills.json", "schema/passive-skill.schema.json", "被动技能", "id") && ok;
 ok = check("data/active-skills.json", "schema/active-skill.schema.json", "主动技能", "id") && ok;
+ok = check("data/equipment.json", "schema/equipment.schema.json", "装备", "id") && ok;
 
 const pals = JSON.parse(readFileSync("data/pals.json", "utf-8"));
 const activeSkills = JSON.parse(readFileSync("data/active-skills.json", "utf-8"));
 const passiveSkills = JSON.parse(readFileSync("data/passive-skills.json", "utf-8"));
+const equipment = JSON.parse(readFileSync("data/equipment.json", "utf-8"));
 const skillIds = new Set(activeSkills.map((skill) => skill.id));
 const passiveIds = new Set(passiveSkills.map((skill) => skill.id));
+const validElements = new Set([
+  "neutral",
+  "fire",
+  "water",
+  "grass",
+  "electric",
+  "ice",
+  "ground",
+  "wind",
+  "dark",
+  "dragon",
+  "rock",
+  "normal",
+]);
 const palReferences = new Set(pals.flatMap((pal) => [String(pal.id), pal.name.zh, pal.name.en]));
 ok = checkUnique(pals, (pal) => pal.id, "幻兽 ID") && ok;
 ok = checkUnique(pals, (pal) => pal.name.zh, "幻兽中文名") && ok;
@@ -55,6 +71,16 @@ ok = checkUnique(activeSkills, (skill) => skill.id, "主动技能 ID") && ok;
 ok = checkUnique(activeSkills, (skill) => skill.name.zh, "主动技能中文名") && ok;
 ok = checkUnique(passiveSkills, (skill) => skill.id, "被动技能 ID") && ok;
 ok = checkUnique(passiveSkills, (skill) => skill.name.zh, "被动技能中文名") && ok;
+ok = checkUnique(equipment, (item) => item.id, "装备 ID") && ok;
+ok = checkUnique(equipment, (item) => item.name.zh, "装备中文名") && ok;
+for (const item of equipment) {
+  for (const affix of item.affixes ?? []) {
+    if (affix.element && !validElements.has(affix.element)) {
+      ok = false;
+      console.error(`✗ 装备 ${item.id} 引用了无效元素: ${affix.element}`);
+    }
+  }
+}
 for (const pal of pals) {
   for (const skillId of pal.activeSkills ?? []) {
     if (!skillIds.has(skillId)) {

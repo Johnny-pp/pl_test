@@ -1,6 +1,17 @@
 import type { Pal } from "../types/pal";
 import type { BaseJob, FacilityId, GameSave } from "../player/playerState";
-import { getPassiveBonuses } from "../passives/passiveEffects.ts";
+import { getBuildBonuses, getSpeciesSkillTree } from "../build/buildSystem.ts";
+import type { ActiveSkill } from "../types/activeSkill.ts";
+import type { PassiveSkill } from "../types/passiveSkill.ts";
+import type { EquipmentDefinition } from "../types/skillTree.ts";
+
+export interface ProductionBuildDeps {
+  activeSkills?: ReadonlyMap<string, ActiveSkill>;
+  passiveSkills?: ReadonlyMap<string, PassiveSkill>;
+  equipment?: ReadonlyMap<string, EquipmentDefinition>;
+}
+
+const EMPTY_DEPS: ProductionBuildDeps = {};
 
 export type ResourceId = keyof GameSave["base"]["resources"];
 export type CraftableItem = "capture-orb" | "healing-tonic";
@@ -67,7 +78,8 @@ export function removeWorker(save: GameSave, palUid: string): GameSave {
 export function simulateProduction(
   save: GameSave,
   speciesById: ReadonlyMap<number, Pal>,
-  now = Date.now()
+  now = Date.now(),
+  deps: ProductionBuildDeps = EMPTY_DEPS
 ): GameSave {
   const elapsedMinutes = Math.max(0, Math.min(480, (now - save.base.lastUpdatedAt) / 60_000));
   const resources = { ...save.base.resources };
@@ -81,9 +93,18 @@ export function simulateProduction(
     const facilityLevel =
       assignment.job === "planting" ? save.base.facilities.farm : save.base.facilities.workshop;
     const facilityMultiplier = 1 + (facilityLevel - 1) * 0.15;
-    const passive = getPassiveBonuses(instance.passiveSkillIds, { hour: new Date(now).getHours() });
-    const passiveMultiplier = 1 + passive.workSpeedPercent / 100;
-    const yieldMultiplier = 1 + passive.resourceYieldPercent / 100;
+    const tree = getSpeciesSkillTree(
+      species,
+      deps.activeSkills ?? new Map(),
+      deps.passiveSkills ?? new Map()
+    );
+    const build = getBuildBonuses(save, instance, species, tree, deps.equipment ?? new Map(), {
+      hour: new Date(now).getHours(),
+    });
+    const workSpeedPercent = build.percent.workSpeedPercent;
+    const resourceYieldPercent = build.percent.resourceYieldPercent;
+    const passiveMultiplier = 1 + workSpeedPercent / 100;
+    const yieldMultiplier = 1 + resourceYieldPercent / 100;
     const ratePerMinute =
       level *
       (species.stats.workSpeed / 100) *

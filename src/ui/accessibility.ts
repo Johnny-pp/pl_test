@@ -10,6 +10,7 @@ const SCENE_LABELS: Record<string, string> = {
   BreedingScene: "共鸣孵化所。选择两名父母进行配种。",
   CompareScene: "幻兽属性对比。",
   QuestScene: "远征任务。查看目标并领取已完成任务的奖励。",
+  BuildScene: "个体构筑。可解锁技能树、配置主动技能并穿戴装备。",
 };
 
 export function announceGameStatus(message: string): void {

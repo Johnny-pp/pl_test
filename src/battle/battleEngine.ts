@@ -54,11 +54,24 @@ export interface BattleState {
   log: string[];
 }
 
+export interface CombatantBuildInput {
+  /** Equipped active skill ids (max 4). */
+  skillIds: string[];
+  /** Final computed stats including skill tree, passives and equipment. */
+  stats: { maxHp: number; attack: number; defense: number; speed: number; workSpeed: number };
+  /** Combined percent bonuses (passives + equipment). */
+  bonuses: PassiveBonuses;
+  /** Passive ids used for display purposes. */
+  passiveSkillIds: string[];
+}
+
 export interface PartyMemberInput {
   pal: Pal;
   level: number;
   currentHp?: number;
   passiveSkillIds?: string[];
+  /** Optional build snapshot overriding stats and equipped skills. */
+  build?: CombatantBuildInput;
 }
 
 export interface SkillResult {
@@ -102,10 +115,30 @@ export function createCombatant(
   pal: Pal,
   level = 1,
   bossRules?: BossBattleRules,
-  passiveSkillIds: string[] = []
+  passiveSkillIds: string[] = [],
+  build?: CombatantBuildInput
 ): Combatant {
+  const passiveBonuses = build ? build.bonuses : getPassiveBonuses(passiveSkillIds);
+  if (build) {
+    return {
+      id: pal.id,
+      name: pal.name.zh,
+      level: Math.max(1, Math.min(50, Math.floor(level))),
+      elements: [...pal.elements],
+      maxHp: build.stats.maxHp,
+      hp: build.stats.maxHp,
+      attack: build.stats.attack,
+      defense: build.stats.defense,
+      speed: build.stats.speed,
+      energy: MAX_ENERGY,
+      skillIds: [...build.skillIds],
+      statuses: [],
+      passiveSkillIds: [...new Set(build.passiveSkillIds)],
+      passiveBonuses,
+      boss: bossRules ? { ...bossRules, phaseTriggered: false } : undefined,
+    };
+  }
   const stats = getProgressionStats(pal, level);
-  const passiveBonuses = getPassiveBonuses(passiveSkillIds);
   return {
     id: pal.id,
     name: pal.name.zh,
@@ -142,7 +175,13 @@ export function createPartyBattle(
   enemyBoss?: BossBattleRules
 ): BattleState {
   const playerParty = members.map((member) => {
-    const fighter = createCombatant(member.pal, member.level, undefined, member.passiveSkillIds);
+    const fighter = createCombatant(
+      member.pal,
+      member.level,
+      undefined,
+      member.passiveSkillIds,
+      member.build
+    );
     if (member.currentHp !== undefined)
       fighter.hp = Math.max(0, Math.min(fighter.maxHp, Math.floor(member.currentHp)));
     return fighter;

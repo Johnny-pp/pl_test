@@ -2,7 +2,6 @@ import Phaser from "phaser";
 import { preloadUiAssets } from "../ui/assets";
 import { addSceneTitle, installSceneTheme } from "../ui/theme";
 import { pals } from "../data/loadPals";
-import { activeSkillsById } from "../data/loadActiveSkills";
 import {
   chooseEnemySkill,
   createBattle,
@@ -34,6 +33,11 @@ import { bossesById } from "../battle/bosses";
 import { recordBossVictory, recordQuestEvent } from "../quests/questSystem";
 import { createBackButton, createTextButton } from "../ui/button";
 import { describePassiveBonuses } from "../passives/passiveEffects";
+import { createInstanceBuildSnapshot } from "../build/buildCombatant";
+import { activeSkillsById } from "../data/loadActiveSkills";
+import { passiveSkillsById } from "../data/loadPassiveSkills";
+import { equipmentDefinitions, equipmentDefinitionsById } from "../data/loadEquipment";
+import { grantEquipment, rollEquipmentDropForBoss, rollEquipmentId } from "../build/equipment";
 import { chooseAutoBattleSkill, chooseAutoSwitchIndex } from "../battle/autoBattle";
 import type { AutoExploreSession } from "../world/autoExploration";
 import { announceGameStatus } from "../ui/accessibility";
@@ -137,6 +141,11 @@ export class BattleScene extends Phaser.Scene {
             level: owned.level,
             currentHp: owned.currentHp,
             passiveSkillIds: owned.passiveSkillIds,
+            build: createInstanceBuildSnapshot(currentSave, species, owned, {
+              activeSkills: activeSkillsById,
+              passiveSkills: passiveSkillsById,
+              equipment: equipmentDefinitionsById,
+            }),
           },
         ];
       });
@@ -304,9 +313,10 @@ export class BattleScene extends Phaser.Scene {
     hpBar.displayWidth = 200 * (fighter.hp / fighter.maxHp);
     hpBar.setFillStyle(fighter.hp / fighter.maxHp > 0.35 ? 0x66bb6a : 0xef5350);
     const statusNames = fighter.statuses.map((effect) => getStatusLabel(effect.type)).join("、");
+    const skillNames = fighter.skillIds.map((id) => activeSkillsById.get(id)?.name.zh ?? id).join("、");
     const passiveText = describePassiveBonuses(fighter.passiveSkillIds).slice(0, 2).join("、");
     status.setText(
-      `HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100${statusNames ? `    ${statusNames}` : ""}${passiveText ? `\n被动：${passiveText}` : ""}`
+      `HP ${fighter.hp}/${fighter.maxHp}    能量 ${fighter.energy}/100${statusNames ? `    ${statusNames}` : ""}\n技能：${skillNames || "无"}${passiveText ? `\n被动：${passiveText}` : ""}`
     );
   }
 
@@ -530,7 +540,27 @@ export class BattleScene extends Phaser.Scene {
     if (this.state.phase === "victory") {
       save = recordBattleWin(save);
       save = recordQuestEvent(save, { type: "battle-win" });
-      if (this.bossId) save = recordBossVictory(save, this.bossId);
+      if (this.bossId) {
+        save = recordBossVictory(save, this.bossId);
+        const boss = bossesById.get(this.bossId);
+        if (boss) {
+          const dropped = rollEquipmentDropForBoss(boss.name, boss.id);
+          if (dropped) {
+            const result = grantEquipment(save, dropped);
+            save = result.save;
+            this.captureMessage = `首领掉落：${equipmentDefinitions.find((item) => item.id === dropped)?.name.zh ?? dropped}（装备已存入背包）`;
+          }
+        }
+      } else if (Math.random() < 0.18) {
+        const enemyPalForDrop = pals.find((pal) => pal.id === this.state?.enemy.id);
+        const rarity = enemyPalForDrop ? (enemyPalForDrop.rarity >= 4 ? "rare" : "common") : "common";
+        const dropped = rollEquipmentId(equipmentDefinitions, rarity);
+        if (dropped) {
+          const result = grantEquipment(save, dropped);
+          save = result.save;
+          this.captureMessage = `掉落装备：${equipmentDefinitions.find((item) => item.id === dropped)?.name.zh ?? dropped}`;
+        }
+      }
       const enemySpecies = pals.find((pal) => pal.id === this.state?.enemy.id);
       if (enemySpecies) {
         const messages: string[] = [];

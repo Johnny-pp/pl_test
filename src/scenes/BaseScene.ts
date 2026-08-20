@@ -10,6 +10,9 @@ import {
   upgradeFacility,
   type CraftableItem,
 } from "../base/baseSystem";
+import { activeSkillsById } from "../data/loadActiveSkills";
+import { passiveSkillsById } from "../data/loadPassiveSkills";
+import { equipmentDefinitionsById } from "../data/loadEquipment";
 import { loadGame, saveGame, type BaseJob, type FacilityId, type GameSave } from "../player/playerState";
 import { startScene } from "./sceneLoader";
 import { recordQuestEvent } from "../quests/questSystem";
@@ -43,7 +46,11 @@ export class BaseScene extends Phaser.Scene {
 
   create() {
     installSceneTheme(this);
-    this.save = simulateProduction(loadGame(localStorage), speciesById);
+    this.save = simulateProduction(loadGame(localStorage), speciesById, Date.now(), {
+      activeSkills: activeSkillsById,
+      passiveSkills: passiveSkillsById,
+      equipment: equipmentDefinitionsById,
+    });
     saveGame(localStorage, this.save);
     createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
     addSceneTitle(this, "远征基地");
@@ -75,7 +82,7 @@ export class BaseScene extends Phaser.Scene {
         .text(
           450,
           96,
-          `捕获器 ${this.save.inventory.captureOrbs} · 治疗剂 ${this.save.inventory.healingTonics}`,
+          `捕获器 ${this.save.inventory.captureOrbs} · 治疗剂 ${this.save.inventory.healingTonics} · 装备 ${this.save.inventory.equipment.length} 件`,
           { fontFamily: "sans-serif", fontSize: "15px", color: "#9ccc65" }
         )
         .setOrigin(0.5)
@@ -228,7 +235,11 @@ export class BaseScene extends Phaser.Scene {
   }
 
   private settleProduction() {
-    this.save = simulateProduction(this.save, speciesById);
+    this.save = simulateProduction(this.save, speciesById, Date.now(), {
+      activeSkills: activeSkillsById,
+      passiveSkills: passiveSkillsById,
+      equipment: equipmentDefinitionsById,
+    });
     this.persist("生产已结算");
   }
 

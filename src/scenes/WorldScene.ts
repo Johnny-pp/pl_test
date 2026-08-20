@@ -709,6 +709,13 @@ export class WorldScene extends Phaser.Scene {
         ...save.inventory,
         captureOrbs: save.inventory.captureOrbs + (chest.rewards.captureOrbs ?? 0),
         healingTonics: save.inventory.healingTonics + (chest.rewards.healingTonics ?? 0),
+        equipment: [
+          ...save.inventory.equipment,
+          ...(chest.rewards.equipment ?? []).map((equipmentId) => ({
+            uid: `chest-${chest.id}-${equipmentId}`,
+            equipmentId,
+          })),
+        ],
       },
       progress: { ...save.progress, claimedWorldRewardIds: [...this.claimedChests] },
     });

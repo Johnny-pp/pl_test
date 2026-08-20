@@ -31,6 +31,7 @@ export interface QuestDefinition {
     captureOrbs?: number;
     healingTonics?: number;
     abilities?: string[];
+    equipment?: string[];
   };
 }
 
@@ -126,8 +127,12 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         bossId: "abyssal-colossus",
       },
     ],
-    rewardLabel: "晶体 30、能力「星潮引航」",
-    rewards: { resources: { crystal: 30 }, abilities: ["tide-navigation"] },
+    rewardLabel: "晶体 30、能力「星潮引航」、传说护甲「日曜坚壳」",
+    rewards: {
+      resources: { crystal: 30 },
+      abilities: ["tide-navigation"],
+      equipment: ["armor-solar-carapace"],
+    },
   },
 ];
 
@@ -225,6 +230,13 @@ export function claimQuestReward(save: GameSave, questId: string): GameSave {
       ...save.inventory,
       captureOrbs: save.inventory.captureOrbs + (rewards.captureOrbs ?? 0),
       healingTonics: save.inventory.healingTonics + (rewards.healingTonics ?? 0),
+      equipment: [
+        ...save.inventory.equipment,
+        ...(rewards.equipment ?? []).map((equipmentId) => ({
+          uid: `quest-${questId}-${equipmentId}`,
+          equipmentId,
+        })),
+      ],
     },
     base: { ...save.base, resources },
   };

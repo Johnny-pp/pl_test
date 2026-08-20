@@ -10,6 +10,10 @@ import { startScene } from "./sceneLoader";
 import { preloadUiAssets, UI_ASSETS } from "../ui/assets";
 import { addSceneTitle, installSceneTheme } from "../ui/theme";
 import { createBackButton } from "../ui/button";
+import { getSpeciesSkillTree } from "../build/buildSystem";
+import { passiveSkillsById } from "../data/loadPassiveSkills";
+import { equipmentDefinitionsById } from "../data/loadEquipment";
+import { EQUIPMENT_SLOT_LABELS, EQUIPMENT_RARITY_LABELS } from "../types/skillTree";
 
 const ALL_ELEMENTS = Object.keys(ELEMENT_LABELS) as ElementType[];
 
@@ -164,7 +168,57 @@ export class DetailScene extends Phaser.Scene {
     this.content.add(link);
     y += 34;
 
-    y = this.section(x, y, "掉落物");
+    y = this.section(x, y, "技能树（个体构筑）");
+    const speciesTree = getSpeciesSkillTree(pal, activeSkillsById, passiveSkillsById);
+    const treeRows: string[] = [];
+    for (const node of speciesTree) {
+      const typeLabel = node.type === "attribute" ? "属性" : node.type === "active" ? "技能" : "被动";
+      const prereq = node.requires.length > 0 ? `（前置：${node.requires.join("、")}）` : "";
+      treeRows.push(`${typeLabel}·${node.name.zh}：${node.description}${prereq} · ${node.cost} 点`);
+    }
+    this.content.add(
+      this.line(
+        x,
+        y,
+        `个体升级获得技能点后，可按花费解锁节点以配置主动技能并获得属性/被动加成。`,
+        0x80deea,
+        14,
+        760
+      )
+    );
+    y += 26;
+    for (const row of treeRows) {
+      this.content.add(this.line(x + 12, y, row, 0x9aa0c0, 13, 760));
+      y += 20;
+    }
+    y += 12;
+
+    y = this.section(x, y, "装备槽位");
+    this.content.add(
+      this.line(
+        x,
+        y,
+        `核心（Core）· 护符（Charm）· 护甲（Armor）三槽，可穿戴基础/稀有/传说装备。`,
+        0x80deea,
+        14,
+        760
+      )
+    );
+    y += 26;
+    const slotSummaries = (["core", "charm", "armor"] as const).map(
+      (slot) =>
+        `${EQUIPMENT_SLOT_LABELS[slot]}：${
+          [...equipmentDefinitionsById.values()]
+            .filter((definition) => definition.slot === slot)
+            .map((definition) => `${definition.name.zh}(${EQUIPMENT_RARITY_LABELS[definition.rarity]})`)
+            .join("、") || "—"
+        }`
+    );
+    for (const summary of slotSummaries) {
+      this.content.add(this.line(x + 12, y, summary, 0x9aa0c0, 13, 760));
+      y += 22;
+    }
+    y += 8;
     for (const d of pal.drops ?? []) {
       this.content.add(this.line(x, y, `${d.item}：${d.rate}%`, 0xff8a65));
       y += 24;

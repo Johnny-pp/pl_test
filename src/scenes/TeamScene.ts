@@ -19,6 +19,14 @@ import { startScene } from "./sceneLoader";
 import { getProgressionStats, getTotalExperienceForLevel, MAX_PAL_LEVEL } from "../progression/progression";
 import { passiveSkillsById } from "../data/loadPassiveSkills";
 import { describePassiveBonuses } from "../passives/passiveEffects";
+import { activeSkillsById } from "../data/loadActiveSkills";
+import { equipmentDefinitionsById } from "../data/loadEquipment";
+import {
+  getEquippedSkillIds,
+  getFinalBuildStats,
+  getSpeciesSkillTree,
+  getAvailableSkillPoints,
+} from "../build/buildSystem";
 import { clampScroll } from "../ui/scroll";
 import { createBackButton, createTextButton } from "../ui/button";
 
@@ -48,7 +56,7 @@ export class TeamScene extends Phaser.Scene {
     this.render();
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       const rows = Math.ceil(this.save.ownedPals.length / 3);
-      const contentHeight = GRID_TOP + rows * 138;
+      const contentHeight = GRID_TOP + rows * 150 + 60;
       this.content.y = clampScroll(this.content.y, dy, this.scale.height, contentHeight, 20);
     });
   }
@@ -177,35 +185,39 @@ export class TeamScene extends Phaser.Scene {
     const col = index % 3;
     const row = Math.floor(index / 3);
     const x = 170 + col * 280;
-    const y = GRID_TOP + 54 + row * 138;
+    const y = GRID_TOP + 74 + row * 150;
     const inTeam = this.save.teamIds.includes(instance.uid);
     const element = species.elements[0] ?? "neutral";
     const stats = getProgressionStats(species, instance.level);
+    const tree = getSpeciesSkillTree(species, activeSkillsById, passiveSkillsById);
+    const finalStats = getFinalBuildStats(species, instance, tree, equipmentDefinitionsById, this.save);
+    const equipped = getEquippedSkillIds(species, instance, tree);
+    const skillPoints = getAvailableSkillPoints(instance, tree);
     const levelStart = getTotalExperienceForLevel(instance.level, species.growth.experienceCurve);
     const nextLevel =
       instance.level < MAX_PAL_LEVEL
         ? getTotalExperienceForLevel(instance.level + 1, species.growth.experienceCurve)
         : undefined;
-    const bg = this.add.rectangle(x, y, 250, 120, 0x16213e).setStrokeStyle(2, ELEMENT_COLORS[element]);
-    const portrait = addPalPortrait(this, species.id, x - 88, y, 76);
-    const name = this.add.text(x - 45, y - 48, `${species.name.zh}  Lv.${instance.level}`, {
+    const bg = this.add.rectangle(x, y, 250, 132, 0x16213e).setStrokeStyle(2, ELEMENT_COLORS[element]);
+    const portrait = addPalPortrait(this, species.id, x - 92, y, 76);
+    const name = this.add.text(x - 50, y - 56, `${species.name.zh}  Lv.${instance.level}`, {
       fontFamily: "sans-serif",
       fontSize: "18px",
       color: "#ffffff",
     });
     const detail = this.add.text(
-      x - 45,
-      y - 22,
-      `${species.elements.map((e) => ELEMENT_LABELS[e]).join("/")} · HP ${instance.currentHp}/${stats.maxHp} · 攻 ${stats.attack} 防 ${stats.defense}`,
+      x - 50,
+      y - 30,
+      `${species.elements.map((e) => ELEMENT_LABELS[e]).join("/")} · HP ${instance.currentHp}/${finalStats.maxHp} · 攻 ${finalStats.attack} 防 ${finalStats.defense}`,
       { fontFamily: "sans-serif", fontSize: "13px", color: "#9aa0c0" }
     );
     const button = this.add
-      .rectangle(x + 55, y + 40, 112, 30, inTeam ? 0x713b4a : 0x0f5c6e)
+      .rectangle(x + 72, y - 2, 100, 28, inTeam ? 0x713b4a : 0x0f5c6e)
       .setInteractive({ useHandCursor: true });
     const buttonText = this.add
-      .text(x + 55, y + 40, inTeam ? "移出队伍" : "加入队伍", {
+      .text(x + 72, y - 2, inTeam ? "移出队伍" : "加入队伍", {
         fontFamily: "sans-serif",
-        fontSize: "14px",
+        fontSize: "13px",
         color: "#ffffff",
       })
       .setOrigin(0.5);
@@ -222,26 +234,44 @@ export class TeamScene extends Phaser.Scene {
       .join("、");
     const passiveEffects = describePassiveBonuses(instance.passiveSkillIds).join("、");
     const passiveText = this.add.text(
-      x - 45,
-      y - 3,
+      x - 50,
+      y - 8,
       passiveNames ? `被动 ${passiveNames}${passiveEffects ? `｜${passiveEffects}` : ""}` : "被动 无",
-      { fontFamily: "sans-serif", fontSize: "10px", color: "#ce93d8", wordWrap: { width: 195 } }
+      { fontFamily: "sans-serif", fontSize: "10px", color: "#ce93d8", wordWrap: { width: 175 } }
     );
+    const equippedNames = equipped.map((id) => activeSkillsById.get(id)?.name.zh ?? id).join("、");
+    const buildText = this.add.text(x - 50, y + 14, `技能点 ${skillPoints} · ${equippedNames || "无技能"}`, {
+      fontFamily: "sans-serif",
+      fontSize: "11px",
+      color: "#80deea",
+      wordWrap: { width: 175 },
+    });
     const experienceText = this.add.text(
-      x - 45,
-      y + 17,
+      x - 50,
+      y + 34,
       nextLevel
         ? `经验 ${Math.max(0, instance.experience - levelStart)}/${nextLevel - levelStart}`
         : "经验 MAX",
-      { fontFamily: "sans-serif", fontSize: "12px", color: "#80deea" }
+      { fontFamily: "sans-serif", fontSize: "11px", color: "#80deea" }
     );
-    this.content.add([passiveText, experienceText]);
+    this.content.add([passiveText, buildText, experienceText]);
+    const build = createTextButton(this, {
+      x: x + 72,
+      y: y + 34,
+      width: 100,
+      height: 28,
+      label: "构筑",
+      variant: "primary",
+      fontSize: "13px",
+      onPress: () => void startScene(this, "BuildScene", { uid: instance.uid }),
+    });
+    this.content.add(build);
     if (instance.currentHp < stats.maxHp) {
       const heal = this.add
-        .rectangle(x - 65, y + 40, 100, 30, 0x49743f)
+        .rectangle(x - 50, y + 34, 100, 28, 0x49743f)
         .setInteractive({ useHandCursor: true });
       const healText = this.add
-        .text(x - 65, y + 40, `治疗 ×${this.save.inventory.healingTonics}`, {
+        .text(x - 50, y + 34, `治疗 ×${this.save.inventory.healingTonics}`, {
           fontFamily: "sans-serif",
           fontSize: "13px",
           color: "#ffffff",
