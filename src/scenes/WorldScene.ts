@@ -32,7 +32,19 @@ import {
   type WorldRegion,
 } from "../world/regions";
 import { canChallengeBoss, getQuestViews, recordQuestEvent } from "../quests/questSystem";
-import { bossesById } from "../battle/bosses";
+import { bossesById, getBossesForRegion } from "../battle/bosses";
+import {
+  STARTIDE_DISCOVERIES,
+  STARTIDE_CHESTS,
+  STARTIDE_WAYPOINTS,
+  STARTIDE_RARE_SPAWN,
+  STARTIDE_BOSS_ALTARS,
+  getTidePhase,
+  getFogSectorAtTile,
+  isSporeHazardActive,
+  isStartideRegion,
+  startideExplorationCompletion,
+} from "../world/startideContent.ts";
 import { createPatrolPath, type AutoExploreSession, type GridPoint } from "../world/autoExploration";
 import { createTextButton } from "../ui/button";
 import { announceGameStatus } from "../ui/accessibility";
@@ -46,6 +58,10 @@ interface WorldSceneData {
   encounterCooldown?: boolean;
   gathered?: number;
   collectedResourceIds?: string[];
+  discoveredLocationIds?: string[];
+  claimedWorldRewardIds?: string[];
+  activatedWaypointIds?: string[];
+  revealedSectorIds?: string[];
   autoExplore?: AutoExploreSession;
 }
 
@@ -128,6 +144,23 @@ export class WorldScene extends Phaser.Scene {
   >();
   private collected = new Set<string>();
   private gathered = 0;
+  private discovered = new Set<string>();
+  private claimedChests = new Set<string>();
+  private activatedWaypoints = new Set<string>();
+  private revealedSectors = new Set<string>();
+  private sporeOverlay?: Phaser.GameObjects.Rectangle;
+  private explorationText?: Phaser.GameObjects.Text;
+  private environmentText?: Phaser.GameObjects.Text;
+  private discoveryObjects = new Map<
+    string,
+    { node: Phaser.GameObjects.Arc; label: Phaser.GameObjects.Text }
+  >();
+  private chestObjects = new Map<string, { node: Phaser.GameObjects.Arc; label: Phaser.GameObjects.Text }>();
+  private waypointObjects = new Map<
+    string,
+    { node: Phaser.GameObjects.Arc; label: Phaser.GameObjects.Text }
+  >();
+  private rareSpawnNode?: Phaser.GameObjects.Arc;
   private encounterLocked = false;
   private encounterCooldownUntil = 0;
   private nextEncounterCheck = 0;
@@ -163,12 +196,16 @@ export class WorldScene extends Phaser.Scene {
     installSceneTheme(this);
     this.encounterLocked = false;
     this.gathered = data.gathered ?? 0;
-    this.collected = new Set(data.collectedResourceIds ?? []);
     this.autoExploreActive = data.autoExplore?.active === true;
     this.autoExploreMessage =
       data.autoExplore?.message ?? (this.autoExploreActive ? "自动巡逻中" : "手动探索中");
     this.patrolPath = [];
     const save = loadGame(localStorage);
+    this.collected = new Set(data.collectedResourceIds ?? []);
+    this.discovered = new Set(save.progress.discoveredLocationIds);
+    this.claimedChests = new Set(save.progress.claimedWorldRewardIds);
+    this.activatedWaypoints = new Set(save.progress.activatedWaypointIds);
+    this.revealedSectors = new Set(save.progress.revealedSectorIds);
     const requestedRegion = isWorldRegion(data.region) ? data.region : STARTING_REGION;
     this.region = save.progress.unlockedRegions.includes(requestedRegion) ? requestedRegion : STARTING_REGION;
     const leader = this.resolveLeader(data.leaderId, data.leaderUid);
@@ -213,7 +250,12 @@ export class WorldScene extends Phaser.Scene {
 
     this.createResources();
     this.createPortals();
-    this.createBossAltar();
+    this.createBossAltars();
+    this.createDiscoveries();
+    this.createChests();
+    this.createWaypoints();
+    this.createRareSpawn();
+    this.createSporeOverlay();
     this.createHud();
     this.encounterCooldownUntil = this.time.now + (data.encounterCooldown ? 2200 : 800);
     document.addEventListener("visibilitychange", this.visibilityHandler);
@@ -249,23 +291,81 @@ export class WorldScene extends Phaser.Scene {
     );
 
     const nearest = this.findNearbyResource();
+    const nearChest = this.findNearbyChest();
+    const nearDiscovery = this.findNearbyDiscovery();
+    const nearWaypoint = this.findNearbyWaypoint();
     const nearPortal = this.findNearbyPortal();
     const nearBoss = this.isNearBossAltar();
     const interactRequested = Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested;
-    this.promptText.setVisible(Boolean(nearest) || Boolean(nearPortal) || nearBoss);
+    const promptVisible = Boolean(
+      nearest || nearChest || nearDiscovery || nearWaypoint || nearPortal || nearBoss
+    );
+    this.promptText.setVisible(promptVisible);
     if (nearest) {
       this.promptText.setText(`按 E 采集 ${nearest.label}`);
       if (interactRequested || this.autoExploreActive) this.gatherResource(nearest);
+    } else if (nearChest) {
+      this.promptText.setText(`按 E 开启 ${nearChest.label}`);
+      if (interactRequested) this.openChest(nearChest);
+    } else if (nearDiscovery) {
+      this.promptText.setText(`按 E 记录 ${nearDiscovery.label}`);
+      if (interactRequested) this.discoverLocation(nearDiscovery);
+    } else if (nearWaypoint) {
+      this.promptText.setText(`按 E 激活 ${nearWaypoint.label}（传送至芦灯港）`);
+      if (interactRequested) this.activateWaypoint(nearWaypoint);
     } else if (nearPortal) {
       this.promptText.setText(this.getPortalPrompt(nearPortal));
       if (interactRequested) this.usePortal(nearPortal);
     } else if (nearBoss) {
-      this.promptText.setText(this.getBossPrompt());
-      if (interactRequested) this.challengeBoss();
+      this.promptText.setText(this.getBossPrompt(nearBoss.id));
+      if (interactRequested) this.challengeBoss(nearBoss.id);
     }
     this.touchInteractRequested = false;
 
-    if (direction.lengthSq() > 0) this.tryEncounter(zone, period);
+    this.revealFogSector(Math.floor(this.player.x / TILE_SIZE), Math.floor(this.player.y / TILE_SIZE));
+    this.updateEnvironmentHud(period);
+
+    if (direction.lengthSq() > 0) {
+      if (this.isNearRareSpawn()) this.triggerRareSpawn();
+      else this.tryEncounter(zone, period);
+    }
+  }
+
+  private revealFogSector(tileX: number, tileY: number) {
+    if (!isStartideRegion(this.region)) return;
+    const sector = getFogSectorAtTile(tileX, tileY);
+    if (!sector || this.revealedSectors.has(sector)) return;
+    this.revealedSectors.add(sector);
+    const save = loadGame(localStorage);
+    saveGame(localStorage, {
+      ...save,
+      progress: { ...save.progress, revealedSectorIds: [...this.revealedSectors] },
+    });
+    this.updateExplorationHud();
+  }
+
+  private triggerRareSpawn() {
+    if (this.encounterLocked || this.time.now < this.encounterCooldownUntil) return;
+    this.encounterLocked = true;
+    this.player.setVelocity(0, 0);
+    this.rareSpawnNode?.setActive(false);
+    const save = loadGame(localStorage);
+    const leaderLevel = save.ownedPals.find((pal) => pal.uid === this.leaderUid)?.level ?? 1;
+    const enemyLevel = Math.max(
+      getEncounterLevelFloor("sunken-observatory"),
+      Math.min(50, leaderLevel + STARTIDE_RARE_SPAWN.levelBonus)
+    );
+    void startScene(this, "BattleScene", {
+      playerId: this.leader.id,
+      playerUid: this.leaderUid,
+      enemyId: STARTIDE_RARE_SPAWN.speciesId,
+      enemyLevel,
+      autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
+      returnTo: {
+        scene: "WorldScene",
+        data: this.buildReturnData(),
+      },
+    });
   }
 
   private resolveLeader(preferredId?: number, preferredUid?: string): { species: Pal; uid?: string } {
@@ -379,6 +479,28 @@ export class WorldScene extends Phaser.Scene {
       .setVisible(false);
     this.updateResourceText();
     this.updateAutoExploreHud();
+    this.environmentText = this.add
+      .text(20, 90, "", {
+        fontFamily: "sans-serif",
+        fontSize: "13px",
+        color: "#b2ebf2",
+        backgroundColor: "#0b1224",
+        padding: { x: 8, y: 4 },
+      })
+      .setScrollFactor(0)
+      .setDepth(21);
+    this.explorationText = this.add
+      .text(20, 118, "", {
+        fontFamily: "sans-serif",
+        fontSize: "13px",
+        color: "#ffe082",
+        backgroundColor: "#0b1224",
+        padding: { x: 8, y: 4 },
+      })
+      .setScrollFactor(0)
+      .setDepth(21);
+    this.updateEnvironmentHud();
+    this.updateExplorationHud();
     this.createTouchControls();
   }
 
@@ -515,6 +637,138 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  private findNearbyDiscovery(): (typeof STARTIDE_DISCOVERIES)[number] | undefined {
+    if (!isStartideRegion(this.region)) return undefined;
+    return STARTIDE_DISCOVERIES.find(
+      (discovery) =>
+        !this.discovered.has(discovery.id) &&
+        Phaser.Math.Distance.Between(this.player.x, this.player.y, discovery.x, discovery.y) < 52
+    );
+  }
+
+  private findNearbyChest(): (typeof STARTIDE_CHESTS)[number] | undefined {
+    if (!isStartideRegion(this.region)) return undefined;
+    return STARTIDE_CHESTS.find(
+      (chest) =>
+        !this.claimedChests.has(chest.id) &&
+        Phaser.Math.Distance.Between(this.player.x, this.player.y, chest.x, chest.y) < 52
+    );
+  }
+
+  private findNearbyWaypoint(): (typeof STARTIDE_WAYPOINTS)[number] | undefined {
+    if (!isStartideRegion(this.region)) return undefined;
+    return STARTIDE_WAYPOINTS.find(
+      (waypoint) =>
+        !this.activatedWaypoints.has(waypoint.id) &&
+        Phaser.Math.Distance.Between(this.player.x, this.player.y, waypoint.x, waypoint.y) < 56
+    );
+  }
+
+  private isNearRareSpawn(): boolean {
+    if (!isStartideRegion(this.region) || !this.rareSpawnNode?.active) return false;
+    return (
+      Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        STARTIDE_RARE_SPAWN.x,
+        STARTIDE_RARE_SPAWN.y
+      ) < 50
+    );
+  }
+
+  private discoverLocation(discovery: (typeof STARTIDE_DISCOVERIES)[number]) {
+    this.discovered.add(discovery.id);
+    const object = this.discoveryObjects.get(discovery.id);
+    object?.node.destroy();
+    object?.label.destroy();
+    this.discoveryObjects.delete(discovery.id);
+    const save = loadGame(localStorage);
+    saveGame(localStorage, {
+      ...save,
+      progress: { ...save.progress, discoveredLocationIds: [...this.discovered] },
+    });
+    announceGameStatus(`已发现地点：${discovery.label}`);
+    this.updateExplorationHud();
+  }
+
+  private openChest(chest: (typeof STARTIDE_CHESTS)[number]) {
+    this.claimedChests.add(chest.id);
+    const object = this.chestObjects.get(chest.id);
+    object?.node.destroy();
+    object?.label.destroy();
+    this.chestObjects.delete(chest.id);
+    const save = loadGame(localStorage);
+    const resources = { ...save.base.resources };
+    for (const [resource, amount] of Object.entries(chest.rewards.resources ?? {})) {
+      resources[resource as keyof typeof resources] += amount ?? 0;
+    }
+    saveGame(localStorage, {
+      ...save,
+      base: { ...save.base, resources },
+      inventory: {
+        ...save.inventory,
+        captureOrbs: save.inventory.captureOrbs + (chest.rewards.captureOrbs ?? 0),
+        healingTonics: save.inventory.healingTonics + (chest.rewards.healingTonics ?? 0),
+      },
+      progress: { ...save.progress, claimedWorldRewardIds: [...this.claimedChests] },
+    });
+    announceGameStatus(`已开启${chest.label}`);
+    this.updateResourceText();
+    this.updateExplorationHud();
+  }
+
+  private activateWaypoint(waypoint: (typeof STARTIDE_WAYPOINTS)[number]) {
+    this.activatedWaypoints.add(waypoint.id);
+    const object = this.waypointObjects.get(waypoint.id);
+    object?.node.destroy();
+    object?.label.destroy();
+    this.waypointObjects.delete(waypoint.id);
+    const save = loadGame(localStorage);
+    saveGame(localStorage, {
+      ...save,
+      progress: { ...save.progress, activatedWaypointIds: [...this.activatedWaypoints] },
+    });
+    this.player.setPosition(waypoint.targetX, waypoint.targetY);
+    this.cameras.main.centerOn(waypoint.targetX, waypoint.targetY);
+    announceGameStatus(`已激活${waypoint.label}，传送至芦灯港入口`);
+    this.updateExplorationHud();
+  }
+
+  private updateEnvironmentHud(period: "day" | "night" = "day") {
+    if (!this.environmentText) return;
+    if (!isStartideRegion(this.region)) {
+      this.environmentText.setVisible(false);
+      this.sporeOverlay?.setVisible(false);
+      return;
+    }
+    const tide = getTidePhase(new Date().getHours());
+    const spore = isSporeHazardActive("sunken-observatory", period, this.player.x, this.player.y, [
+      ...this.discovered,
+    ]);
+    const parts = [`潮汐：${tide === "flood" ? "涨潮" : "退潮"}`];
+    if (spore) parts.push("⚠ 孢雾浓密 · 靠近沉星观测台以规避");
+    else if (period === "night") parts.push("孢雾已规避");
+    this.environmentText.setText(parts.join(" · "));
+    this.environmentText.setVisible(true);
+    this.sporeOverlay?.setVisible(spore);
+  }
+
+  private updateExplorationHud() {
+    if (!this.explorationText) return;
+    if (!isStartideRegion(this.region)) {
+      this.explorationText.setVisible(false);
+      return;
+    }
+    const completion = startideExplorationCompletion(
+      [...this.discovered],
+      [...this.claimedChests],
+      [...this.activatedWaypoints],
+      [...this.revealedSectors]
+    );
+    this.explorationText.setText(`星潮探索完成度：${completion}%`);
+    this.explorationText.setVisible(true);
+  }
+
   private findNearbyResource(): ResourceNode | undefined {
     return REGION_RESOURCES[this.region].find((resource) => {
       const object = this.resources.get(resource.id);
@@ -541,44 +795,75 @@ export class WorldScene extends Phaser.Scene {
     this.resourceText?.setText(`采集物 ${this.gathered}`);
   }
 
-  private createBossAltar() {
-    if (this.region !== HIGHLAND_REGION) return;
-    const x = 36 * TILE_SIZE;
-    const y = 14 * TILE_SIZE;
-    this.add.circle(x, y, 25, 0x7e57c2, 0.8).setStrokeStyle(4, 0xffd54f, 0.9);
-    this.add.circle(x, y, 10, 0xffd54f, 0.85);
-    this.add
-      .text(x, y + 32, "风暴祭坛", {
-        fontFamily: "sans-serif",
-        fontSize: "13px",
-        color: "#ffffff",
-        backgroundColor: "#0b1224",
-        padding: { x: 5, y: 2 },
-      })
-      .setOrigin(0.5, 0);
+  private createBossAltars() {
+    if (this.region !== HIGHLAND_REGION && !isStartideRegion(this.region)) return;
+    const bosses = getBossesForRegion(this.region);
+    for (const boss of bosses) {
+      const pos =
+        this.region === HIGHLAND_REGION
+          ? { x: 36 * TILE_SIZE, y: 14 * TILE_SIZE }
+          : STARTIDE_BOSS_ALTARS[boss.id];
+      if (!pos) continue;
+      this.add.circle(pos.x, pos.y, 25, 0x7e57c2, 0.8).setStrokeStyle(4, 0xffd54f, 0.9);
+      this.add.circle(pos.x, pos.y, 10, 0xffd54f, 0.85);
+      this.add
+        .text(pos.x, pos.y + 32, boss.name, {
+          fontFamily: "sans-serif",
+          fontSize: "13px",
+          color: "#ffffff",
+          backgroundColor: "#0b1224",
+          padding: { x: 5, y: 2 },
+        })
+        .setOrigin(0.5, 0);
+    }
   }
 
-  private isNearBossAltar(): boolean {
-    return (
-      this.region === HIGHLAND_REGION &&
-      Phaser.Math.Distance.Between(this.player.x, this.player.y, 36 * TILE_SIZE, 14 * TILE_SIZE) < 62
-    );
+  private isNearBossAltar(): { id: string; x: number; y: number } | undefined {
+    if (this.region !== HIGHLAND_REGION && !isStartideRegion(this.region)) return undefined;
+    const bosses = getBossesForRegion(this.region);
+    for (const boss of bosses) {
+      const pos =
+        this.region === HIGHLAND_REGION
+          ? { x: 36 * TILE_SIZE, y: 14 * TILE_SIZE }
+          : STARTIDE_BOSS_ALTARS[boss.id];
+      if (!pos) continue;
+      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, pos.x, pos.y) < 62) {
+        return { id: boss.id, x: pos.x, y: pos.y };
+      }
+    }
+    return undefined;
   }
 
-  private getBossPrompt(): string {
+  private getBossPrompt(bossId: string): string {
     const save = loadGame(localStorage);
-    if (save.progress.defeatedBossIds.includes("storm-lord")) return "风暴祭坛已经平息";
-    if (canChallengeBoss(save, "storm-lord")) return "按 E 挑战 Lv.12 风暴领主（抗性 55%）";
-    const challenge = getQuestViews(save).find((view) => view.definition.id === "storm-lord-challenge");
+    const boss = bossesById.get(bossId);
+    if (!boss) return "";
+    if (save.progress.defeatedBossIds.includes(bossId)) return `${boss.name} 已经败退`;
+    if (this.canChallengeBossNow(save, boss))
+      return `按 E 挑战 Lv.${boss.level} ${boss.name}（抗性 ${boss.rules.statusResistance}%）`;
+    const challengeQuestId =
+      this.region === HIGHLAND_REGION ? "storm-lord-challenge" : "abyssal-colossus-challenge";
+    const challenge = getQuestViews(save).find((view) => view.definition.id === challengeQuestId);
     return challenge?.status === "complete"
-      ? "风暴领主已经败退，请到任务页领取奖励"
-      : "风暴祭坛尚未回应 · 先完成云脊踏勘任务";
+      ? `${boss.name} 已经败退，请到任务页领取奖励`
+      : "祭坛尚未回应 · 先完成对应区域任务";
   }
 
-  private challengeBoss() {
+  private canChallengeBossNow(
+    save: ReturnType<typeof loadGame>,
+    boss: ReturnType<typeof bossesById.get>
+  ): boolean {
+    if (!boss) return false;
+    if (save.progress.defeatedBossIds.includes(boss.id)) return false;
+    if (boss.rules.phaseThreshold > 0) return canChallengeBoss(save, boss.id);
+    const voyage = getQuestViews(save).find((view) => view.definition.id === "startide-voyage");
+    return voyage !== undefined && voyage.status !== "locked";
+  }
+
+  private challengeBoss(bossId: string) {
     const save = loadGame(localStorage);
-    const boss = bossesById.get("storm-lord");
-    if (!boss || !canChallengeBoss(save, boss.id)) return;
+    const boss = bossesById.get(bossId);
+    if (!boss || !this.canChallengeBossNow(save, boss)) return;
     this.encounterLocked = true;
     this.player.setVelocity(0, 0);
     void startScene(this, "BattleScene", {
@@ -589,19 +874,87 @@ export class WorldScene extends Phaser.Scene {
       bossId: boss.id,
       returnTo: {
         scene: "WorldScene",
-        data: {
-          region: this.region,
-          playerX: this.player.x,
-          playerY: this.player.y,
-          leaderId: this.leader.id,
-          leaderUid: this.leaderUid,
-          encounterCooldown: true,
-          gathered: this.gathered,
-          collectedResourceIds: [...this.collected],
+        data: this.buildReturnData({
           autoExplore: { active: false, message: "首领挑战需手动进行" },
-        },
+        }),
       },
     });
+  }
+
+  private createDiscoveries() {
+    if (!isStartideRegion(this.region)) return;
+    for (const discovery of STARTIDE_DISCOVERIES) {
+      if (this.discovered.has(discovery.id)) continue;
+      const node = this.add
+        .circle(discovery.x, discovery.y, 14, 0xffe082, 0.7)
+        .setStrokeStyle(3, 0xffffff, 0.7);
+      const label = this.add
+        .text(discovery.x, discovery.y + 18, discovery.label, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#fff3c4",
+        })
+        .setOrigin(0.5, 0);
+      this.discoveryObjects.set(discovery.id, { node, label });
+    }
+  }
+
+  private createChests() {
+    if (!isStartideRegion(this.region)) return;
+    for (const chest of STARTIDE_CHESTS) {
+      if (this.claimedChests.has(chest.id)) continue;
+      const node = this.add.circle(chest.x, chest.y, 13, 0x80cbc4, 0.75).setStrokeStyle(3, 0xfff176, 0.8);
+      const label = this.add
+        .text(chest.x, chest.y + 18, chest.label, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#d5f7ff",
+        })
+        .setOrigin(0.5, 0);
+      this.chestObjects.set(chest.id, { node, label });
+    }
+  }
+
+  private createWaypoints() {
+    if (!isStartideRegion(this.region)) return;
+    for (const waypoint of STARTIDE_WAYPOINTS) {
+      if (this.activatedWaypoints.has(waypoint.id)) continue;
+      const node = this.add
+        .circle(waypoint.x, waypoint.y, 15, 0xb39ddb, 0.75)
+        .setStrokeStyle(3, 0xffffff, 0.7);
+      const label = this.add
+        .text(waypoint.x, waypoint.y + 20, waypoint.label, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#e1bee7",
+        })
+        .setOrigin(0.5, 0);
+      this.waypointObjects.set(waypoint.id, { node, label });
+    }
+  }
+
+  private createRareSpawn() {
+    if (!isStartideRegion(this.region)) return;
+    this.rareSpawnNode = this.add
+      .circle(STARTIDE_RARE_SPAWN.x, STARTIDE_RARE_SPAWN.y, 16, 0x4dd0e1, 0.4)
+      .setStrokeStyle(3, 0x4dd0e1, 0.9);
+    this.add
+      .text(STARTIDE_RARE_SPAWN.x, STARTIDE_RARE_SPAWN.y + 22, STARTIDE_RARE_SPAWN.label, {
+        fontFamily: "sans-serif",
+        fontSize: "12px",
+        color: "#b2ebf2",
+      })
+      .setOrigin(0.5, 0);
+  }
+
+  private createSporeOverlay() {
+    if (!isStartideRegion(this.region)) return;
+    this.sporeOverlay = this.add
+      .rectangle(0, 0, WORLD_COLS * TILE_SIZE, WORLD_ROWS * TILE_SIZE, 0x4a148c, 0.28)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(15)
+      .setVisible(false);
   }
 
   private getRegionPortals(): RegionPortal[] {
@@ -700,6 +1053,25 @@ export class WorldScene extends Phaser.Scene {
     this.changeRegion(portal.target, portal.arrivalX);
   }
 
+  private buildReturnData(extra: Partial<WorldSceneData> = {}): WorldSceneData {
+    return {
+      region: this.region,
+      playerX: this.player.x,
+      playerY: this.player.y,
+      leaderId: this.leader.id,
+      leaderUid: this.leaderUid,
+      encounterCooldown: true,
+      gathered: this.gathered,
+      collectedResourceIds: [...this.collected],
+      discoveredLocationIds: [...this.discovered],
+      claimedWorldRewardIds: [...this.claimedChests],
+      activatedWaypointIds: [...this.activatedWaypoints],
+      revealedSectorIds: [...this.revealedSectors],
+      autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
+      ...extra,
+    };
+  }
+
   private changeRegion(region: WorldRegion, playerX: number) {
     void startScene(this, "WorldScene", {
       region,
@@ -710,6 +1082,10 @@ export class WorldScene extends Phaser.Scene {
       encounterCooldown: true,
       gathered: this.gathered,
       collectedResourceIds: [...this.collected],
+      discoveredLocationIds: [...this.discovered],
+      claimedWorldRewardIds: [...this.claimedChests],
+      activatedWaypointIds: [...this.activatedWaypoints],
+      revealedSectorIds: [...this.revealedSectors],
       autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
     });
   }
@@ -740,17 +1116,7 @@ export class WorldScene extends Phaser.Scene {
       autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
       returnTo: {
         scene: "WorldScene",
-        data: {
-          region: this.region,
-          playerX: this.player.x,
-          playerY: this.player.y,
-          leaderId: this.leader.id,
-          leaderUid: this.leaderUid,
-          encounterCooldown: true,
-          gathered: this.gathered,
-          collectedResourceIds: [...this.collected],
-          autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
-        },
+        data: this.buildReturnData(),
       },
     });
   }

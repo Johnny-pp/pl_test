@@ -1,5 +1,5 @@
 import type { GameSave, QuestState } from "../player/playerState";
-import { HIGHLAND_REGION, type WorldRegion } from "../world/regions.ts";
+import { HIGHLAND_REGION, STARTIDE_REGION, type WorldRegion } from "../world/regions.ts";
 
 export type QuestEventType = "battle-win" | "capture" | "gather" | "craft" | "boss-win";
 
@@ -85,6 +85,49 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     ],
     rewardLabel: "晶体 20、能力「岚印锻造」",
     rewards: { resources: { crystal: 20 }, abilities: ["storm-forging"] },
+  },
+  {
+    id: "startide-voyage",
+    title: "星潮远航",
+    description: "修复渡门后深入星潮群岛，采集群岛素材并赢得数场战斗。",
+    prerequisites: ["storm-lord-challenge"],
+    requiredRegion: STARTIDE_REGION,
+    goals: [
+      {
+        id: "startide-gather",
+        type: "gather",
+        label: "采集星潮素材",
+        target: 3,
+        region: STARTIDE_REGION,
+      },
+      {
+        id: "startide-battle",
+        type: "battle-win",
+        label: "在星潮群岛获胜",
+        target: 4,
+        region: STARTIDE_REGION,
+      },
+    ],
+    rewardLabel: "捕获器 2、治疗剂 3",
+    rewards: { captureOrbs: 2, healingTonics: 3 },
+  },
+  {
+    id: "abyssal-colossus-challenge",
+    title: "沉星终章",
+    description: "前往沉星遗迹核心，击败半血强化的晦曜巨像终章首领。",
+    prerequisites: ["startide-voyage"],
+    requiredRegion: STARTIDE_REGION,
+    goals: [
+      {
+        id: "abyssal-colossus",
+        type: "boss-win",
+        label: "击败沉星终章首领",
+        target: 1,
+        bossId: "abyssal-colossus",
+      },
+    ],
+    rewardLabel: "晶体 30、能力「星潮引航」",
+    rewards: { resources: { crystal: 30 }, abilities: ["tide-navigation"] },
   },
 ];
 

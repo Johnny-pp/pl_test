@@ -115,7 +115,7 @@ test("v5 存档迁移会补齐任务、首领和能力进度", () => {
   });
   const migrated = loadGame(memoryStorage(old));
   assert.equal(migrated.version, 7);
-  assert.equal(migrated.progress.quests.length, 3);
+  assert.equal(migrated.progress.quests.length, 5);
   assert.equal(migrated.progress.quests[0].progress["battle-win"], 3);
   assert.equal(migrated.progress.quests[0].progress.capture, 2);
   assert.deepEqual(migrated.progress.defeatedBossIds, []);

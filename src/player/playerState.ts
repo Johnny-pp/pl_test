@@ -34,7 +34,13 @@ export interface QuestState {
   rewardClaimed: boolean;
 }
 
-const QUEST_IDS = ["frontier-preparation", "highland-survey", "storm-lord-challenge"] as const;
+const QUEST_IDS = [
+  "frontier-preparation",
+  "highland-survey",
+  "storm-lord-challenge",
+  "startide-voyage",
+  "abyssal-colossus-challenge",
+] as const;
 
 function createInitialQuestStates(battlesWon = 0, captures = 0): QuestState[] {
   return QUEST_IDS.map((id) => {

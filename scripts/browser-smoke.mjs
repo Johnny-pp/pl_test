@@ -417,6 +417,132 @@ try {
   console.log(
     "✓ 浏览器流程：任务奖励、基地制造、探索挂机、自动战斗/捕获、键盘打断、触控、移动布局、战斗升级、存档恢复与无障碍状态均通过"
   );
+
+  const startideSave = {
+    version: 7,
+    ownedPals: [
+      {
+        uid: "browser-pal",
+        speciesId: 30,
+        level: 1,
+        experience: 45,
+        currentHp: 132,
+        passiveSkillIds: ["sharp_focus"],
+        capturedAt: "2026-08-19T00:00:00.000Z",
+      },
+    ],
+    teamIds: ["browser-pal"],
+    progress: {
+      battlesWon: 10,
+      captures: 2,
+      unlockedRegions: ["frontier", "cloudridge-highlands", "startide-archipelago"],
+      quests: [
+        { id: "frontier-preparation", progress: { "battle-win": 3, capture: 2 }, rewardClaimed: true },
+        { id: "highland-survey", progress: {}, rewardClaimed: true },
+        { id: "storm-lord-challenge", progress: {}, rewardClaimed: true },
+        { id: "startide-voyage", progress: {}, rewardClaimed: false },
+        { id: "abyssal-colossus-challenge", progress: {}, rewardClaimed: false },
+      ],
+      defeatedBossIds: [],
+      unlockedAbilities: ["storm-forging"],
+    },
+    inventory: { captureOrbs: 3, healingTonics: 0 },
+    base: {
+      resources: { wood: 100, stone: 100, food: 100, fiber: 100, crystal: 40 },
+      assignments: [],
+      facilities: { warehouse: 1, farm: 1, workshop: 1 },
+      lastUpdatedAt: 0,
+    },
+    breedingEggs: [],
+  };
+  await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [
+    startideSave,
+  ]);
+  await navigate(sessionId, appUrl);
+  await waitUntil(sessionId, "return Boolean(window.__PL_TEST__) && document.querySelector('#game canvas')");
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1];
+     window.__PL_TEST__.startScene('WorldScene', {
+       region: 'startide-archipelago', leaderId: 30, leaderUid: 'browser-pal'
+     }).then(() => done(true), error => done(String(error)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return window.__PL_TEST__.game.scene.getScene('WorldScene').environmentText.text.includes('潮汐')"
+  );
+  const startideEnv = await execute(
+    sessionId,
+    "return window.__PL_TEST__.game.scene.getScene('WorldScene').environmentText.text"
+  );
+  assert.ok(startideEnv.includes("潮汐"));
+  const startideExploration = await execute(
+    sessionId,
+    "return window.__PL_TEST__.game.scene.getScene('WorldScene').explorationText.text"
+  );
+  assert.ok(startideExploration.includes("星潮探索完成度"));
+  await captureScreenshot(sessionId, "startide-world");
+
+  await execute(
+    sessionId,
+    `const world = window.__PL_TEST__.game.scene.getScene('WorldScene');
+     world.player.setPosition(8 * 32, 6 * 32);`
+  );
+  await webdriver("POST", `/session/${sessionId}/actions`, {
+    actions: [
+      {
+        type: "key",
+        id: "startide-discover",
+        actions: [
+          { type: "keyDown", value: "e" },
+          { type: "pause", duration: 140 },
+          { type: "keyUp", value: "e" },
+        ],
+      },
+    ],
+  });
+  await waitUntil(
+    sessionId,
+    `const save = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     return save.progress.discoveredLocationIds.includes('startide-discovery-haven');`,
+    8_000
+  );
+
+  await execute(
+    sessionId,
+    `const world = window.__PL_TEST__.game.scene.getScene('WorldScene');
+     world.player.setPosition(6 * 32, 14 * 32);`
+  );
+  await webdriver("POST", `/session/${sessionId}/actions`, {
+    actions: [
+      {
+        type: "key",
+        id: "startide-chest",
+        actions: [
+          { type: "keyDown", value: "e" },
+          { type: "pause", duration: 140 },
+          { type: "keyUp", value: "e" },
+        ],
+      },
+    ],
+  });
+  await waitUntil(
+    sessionId,
+    `const save = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     return save.progress.claimedWorldRewardIds.includes('startide-chest-haven');`,
+    8_000
+  );
+  const startideAfter = await execute(
+    sessionId,
+    `const save = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     return { discovered: save.progress.discoveredLocationIds.length,
+       chests: save.progress.claimedWorldRewardIds.length,
+       completion: window.__PL_TEST__.game.scene.getScene('WorldScene').explorationText.text };`
+  );
+  assert.ok(startideAfter.discovered >= 1);
+  assert.ok(startideAfter.chests >= 1);
+  assert.ok(startideAfter.completion.includes("星潮探索完成度"));
+  console.log("✓ 星潮群岛浏览器流程：环境机制、探索完成度、发现地点与隐藏宝箱的一次性领取均通过");
 } finally {
   if (sessionId) {
     try {

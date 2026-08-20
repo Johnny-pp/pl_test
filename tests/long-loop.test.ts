@@ -52,7 +52,12 @@ test("全新存档可按任务链走通高地解锁、制造和首领奖励", ()
   save = claimQuestReward(save, "storm-lord-challenge");
   assert.ok(save.progress.unlockedAbilities.includes("storm-forging"));
   assert.ok(save.base.resources.crystal >= 20);
-  assert.ok(getQuestViews(save).every((view) => view.status === "claimed"));
+  const claimedIds = getQuestViews(save)
+    .filter((view) => view.status === "claimed")
+    .map((view) => view.definition.id);
+  assert.ok(
+    ["frontier-preparation", "highland-survey", "storm-lord-challenge"].every((id) => claimedIds.includes(id))
+  );
 });
 
 test("经验与孵化节奏处于长期循环基线内", () => {

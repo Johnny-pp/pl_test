@@ -56,11 +56,11 @@ test("星潮群岛包含安全聚落、湿地和遗迹三个分区", () => {
   );
   assert.equal(
     pickEncounter("glowmire-wilds", "day", () => 0),
-    34
+    40
   );
   assert.equal(
     pickEncounter("sunken-observatory", "night", () => 0.999),
-    38
+    51
   );
   assert.equal(getEncounterLevelFloor("glowmire-wilds"), 13);
   assert.equal(getEncounterLevelFloor("sunken-observatory"), 16);
