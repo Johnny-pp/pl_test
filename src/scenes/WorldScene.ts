@@ -30,6 +30,9 @@ import {
 } from "../world/regions";
 import { canChallengeBoss, getQuestViews, recordQuestEvent } from "../quests/questSystem";
 import { bossesById } from "../battle/bosses";
+import { createPatrolPath, type AutoExploreSession, type GridPoint } from "../world/autoExploration";
+import { createTextButton } from "../ui/button";
+import { announceGameStatus } from "../ui/accessibility";
 
 interface WorldSceneData {
   region?: WorldRegion;
@@ -40,6 +43,7 @@ interface WorldSceneData {
   encounterCooldown?: boolean;
   gathered?: number;
   collectedResourceIds?: string[];
+  autoExplore?: AutoExploreSession;
 }
 
 interface ResourceNode {
@@ -107,6 +111,18 @@ export class WorldScene extends Phaser.Scene {
   private touchDirection = { up: false, down: false, left: false, right: false };
   private touchInteractRequested = false;
   private region: WorldRegion = STARTING_REGION;
+  private worldMap: number[][] = [];
+  private patrolPath: GridPoint[] = [];
+  private autoExploreActive = false;
+  private autoExploreMessage = "手动探索中";
+  private autoStatusText!: Phaser.GameObjects.Text;
+  private startAutoButton!: Phaser.GameObjects.Container;
+  private stopAutoButton!: Phaser.GameObjects.Container;
+  private readonly visibilityHandler = () => {
+    if (document.hidden && this.autoExploreActive) {
+      this.stopAutoExplore("已因进入后台暂停 · 点击继续挂机");
+    }
+  };
 
   constructor() {
     super("WorldScene");
@@ -125,6 +141,10 @@ export class WorldScene extends Phaser.Scene {
     this.encounterLocked = false;
     this.gathered = data.gathered ?? 0;
     this.collected = new Set(data.collectedResourceIds ?? []);
+    this.autoExploreActive = data.autoExplore?.active === true;
+    this.autoExploreMessage =
+      data.autoExplore?.message ?? (this.autoExploreActive ? "自动巡逻中" : "手动探索中");
+    this.patrolPath = [];
     const save = loadGame(localStorage);
     const requestedRegion = isWorldRegion(data.region) ? data.region : STARTING_REGION;
     this.region =
@@ -136,8 +156,9 @@ export class WorldScene extends Phaser.Scene {
     this.leaderUid = leader.uid;
     this.createTextures();
 
+    this.worldMap = createWorldMap(this.region);
     const map = this.make.tilemap({
-      data: createWorldMap(this.region),
+      data: this.worldMap,
       tileWidth: TILE_SIZE,
       tileHeight: TILE_SIZE,
     });
@@ -175,6 +196,11 @@ export class WorldScene extends Phaser.Scene {
     this.createBossAltar();
     this.createHud();
     this.encounterCooldownUntil = this.time.now + (data.encounterCooldown ? 2200 : 800);
+    document.addEventListener("visibilitychange", this.visibilityHandler);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      document.removeEventListener("visibilitychange", this.visibilityHandler);
+    });
+    if (document.hidden && this.autoExploreActive) this.stopAutoExplore("已因进入后台暂停 · 点击继续挂机");
   }
 
   update() {
@@ -182,7 +208,16 @@ export class WorldScene extends Phaser.Scene {
     const right = this.cursors.right.isDown || this.wasd.right.isDown || this.touchDirection.right;
     const up = this.cursors.up.isDown || this.wasd.up.isDown || this.touchDirection.up;
     const down = this.cursors.down.isDown || this.wasd.down.isDown || this.touchDirection.down;
-    const direction = new Phaser.Math.Vector2(Number(right) - Number(left), Number(down) - Number(up));
+    const manualDirection = new Phaser.Math.Vector2(Number(right) - Number(left), Number(down) - Number(up));
+    if (manualDirection.lengthSq() > 0 && this.autoExploreActive) {
+      this.stopAutoExplore("已由手动移动停止");
+    }
+    const direction =
+      manualDirection.lengthSq() > 0
+        ? manualDirection
+        : this.autoExploreActive
+          ? this.getPatrolDirection()
+          : new Phaser.Math.Vector2();
     if (direction.lengthSq() > 0) direction.normalize().scale(180);
     this.player.setVelocity(direction.x, direction.y);
 
@@ -200,7 +235,7 @@ export class WorldScene extends Phaser.Scene {
     this.promptText.setVisible(Boolean(nearest) || nearPortal || nearBoss);
     if (nearest) {
       this.promptText.setText(`按 E 采集 ${nearest.label}`);
-      if (interactRequested) this.gatherResource(nearest);
+      if (interactRequested || this.autoExploreActive) this.gatherResource(nearest);
     } else if (nearPortal) {
       this.promptText.setText(this.getPortalPrompt());
       if (interactRequested) this.usePortal();
@@ -275,6 +310,41 @@ export class WorldScene extends Phaser.Scene {
       .setOrigin(1, 0)
       .setScrollFactor(0)
       .setDepth(21);
+    this.autoStatusText = this.add
+      .text(450, 58, "", {
+        fontFamily: "sans-serif",
+        fontSize: "13px",
+        color: "#ffffff",
+        backgroundColor: "#0b1224",
+        padding: { x: 10, y: 5 },
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(21);
+    this.startAutoButton = createTextButton(this, {
+      x: 800,
+      y: 74,
+      width: 164,
+      height: 42,
+      label: "▶ 开始挂机",
+      variant: "accent",
+      fontSize: "15px",
+      onPress: () => this.startAutoExplore(),
+    })
+      .setScrollFactor(0)
+      .setDepth(24);
+    this.stopAutoButton = createTextButton(this, {
+      x: 800,
+      y: 74,
+      width: 164,
+      height: 42,
+      label: "■ 停止挂机",
+      variant: "danger",
+      fontSize: "15px",
+      onPress: () => this.stopAutoExplore("已手动停止挂机"),
+    })
+      .setScrollFactor(0)
+      .setDepth(24);
     this.promptText = this.add
       .text(450, 594, "", {
         fontFamily: "sans-serif",
@@ -288,7 +358,70 @@ export class WorldScene extends Phaser.Scene {
       .setDepth(21)
       .setVisible(false);
     this.updateResourceText();
+    this.updateAutoExploreHud();
     this.createTouchControls();
+  }
+
+  private startAutoExplore() {
+    const save = loadGame(localStorage);
+    const hasAvailableTeamMember = save.teamIds.some((uid) => {
+      const member = save.ownedPals.find((pal) => pal.uid === uid);
+      return Boolean(member && member.currentHp > 0);
+    });
+    if (!hasAvailableTeamMember) {
+      this.autoExploreMessage = "队伍中没有可战斗成员 · 请先编组或治疗";
+      this.updateAutoExploreHud();
+      announceGameStatus(this.autoExploreMessage);
+      return;
+    }
+    this.autoExploreActive = true;
+    this.autoExploreMessage = "自动巡逻中 · 路过资源会自动采集";
+    this.patrolPath = [];
+    this.updateAutoExploreHud();
+    announceGameStatus("探索挂机已开始。将自动巡逻、采集并处理普通遭遇。");
+  }
+
+  private stopAutoExplore(message: string) {
+    this.autoExploreActive = false;
+    this.autoExploreMessage = message;
+    this.patrolPath = [];
+    this.player?.setVelocity(0, 0);
+    this.updateAutoExploreHud();
+    announceGameStatus(message);
+  }
+
+  private updateAutoExploreHud() {
+    this.autoStatusText?.setText(
+      `${this.autoExploreActive ? "● 挂机运行" : "○ 挂机暂停"} · ${this.autoExploreMessage}`
+    );
+    this.autoStatusText?.setColor(this.autoExploreActive ? "#9ccc65" : "#ffffff");
+    this.startAutoButton?.setVisible(!this.autoExploreActive);
+    this.stopAutoButton?.setVisible(this.autoExploreActive);
+  }
+
+  private getPatrolDirection(): Phaser.Math.Vector2 {
+    const currentTile = {
+      x: Math.floor(this.player.x / TILE_SIZE),
+      y: Math.floor(this.player.y / TILE_SIZE),
+    };
+    if (this.patrolPath.length === 0) {
+      this.patrolPath = createPatrolPath(this.worldMap, currentTile);
+      if (this.patrolPath.length === 0) {
+        this.stopAutoExplore("当前位置无法规划巡逻路线");
+        return new Phaser.Math.Vector2();
+      }
+    }
+    let next = this.patrolPath[0];
+    let targetX = (next.x + 0.5) * TILE_SIZE;
+    let targetY = (next.y + 0.5) * TILE_SIZE;
+    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, targetX, targetY) < 5) {
+      this.patrolPath.shift();
+      next = this.patrolPath[0];
+      if (!next) return new Phaser.Math.Vector2();
+      targetX = (next.x + 0.5) * TILE_SIZE;
+      targetY = (next.y + 0.5) * TILE_SIZE;
+    }
+    return new Phaser.Math.Vector2(targetX - this.player.x, targetY - this.player.y);
   }
 
   private createTouchControls() {
@@ -445,6 +578,7 @@ export class WorldScene extends Phaser.Scene {
           encounterCooldown: true,
           gathered: this.gathered,
           collectedResourceIds: [...this.collected],
+          autoExplore: { active: false, message: "首领挑战需手动进行" },
         },
       },
     });
@@ -502,6 +636,7 @@ export class WorldScene extends Phaser.Scene {
       encounterCooldown: true,
       gathered: this.gathered,
       collectedResourceIds: [...this.collected],
+      autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
     });
   }
 
@@ -528,6 +663,7 @@ export class WorldScene extends Phaser.Scene {
       playerUid: this.leaderUid,
       enemyId,
       enemyLevel,
+      autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
       returnTo: {
         scene: "WorldScene",
         data: {
@@ -539,6 +675,7 @@ export class WorldScene extends Phaser.Scene {
           encounterCooldown: true,
           gathered: this.gathered,
           collectedResourceIds: [...this.collected],
+          autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
         },
       },
     });

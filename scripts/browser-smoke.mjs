@@ -291,6 +291,56 @@ try {
     [keyboardStartX]
   );
 
+  const autoRunBefore = await execute(
+    sessionId,
+    `const save = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     window.__plTestOriginalRandom = Math.random; Math.random = () => 0;
+     return { battlesWon: save.progress.battlesWon, owned: save.ownedPals.length };`
+  );
+  await clickCanvas(sessionId, 800, 74);
+  await waitUntil(
+    sessionId,
+    "return window.__PL_TEST__.game.scene.getScene('WorldScene').autoExploreActive === true"
+  );
+  await waitUntil(
+    sessionId,
+    `const save = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     const world = window.__PL_TEST__.game.scene.getScene('WorldScene');
+     return save.progress.battlesWon > arguments[0] && save.ownedPals.length > arguments[1] &&
+       world.scene.isActive() && world.autoExploreActive === true;`,
+    30_000,
+    [autoRunBefore.battlesWon, autoRunBefore.owned]
+  );
+  await execute(sessionId, "Math.random = window.__plTestOriginalRandom");
+  const autoRunResult = await execute(
+    sessionId,
+    `const save = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     return { battlesWon: save.progress.battlesWon, owned: save.ownedPals.length,
+       orbs: save.inventory.captureOrbs };`
+  );
+  assert.ok(autoRunResult.battlesWon > autoRunBefore.battlesWon);
+  assert.ok(autoRunResult.owned > autoRunBefore.owned, "挂机应自动捕获尚未拥有的物种");
+  assert.ok(autoRunResult.orbs > 0, "挂机捕获应只消耗一个现有捕获器");
+  await captureScreenshot(sessionId, "world-auto-desktop");
+
+  await webdriver("POST", `/session/${sessionId}/actions`, {
+    actions: [
+      {
+        type: "key",
+        id: "browser-smoke-auto-stop",
+        actions: [
+          { type: "keyDown", value: "\uE014" },
+          { type: "pause", duration: 200 },
+          { type: "keyUp", value: "\uE014" },
+        ],
+      },
+    ],
+  });
+  await waitUntil(
+    sessionId,
+    "return window.__PL_TEST__.game.scene.getScene('WorldScene').autoExploreActive === false"
+  );
+
   await webdriver("POST", `/session/${sessionId}/window/rect`, {
     width: 390,
     height: 844,
@@ -365,7 +415,7 @@ try {
   assert.equal(restored.claimed, true);
   assert.ok(restored.captureOrbs > orbsBefore);
   console.log(
-    "✓ 浏览器流程：任务奖励、基地制造、探索、键盘/触控控件、移动布局、战斗升级、存档恢复与无障碍状态均通过"
+    "✓ 浏览器流程：任务奖励、基地制造、探索挂机、自动战斗/捕获、键盘打断、触控、移动布局、战斗升级、存档恢复与无障碍状态均通过"
   );
 } finally {
   if (sessionId) {

@@ -34,6 +34,9 @@ import { bossesById } from "../battle/bosses";
 import { recordBossVictory, recordQuestEvent } from "../quests/questSystem";
 import { createBackButton, createTextButton } from "../ui/button";
 import { describePassiveBonuses } from "../passives/passiveEffects";
+import { chooseAutoBattleSkill, chooseAutoSwitchIndex } from "../battle/autoBattle";
+import type { AutoExploreSession } from "../world/autoExploration";
+import { announceGameStatus } from "../ui/accessibility";
 
 interface BattleSceneData {
   playerId: number;
@@ -41,6 +44,7 @@ interface BattleSceneData {
   enemyLevel?: number;
   playerUid?: string;
   bossId?: string;
+  autoExplore?: AutoExploreSession;
   returnTo?: {
     scene: string;
     data?: Record<string, unknown>;
@@ -69,6 +73,18 @@ export class BattleScene extends Phaser.Scene {
   private choosingSwitch = false;
   private playerPanel?: Phaser.GameObjects.Container;
   private displayedPlayerIndex = -1;
+  private autoExploreAvailable = false;
+  private autoExploreActive = false;
+  private autoExploreMessage = "";
+  private autoActionTimer?: Phaser.Time.TimerEvent;
+  private autoStatusText?: Phaser.GameObjects.Text;
+  private startAutoButton?: Phaser.GameObjects.Container;
+  private stopAutoButton?: Phaser.GameObjects.Container;
+  private readonly visibilityHandler = () => {
+    if (document.hidden && this.autoExploreActive) {
+      this.setAutoExplore(false, "已因进入后台暂停 · 点击继续挂机");
+    }
+  };
 
   constructor() {
     super("BattleScene");
@@ -89,6 +105,9 @@ export class BattleScene extends Phaser.Scene {
     this.choosingSwitch = false;
     this.displayedPlayerIndex = -1;
     this.returnTo = data.returnTo;
+    this.autoExploreAvailable = Boolean(data.autoExplore) && !data.bossId;
+    this.autoExploreActive = this.autoExploreAvailable && data.autoExplore?.active === true;
+    this.autoExploreMessage = data.autoExplore?.message ?? "挂机战斗已暂停";
     this.playerUid = data.playerUid;
     this.enemyLevel = Math.max(1, Math.min(50, Math.floor(data.enemyLevel ?? 1)));
     this.bossId = data.bossId;
@@ -130,6 +149,7 @@ export class BattleScene extends Phaser.Scene {
     if (boss) this.state.enemy.name = boss.name;
     createBackButton(this, "退出战斗", () => this.leaveBattle());
     addSceneTitle(this, boss ? "区域首领战" : "幻兽对决");
+    this.createAutoExploreControls();
     this.roundText = this.add
       .text(450, 66, "", {
         fontFamily: "sans-serif",
@@ -151,7 +171,76 @@ export class BattleScene extends Phaser.Scene {
       wordWrap: { width: 804 },
     });
     this.actionLayer = this.add.container(0, 0);
+    document.addEventListener("visibilitychange", this.visibilityHandler);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      document.removeEventListener("visibilitychange", this.visibilityHandler);
+      this.autoActionTimer?.remove(false);
+    });
+    if (document.hidden && this.autoExploreActive) {
+      this.setAutoExplore(false, "已因进入后台暂停 · 点击继续挂机");
+    }
     this.render();
+  }
+
+  private createAutoExploreControls() {
+    if (!this.autoExploreAvailable) return;
+    this.autoStatusText = this.add
+      .text(785, 65, "", {
+        fontFamily: "sans-serif",
+        fontSize: "12px",
+        color: "#9ccc65",
+      })
+      .setOrigin(1, 0.5)
+      .setDepth(11);
+    this.startAutoButton = createTextButton(this, {
+      x: 810,
+      y: 28,
+      width: 142,
+      height: 32,
+      label: "▶ 继续挂机",
+      variant: "accent",
+      fontSize: "13px",
+      onPress: () => this.setAutoExplore(true, "自动战斗中"),
+    }).setDepth(12);
+    this.stopAutoButton = createTextButton(this, {
+      x: 810,
+      y: 28,
+      width: 142,
+      height: 32,
+      label: "■ 停止挂机",
+      variant: "danger",
+      fontSize: "13px",
+      onPress: () => this.setAutoExplore(false, "已手动停止挂机"),
+    }).setDepth(12);
+    this.updateAutoExploreControls();
+  }
+
+  private setAutoExplore(active: boolean, message: string) {
+    this.autoExploreActive = active;
+    this.autoExploreMessage = message;
+    this.autoActionTimer?.remove(false);
+    this.autoActionTimer = undefined;
+    this.syncReturnAutoExplore();
+    this.updateAutoExploreControls();
+    announceGameStatus(active ? "探索挂机继续，正在自动战斗。" : message);
+    if (active) this.queueAutoAction();
+  }
+
+  private syncReturnAutoExplore() {
+    if (!this.returnTo?.data) return;
+    this.returnTo.data.autoExplore = {
+      active: this.autoExploreActive,
+      message: this.autoExploreMessage,
+    } satisfies AutoExploreSession;
+  }
+
+  private updateAutoExploreControls() {
+    this.autoStatusText?.setText(
+      `${this.autoExploreActive ? "● 挂机运行" : "○ 挂机暂停"} · ${this.autoExploreMessage}`
+    );
+    this.autoStatusText?.setColor(this.autoExploreActive ? "#9ccc65" : "#ff8a80");
+    this.startAutoButton?.setVisible(!this.autoExploreActive);
+    this.stopAutoButton?.setVisible(this.autoExploreActive);
   }
 
   private makeCombatantPanel(
@@ -283,11 +372,19 @@ export class BattleScene extends Phaser.Scene {
           this.actionLayer.add(message);
         }
       }
+      if (this.autoExploreActive) {
+        if (this.state.phase === "defeat") {
+          this.setAutoExplore(false, "全队已失去战斗能力 · 请返回队伍治疗");
+        } else {
+          this.queueAutoAction();
+        }
+      }
       return;
     }
 
     if (this.state.phase === "switching" || this.choosingSwitch) {
       this.renderPartyChoices(this.state.phase === "switching");
+      this.queueAutoAction();
       return;
     }
 
@@ -332,6 +429,54 @@ export class BattleScene extends Phaser.Scene {
       bg.on("pointerdown", () => this.takeTurn(skill));
       this.actionLayer.add([bg, name, stats]);
     });
+    this.queueAutoAction();
+  }
+
+  private queueAutoAction() {
+    if (!this.autoExploreActive || !this.state || this.autoActionTimer) return;
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    this.autoActionTimer = this.time.delayedCall(reducedMotion ? 240 : 620, () => {
+      this.autoActionTimer = undefined;
+      this.runAutoAction();
+    });
+  }
+
+  private runAutoAction() {
+    if (!this.autoExploreActive || !this.state || this.busy) {
+      if (this.autoExploreActive) this.queueAutoAction();
+      return;
+    }
+    if (this.state.phase === "victory") {
+      const enemyPal = pals.find((pal) => pal.id === this.state?.enemy.id);
+      const save = loadGame(localStorage);
+      const isNewSpecies = enemyPal && !save.ownedPals.some((pal) => pal.speciesId === enemyPal.id);
+      if (enemyPal && isNewSpecies && !this.captureAttempted && save.inventory.captureOrbs > 0) {
+        this.captureEnemy(enemyPal);
+        return;
+      }
+      this.leaveBattle();
+      return;
+    }
+    if (this.state.phase === "defeat") return;
+    if (this.state.phase === "switching") {
+      const index = chooseAutoSwitchIndex(this.state);
+      if (index === undefined) {
+        this.setAutoExplore(false, "全队已失去战斗能力 · 请返回队伍治疗");
+        return;
+      }
+      this.switchTo(index);
+      return;
+    }
+    if (this.state.phase !== "choosing") {
+      this.queueAutoAction();
+      return;
+    }
+    const skill = chooseAutoBattleSkill(this.state.player, this.state.enemy, activeSkillsById);
+    if (!skill) {
+      this.setAutoExplore(false, "当前队员没有可用技能 · 已停止挂机");
+      return;
+    }
+    this.takeTurn(skill);
   }
 
   private renderPartyChoices(forced: boolean) {
