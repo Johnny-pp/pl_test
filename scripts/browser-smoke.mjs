@@ -857,6 +857,93 @@ try {
   );
   assert.ok(coinsAfterQuest === coinsBeforeQuest + 80, "支线奖励应发放星币");
   console.log("✓ 阶段十七：支线任务可查看并领取奖励");
+
+  // ---- 阶段十八：基地布局/科技/加工链/订单 浏览器流程 ----
+  const stage18Save = JSON.parse(JSON.stringify(stage17Save));
+  stage18Save.version = 9;
+  stage18Save.base.resources = {
+    wood: 500,
+    stone: 500,
+    food: 200,
+    fiber: 400,
+    crystal: 100,
+    ore: 60,
+    metal: 30,
+  };
+  stage18Save.base.placedFacilities = [
+    { facilityId: "warehouse", level: 3, gridX: 0, gridY: 0 },
+    { facilityId: "farm", level: 1, gridX: 2, gridY: 0 },
+    { facilityId: "workshop", level: 2, gridX: 0, gridY: 2 },
+  ];
+  stage18Save.base.techIds = [];
+  stage18Save.base.orders = [];
+  await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [
+    stage18Save,
+  ]);
+  await navigate(sessionId, appUrl);
+  await waitUntil(sessionId, "return Boolean(window.__PL_TEST__) && document.querySelector('#game canvas')");
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('BaseScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('远征基地')"
+  );
+
+  const baseScene = () => `window.__PL_TEST__.game.scene.getScene('BaseScene')`;
+  await execute(sessionId, `${baseScene()}.tab = 'tech'; ${baseScene()}.render();`);
+  await execute(sessionId, `${baseScene()}.doUnlockTech('tech-smelting');`);
+  await execute(sessionId, `${baseScene()}.doUnlockTech('tech-assembly');`);
+  const techIds = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).base.techIds;`
+  );
+  assert.ok(
+    techIds.includes("tech-smelting") && techIds.includes("tech-assembly"),
+    "浏览器中应能解锁冶炼与装配科技"
+  );
+
+  await execute(sessionId, `${baseScene()}.tab = 'layout'; ${baseScene()}.render();`);
+  await execute(sessionId, `${baseScene()}.doPlaceFacility('forge', 4, 0);`);
+  await execute(sessionId, `${baseScene()}.doPlaceFacility('assembly', 4, 2);`);
+  const placedIds = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).base.placedFacilities.map(e => e.facilityId);`
+  );
+  assert.ok(placedIds.includes("forge") && placedIds.includes("assembly"), "浏览器中应能放置熔炉与装配台");
+
+  await execute(sessionId, `${baseScene()}.tab = 'processing'; ${baseScene()}.render();`);
+  const metalBeforeSmelt = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).base.resources.metal;`
+  );
+  await execute(sessionId, `${baseScene()}.doSmelt();`);
+  const metalAfterSmelt = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).base.resources.metal;`
+  );
+  assert.ok(metalAfterSmelt > metalBeforeSmelt, "熔炼后金属锭应增加");
+  await execute(sessionId, `${baseScene()}.doAssembleOrb();`);
+  const orbAfter = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).inventory.advancedCaptureOrbs;`
+  );
+  assert.ok(orbAfter >= 1, "装配后应获得高级捕获器");
+
+  await execute(sessionId, `${baseScene()}.tab = 'orders'; ${baseScene()}.render();`);
+  await execute(sessionId, `${baseScene()}.doCompleteOrder('order-forge-commission');`);
+  const orderState = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save')); return { orders: s.base.orders, coins: s.inventory.coins };`
+  );
+  assert.ok(
+    orderState.orders.length >= 1 && orderState.orders[0].claimedCount >= 1,
+    "订单应可完成并记录次数"
+  );
+  assert.ok(orderState.coins >= stage18Save.inventory.coins + 180, "订单奖励应发放星币");
+  await captureScreenshot(sessionId, "base-stage18");
+  console.log("✓ 阶段十八：基地布局、科技解锁、加工链与订单均通过");
 } finally {
   if (sessionId) {
     try {
