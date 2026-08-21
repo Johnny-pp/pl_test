@@ -115,10 +115,7 @@ export const GLIDE_DISCOVERY = {
   label: "潮顶瞭望点",
 };
 
-export function getTeamExploreAbilityIds(
-  save: GameSave,
-  speciesById: ReadonlyMap<number, Pal>
-): Set<string> {
+export function getTeamExploreAbilityIds(save: GameSave, speciesById: ReadonlyMap<number, Pal>): Set<string> {
   const abilities = new Set<string>();
   for (const uid of save.teamIds) {
     const instance = save.ownedPals.find((pal) => pal.uid === uid);
@@ -133,7 +130,11 @@ export function isGateOpened(save: GameSave, gateId: string): boolean {
   return save.progress.openedGateIds.includes(gateId);
 }
 
-export function canOpenGate(save: GameSave, gate: ExploreGate, speciesById: ReadonlyMap<number, Pal>): boolean {
+export function canOpenGate(
+  save: GameSave,
+  gate: ExploreGate,
+  speciesById: ReadonlyMap<number, Pal>
+): boolean {
   if (isGateOpened(save, gate.id)) return false;
   return getTeamExploreAbilityIds(save, speciesById).has(gate.requiredAbility);
 }

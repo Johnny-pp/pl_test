@@ -180,8 +180,10 @@ function sideStateFor(save: GameSave, questId: string): SideQuestState {
 }
 
 function mainQuestClaimed(save: GameSave, questId: string): boolean {
-  return (save.progress.quests.find((quest) => quest.id === questId) as QuestState | undefined)
-    ?.rewardClaimed === true;
+  return (
+    (save.progress.quests.find((quest) => quest.id === questId) as QuestState | undefined)?.rewardClaimed ===
+    true
+  );
 }
 
 function sidePrerequisitesMet(save: GameSave, quest: SideQuestDefinition): boolean {
@@ -203,8 +205,7 @@ export function getSideQuestViews(save: GameSave): SideQuestView[] {
     if (state.rewardClaimed) status = "claimed";
     else if (
       sidePrerequisitesMet(save, definition) &&
-      (!definition.requiredRegion ||
-        save.progress.unlockedRegions.includes(definition.requiredRegion))
+      (!definition.requiredRegion || save.progress.unlockedRegions.includes(definition.requiredRegion))
     )
       status = sideQuestIsComplete(state, definition) ? "complete" : "active";
     return { definition, state, status };
@@ -279,9 +280,7 @@ export function claimSideQuestReward(save: GameSave, questId: string): GameSave 
     progress: {
       ...save.progress,
       sideQuests,
-      unlockedAbilities: [
-        ...new Set([...save.progress.unlockedAbilities, ...(rewards.abilities ?? [])]),
-      ],
+      unlockedAbilities: [...new Set([...save.progress.unlockedAbilities, ...(rewards.abilities ?? [])])],
     },
     inventory: {
       ...save.inventory,

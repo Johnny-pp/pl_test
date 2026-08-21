@@ -74,11 +74,7 @@ export interface EliteVictoryResult {
 }
 
 /** 记录精英被击败：首次击败发放奖励并记录，同时更新重战冷却。 */
-export function recordEliteDefeat(
-  save: GameSave,
-  elite: EliteDef,
-  now = Date.now()
-): EliteVictoryResult {
+export function recordEliteDefeat(save: GameSave, elite: EliteDef, now = Date.now()): EliteVictoryResult {
   const firstDefeat = !isEliteDefeated(save, elite.id);
   const rewards = elite.rewards;
   const resources = { ...save.base.resources };

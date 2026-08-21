@@ -653,6 +653,210 @@ try {
   assert.equal(buildSceneHasEquipment, true, "构筑场景应正常渲染装备与技能树");
   await captureScreenshot(sessionId, "build-desktop");
   console.log("✓ 构筑浏览器流程：技能树解锁、技能点与装备穿戴均通过");
+
+  // ---- 阶段十七：NPC/商店/机关/精英/支线 浏览器流程 ----
+  const stage17Save = {
+    version: 7,
+    ownedPals: [
+      {
+        uid: "s17-vine",
+        speciesId: 1,
+        level: 1,
+        experience: 0,
+        currentHp: 132,
+        passiveSkillIds: [],
+        capturedAt: "2026-08-20T00:00:00.000Z",
+      },
+      {
+        uid: "s17-rock",
+        speciesId: 28,
+        level: 1,
+        experience: 0,
+        currentHp: 132,
+        passiveSkillIds: [],
+        capturedAt: "2026-08-20T00:00:00.000Z",
+      },
+      {
+        uid: "s17-wade",
+        speciesId: 11,
+        level: 1,
+        experience: 0,
+        currentHp: 132,
+        passiveSkillIds: [],
+        capturedAt: "2026-08-20T00:00:00.000Z",
+      },
+      {
+        uid: "s17-light",
+        speciesId: 4,
+        level: 1,
+        experience: 0,
+        currentHp: 132,
+        passiveSkillIds: [],
+        capturedAt: "2026-08-20T00:00:00.000Z",
+      },
+      {
+        uid: "s17-glide",
+        speciesId: 30,
+        level: 20,
+        experience: 0,
+        currentHp: 320,
+        passiveSkillIds: [],
+        capturedAt: "2026-08-20T00:00:00.000Z",
+      },
+    ],
+    teamIds: ["s17-vine", "s17-rock", "s17-wade", "s17-light", "s17-glide"],
+    progress: {
+      battlesWon: 10,
+      captures: 5,
+      unlockedRegions: ["frontier", "cloudridge-highlands", "startide-archipelago"],
+      quests: [
+        { id: "frontier-preparation", progress: { "battle-win": 3, capture: 2 }, rewardClaimed: true },
+        { id: "highland-survey", progress: {}, rewardClaimed: true },
+        { id: "storm-lord-challenge", progress: {}, rewardClaimed: true },
+        { id: "startide-voyage", progress: {}, rewardClaimed: true },
+        { id: "abyssal-colossus-challenge", progress: {}, rewardClaimed: true },
+      ],
+      defeatedBossIds: [],
+      unlockedAbilities: ["storm-forging"],
+    },
+    inventory: { captureOrbs: 3, healingTonics: 0, coins: 300, equipment: [], materials: { 柔韧绒丝: 3 } },
+    base: {
+      resources: { wood: 100, stone: 100, food: 100, fiber: 100, crystal: 40 },
+      assignments: [],
+      facilities: { warehouse: 1, farm: 1, workshop: 1 },
+      lastUpdatedAt: 0,
+    },
+    breedingEggs: [],
+  };
+  await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [
+    stage17Save,
+  ]);
+  await navigate(sessionId, appUrl);
+  await waitUntil(sessionId, "return Boolean(window.__PL_TEST__) && document.querySelector('#game canvas')");
+
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('ShopScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('芦灯港商店')"
+  );
+  const shopBefore = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save')); return { coins: s.inventory.coins, orbs: s.inventory.captureOrbs, mat: s.inventory.materials['柔韧绒丝'] };`
+  );
+  await execute(sessionId, `window.__PL_TEST__.game.scene.getScene('ShopScene').doBuy('shop-capture-orb');`);
+  await execute(sessionId, `window.__PL_TEST__.game.scene.getScene('ShopScene').doSellMaterial('柔韧绒丝');`);
+  const shopAfter = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save')); return { coins: s.inventory.coins, orbs: s.inventory.captureOrbs, mat: s.inventory.materials['柔韧绒丝'] };`
+  );
+  assert.ok(shopAfter.orbs === shopBefore.orbs + 1, "商店购买应增加捕获器");
+  assert.ok(shopAfter.coins < shopBefore.coins, "购买应扣除星币");
+  assert.ok(shopAfter.mat === shopBefore.mat - 1, "出售应减少掉落物");
+  console.log("✓ 阶段十七：商店购买、出售与星币结算均通过");
+
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('WorldScene', { region: 'startide-archipelago', leaderId: 30, leaderUid: 's17-glide' }).then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return Boolean(window.__PL_TEST__.game.scene.getScene('WorldScene') && window.__PL_TEST__.game.scene.getScene('WorldScene').player)"
+  );
+  await execute(
+    sessionId,
+    `const w = window.__PL_TEST__.game.scene.getScene('WorldScene'); w.player.setPosition(17 * 32, 10 * 32);`
+  );
+  await webdriver("POST", `/session/${sessionId}/actions`, {
+    actions: [
+      {
+        type: "key",
+        id: "s17-gate",
+        actions: [
+          { type: "keyDown", value: "e" },
+          { type: "pause", duration: 140 },
+          { type: "keyUp", value: "e" },
+        ],
+      },
+    ],
+  });
+  await waitUntil(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save')); return s.progress.openedGateIds.includes('startide-gate-vine');`,
+    8000
+  );
+  console.log("✓ 阶段十七：队伍具备对应探索能力时可开启机关门");
+
+  await execute(
+    sessionId,
+    `const w = window.__PL_TEST__.game.scene.getScene('WorldScene'); w.player.setPosition(14 * 32, 14 * 32);`
+  );
+  await webdriver("POST", `/session/${sessionId}/actions`, {
+    actions: [
+      {
+        type: "key",
+        id: "s17-elite",
+        actions: [
+          { type: "keyDown", value: "e" },
+          { type: "pause", duration: 140 },
+          { type: "keyUp", value: "e" },
+        ],
+      },
+    ],
+  });
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('回合战斗')",
+    8000
+  );
+  for (let turn = 0; turn < 14; turn += 1) {
+    await clickCanvas(sessionId, 150, 594);
+    await new Promise((resolve) => setTimeout(resolve, 120));
+  }
+  await waitUntil(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save')); return s.progress.defeatedEliteIds.includes('elite-plumage-sentinel');`,
+    12000
+  );
+  console.log("✓ 阶段十七：精英训练者挑战与首次击败记录均通过");
+
+  const sideReady = JSON.parse(JSON.stringify(stage17Save));
+  sideReady.progress.sideQuests = [
+    { id: "side-reedlight-prayer", progress: { "talk-tao": 1, "gather-startide": 3 }, rewardClaimed: false },
+  ];
+  await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [
+    sideReady,
+  ]);
+  await navigate(sessionId, appUrl);
+  await waitUntil(sessionId, "return Boolean(window.__PL_TEST__) && document.querySelector('#game canvas')");
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('QuestScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('远征任务')"
+  );
+  const coinsBeforeQuest = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).inventory.coins;`
+  );
+  await execute(
+    sessionId,
+    `const scene = window.__PL_TEST__.game.scene.getScene('QuestScene'); scene.showSide = true; scene.render();`
+  );
+  await execute(
+    sessionId,
+    `window.__PL_TEST__.game.scene.getScene('QuestScene').claimSide('side-reedlight-prayer');`
+  );
+  const coinsAfterQuest = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).inventory.coins;`
+  );
+  assert.ok(coinsAfterQuest === coinsBeforeQuest + 80, "支线奖励应发放星币");
+  console.log("✓ 阶段十七：支线任务可查看并领取奖励");
 } finally {
   if (sessionId) {
     try {

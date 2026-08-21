@@ -75,7 +75,8 @@ function createInitialQuestStates(battlesWon = 0, captures = 0): QuestState[] {
         : {};
     return { id, progress, rewardClaimed: false };
   });
-}export type BaseJob = "planting" | "mining" | "lumbering" | "generating";
+}
+export type BaseJob = "planting" | "mining" | "lumbering" | "generating";
 export type FacilityId = "warehouse" | "farm" | "workshop";
 
 export interface BaseAssignment {

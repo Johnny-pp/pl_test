@@ -81,13 +81,62 @@ export interface ShopStockItem {
 export const SHOP_STOCK: ShopStockItem[] = [
   { id: "shop-capture-orb", kind: "capture-orb", name: "捕获器", price: 60, stockLimit: 0 },
   { id: "shop-healing-tonic", kind: "healing-tonic", name: "治疗剂", price: 40, stockLimit: 0 },
-  { id: "shop-equip-reed-plate", kind: "equipment", equipmentId: "armor-reed-plate", name: "苇编护甲", price: 90, stockLimit: 1 },
-  { id: "shop-equip-bark-token", kind: "equipment", equipmentId: "charm-bark-token", name: "树皮护符", price: 70, stockLimit: 1 },
-  { id: "shop-equip-grove-moss", kind: "equipment", equipmentId: "core-grove-moss", name: "林苔芯核", price: 80, stockLimit: 1 },
-  { id: "shop-equip-tide-pearl", kind: "equipment", equipmentId: "core-tide-pearl", name: "潮汐珍珠核", price: 110, stockLimit: 1 },
-  { id: "shop-equip-frost-seal", kind: "equipment", equipmentId: "charm-frost-seal", name: "霜印护符", price: 130, stockLimit: 1 },
-  { id: "shop-equip-crystal-vein", kind: "equipment", equipmentId: "core-crystal-vein", name: "晶脉核心", price: 320, stockLimit: 1 },
-  { id: "shop-equip-scale-mantle", kind: "equipment", equipmentId: "armor-scale-mantle", name: "鳞纹披甲", price: 360, stockLimit: 1 },
+  {
+    id: "shop-equip-reed-plate",
+    kind: "equipment",
+    equipmentId: "armor-reed-plate",
+    name: "苇编护甲",
+    price: 90,
+    stockLimit: 1,
+  },
+  {
+    id: "shop-equip-bark-token",
+    kind: "equipment",
+    equipmentId: "charm-bark-token",
+    name: "树皮护符",
+    price: 70,
+    stockLimit: 1,
+  },
+  {
+    id: "shop-equip-grove-moss",
+    kind: "equipment",
+    equipmentId: "core-grove-moss",
+    name: "林苔芯核",
+    price: 80,
+    stockLimit: 1,
+  },
+  {
+    id: "shop-equip-tide-pearl",
+    kind: "equipment",
+    equipmentId: "core-tide-pearl",
+    name: "潮汐珍珠核",
+    price: 110,
+    stockLimit: 1,
+  },
+  {
+    id: "shop-equip-frost-seal",
+    kind: "equipment",
+    equipmentId: "charm-frost-seal",
+    name: "霜印护符",
+    price: 130,
+    stockLimit: 1,
+  },
+  {
+    id: "shop-equip-crystal-vein",
+    kind: "equipment",
+    equipmentId: "core-crystal-vein",
+    name: "晶脉核心",
+    price: 320,
+    stockLimit: 1,
+  },
+  {
+    id: "shop-equip-scale-mantle",
+    kind: "equipment",
+    equipmentId: "armor-scale-mantle",
+    name: "鳞纹披甲",
+    price: 360,
+    stockLimit: 1,
+  },
 ];
 
 export function getShopStock(save: GameSave, item: ShopStockItem): number {
@@ -113,8 +162,7 @@ export function buyShopItem(
   equipmentDefinitions: ReadonlyMap<string, EquipmentDefinition>
 ): PurchaseResult {
   if (getShopStock(save, item) <= 0) return { save, ok: false, reason: "该商品已经售罄" };
-  if (save.inventory.coins < item.price)
-    return { save, ok: false, reason: `星币不足，需要 ${item.price}` };
+  if (save.inventory.coins < item.price) return { save, ok: false, reason: `星币不足，需要 ${item.price}` };
   const equipmentItems = [...save.inventory.equipment];
   if (item.kind === "equipment") {
     if (!item.equipmentId || !equipmentDefinitions.has(item.equipmentId))

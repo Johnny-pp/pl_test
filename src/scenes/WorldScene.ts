@@ -32,7 +32,17 @@ import {
   type WorldRegion,
 } from "../world/regions";
 import { canChallengeBoss, getQuestViews, recordQuestEvent } from "../quests/questSystem";
+import { recordNpcTalk, recordSideQuestEvent } from "../quests/sideQuests";
 import { bossesById, getBossesForRegion } from "../battle/bosses";
+import {
+  EXPLORE_GATES,
+  HIDDEN_CHESTS,
+  canOpenGate,
+  openGate,
+  isHiddenChestAvailable,
+} from "../explore/gates";
+import { ELITES, getElitesForRegion, isEliteDefeated, canRebattleElite } from "../explore/elites";
+import { SETTLEMENT_NPCS, HEAL_COST } from "../world/settlementContent";
 import {
   STARTIDE_DISCOVERIES,
   STARTIDE_CHESTS,
@@ -63,6 +73,24 @@ interface WorldSceneData {
   activatedWaypointIds?: string[];
   revealedSectorIds?: string[];
   autoExplore?: AutoExploreSession;
+}
+
+interface NpcNode {
+  id: string;
+  node: Phaser.GameObjects.Arc;
+  label: Phaser.GameObjects.Text;
+}
+
+interface GateNode {
+  id: string;
+  node: Phaser.GameObjects.Arc;
+  label: Phaser.GameObjects.Text;
+}
+
+interface EliteNode {
+  id: string;
+  node: Phaser.GameObjects.Arc;
+  label: Phaser.GameObjects.Text;
 }
 
 interface ResourceNode {
@@ -148,6 +176,15 @@ export class WorldScene extends Phaser.Scene {
   private claimedChests = new Set<string>();
   private activatedWaypoints = new Set<string>();
   private revealedSectors = new Set<string>();
+  private openedGates = new Set<string>();
+  private npcObjects = new Map<string, NpcNode>();
+  private gateObjects = new Map<string, GateNode>();
+  private eliteObjects = new Map<string, EliteNode>();
+  private hiddenChestObjects = new Map<
+    string,
+    { node: Phaser.GameObjects.Arc; label: Phaser.GameObjects.Text }
+  >();
+  private dialogueOverlay?: Phaser.GameObjects.Container;
   private sporeOverlay?: Phaser.GameObjects.Rectangle;
   private explorationText?: Phaser.GameObjects.Text;
   private environmentText?: Phaser.GameObjects.Text;
@@ -206,6 +243,7 @@ export class WorldScene extends Phaser.Scene {
     this.claimedChests = new Set(save.progress.claimedWorldRewardIds);
     this.activatedWaypoints = new Set(save.progress.activatedWaypointIds);
     this.revealedSectors = new Set(save.progress.revealedSectorIds);
+    this.openedGates = new Set(save.progress.openedGateIds);
     const requestedRegion = isWorldRegion(data.region) ? data.region : STARTING_REGION;
     this.region = save.progress.unlockedRegions.includes(requestedRegion) ? requestedRegion : STARTING_REGION;
     const leader = this.resolveLeader(data.leaderId, data.leaderUid);
@@ -255,6 +293,10 @@ export class WorldScene extends Phaser.Scene {
     this.createChests();
     this.createWaypoints();
     this.createRareSpawn();
+    this.createNpcs();
+    this.createGates();
+    this.createElites();
+    this.createHiddenChests();
     this.createSporeOverlay();
     this.createHud();
     this.encounterCooldownUntil = this.time.now + (data.encounterCooldown ? 2200 : 800);
@@ -294,11 +336,24 @@ export class WorldScene extends Phaser.Scene {
     const nearChest = this.findNearbyChest();
     const nearDiscovery = this.findNearbyDiscovery();
     const nearWaypoint = this.findNearbyWaypoint();
+    const nearNpc = this.findNearbyNpc();
+    const nearGate = this.findNearbyGate();
+    const nearHiddenChest = this.findNearbyHiddenChest();
+    const nearElite = this.findNearbyElite();
     const nearPortal = this.findNearbyPortal();
     const nearBoss = this.isNearBossAltar();
     const interactRequested = Phaser.Input.Keyboard.JustDown(this.interactKey) || this.touchInteractRequested;
     const promptVisible = Boolean(
-      nearest || nearChest || nearDiscovery || nearWaypoint || nearPortal || nearBoss
+      nearest ||
+      nearChest ||
+      nearDiscovery ||
+      nearWaypoint ||
+      nearNpc ||
+      nearGate ||
+      nearHiddenChest ||
+      nearElite ||
+      nearPortal ||
+      nearBoss
     );
     this.promptText.setVisible(promptVisible);
     if (nearest) {
@@ -313,6 +368,16 @@ export class WorldScene extends Phaser.Scene {
     } else if (nearWaypoint) {
       this.promptText.setText(`按 E 激活 ${nearWaypoint.label}（传送至芦灯港）`);
       if (interactRequested) this.activateWaypoint(nearWaypoint);
+    } else if (nearNpc) {
+      this.promptText.setText(`按 E 与 ${nearNpc.name} 对话`);
+      if (interactRequested) this.openNpcDialogue(nearNpc);
+    } else if (nearGate) {
+      this.updateGatePrompt(nearGate, interactRequested);
+    } else if (nearHiddenChest) {
+      this.promptText.setText(`按 E 开启 ${nearHiddenChest.label}`);
+      if (interactRequested) this.openHiddenChest(nearHiddenChest);
+    } else if (nearElite) {
+      this.updateElitePrompt(nearElite, interactRequested);
     } else if (nearPortal) {
       this.promptText.setText(this.getPortalPrompt(nearPortal));
       if (interactRequested) this.usePortal(nearPortal);
@@ -360,6 +425,7 @@ export class WorldScene extends Phaser.Scene {
       playerUid: this.leaderUid,
       enemyId: STARTIDE_RARE_SPAWN.speciesId,
       enemyLevel,
+      region: this.region,
       autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
       returnTo: {
         scene: "WorldScene",
@@ -954,6 +1020,342 @@ export class WorldScene extends Phaser.Scene {
       .setOrigin(0.5, 0);
   }
 
+  private createNpcs() {
+    if (!isStartideRegion(this.region)) return;
+    for (const npc of SETTLEMENT_NPCS) {
+      if (npc.role === "talk" && this.discovered.has(`npc-${npc.id}`)) continue;
+      const node = this.add.circle(npc.x, npc.y, 15, 0xffb74d, 0.85).setStrokeStyle(3, 0xffffff, 0.7);
+      const label = this.add
+        .text(npc.x, npc.y + 20, `${npc.name}·${npc.title}`, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#fff3c4",
+        })
+        .setOrigin(0.5, 0);
+      this.npcObjects.set(npc.id, { id: npc.id, node, label });
+    }
+  }
+
+  private createGates() {
+    if (!isStartideRegion(this.region)) return;
+    for (const gate of EXPLORE_GATES) {
+      if (this.openedGates.has(gate.id)) continue;
+      const node = this.add.circle(gate.x, gate.y, 16, 0xa1887f, 0.85).setStrokeStyle(3, 0xfff176, 0.9);
+      const label = this.add
+        .text(gate.x, gate.y + 20, gate.label, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#ffe0b2",
+        })
+        .setOrigin(0.5, 0);
+      this.gateObjects.set(gate.id, { id: gate.id, node, label });
+    }
+  }
+
+  private createElites() {
+    if (!isStartideRegion(this.region)) return;
+    for (const elite of getElitesForRegion(this.region)) {
+      const node = this.add.circle(elite.x, elite.y, 20, 0xef5350, 0.8).setStrokeStyle(4, 0xffd54f, 0.9);
+      const label = this.add
+        .text(elite.x, elite.y + 26, `${elite.name} Lv.${elite.level}`, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#ffcdd2",
+          backgroundColor: "#0b1224",
+          padding: { x: 4, y: 2 },
+        })
+        .setOrigin(0.5, 0);
+      this.eliteObjects.set(elite.id, { id: elite.id, node, label });
+    }
+  }
+
+  private createHiddenChests() {
+    if (!isStartideRegion(this.region)) return;
+    for (const chest of HIDDEN_CHESTS) {
+      if (!isHiddenChestAvailable(this.openedGatesSave(), chest, this.claimedChests)) continue;
+      const node = this.add.circle(chest.x, chest.y, 13, 0x80cbc4, 0.85).setStrokeStyle(3, 0xfff176, 0.9);
+      const label = this.add
+        .text(chest.x, chest.y + 18, chest.label, {
+          fontFamily: "sans-serif",
+          fontSize: "12px",
+          color: "#d5f7ff",
+        })
+        .setOrigin(0.5, 0);
+      this.hiddenChestObjects.set(chest.id, { node, label });
+    }
+  }
+
+  private openedGatesSave(): ReturnType<typeof loadGame> {
+    return loadGame(localStorage);
+  }
+
+  private findNearbyNpc() {
+    for (const npc of SETTLEMENT_NPCS) {
+      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, npc.x, npc.y) < 52) return npc;
+    }
+    return undefined;
+  }
+
+  private findNearbyGate() {
+    for (const gate of EXPLORE_GATES) {
+      if (this.openedGates.has(gate.id)) continue;
+      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, gate.x, gate.y) < 52) return gate;
+    }
+    return undefined;
+  }
+
+  private findNearbyHiddenChest() {
+    for (const chest of HIDDEN_CHESTS) {
+      if (!isHiddenChestAvailable(loadGame(localStorage), chest, this.claimedChests)) continue;
+      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, chest.x, chest.y) < 52) return chest;
+    }
+    return undefined;
+  }
+
+  private findNearbyElite() {
+    for (const elite of getElitesForRegion(this.region)) {
+      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, elite.x, elite.y) < 60) return elite;
+    }
+    return undefined;
+  }
+
+  private updateGatePrompt(gate: (typeof EXPLORE_GATES)[number], interactRequested: boolean) {
+    const save = loadGame(localStorage);
+    if (canOpenGate(save, gate, this.currentSpeciesById())) {
+      this.promptText.setText(`按 E 使用探索能力开启 ${gate.label}`);
+      if (interactRequested) this.useGate(gate);
+    } else {
+      this.promptText.setText(`${gate.label}：需要拥有「${this.abilityLabel(gate.requiredAbility)}」的幻兽`);
+    }
+  }
+
+  private abilityLabel(abilityId: string): string {
+    const labels: Record<string, string> = {
+      "vine-cut": "砍藤",
+      "rock-break": "碎岩",
+      wading: "涉水",
+      glide: "滑翔",
+      illuminate: "照明",
+    };
+    return labels[abilityId] ?? abilityId;
+  }
+
+  private useGate(gate: (typeof EXPLORE_GATES)[number]) {
+    const save = loadGame(localStorage);
+    if (!canOpenGate(save, gate, this.currentSpeciesById())) return;
+    const opened = openGate(save, gate, this.currentSpeciesById());
+    saveGame(localStorage, opened);
+    this.openedGates.add(gate.id);
+    const object = this.gateObjects.get(gate.id);
+    object?.node.destroy();
+    object?.label.destroy();
+    this.gateObjects.delete(gate.id);
+    if (gate.discoveryId) {
+      const discovered = loadGame(localStorage);
+      saveGame(localStorage, {
+        ...discovered,
+        progress: {
+          ...discovered.progress,
+          discoveredLocationIds: [...discovered.progress.discoveredLocationIds, gate.discoveryId],
+        },
+      });
+      this.discovered.add(gate.discoveryId);
+    }
+    if (gate.chestId) this.createHiddenChests();
+    announceGameStatus(`已开启 ${gate.label}`);
+    this.updateExplorationHud();
+  }
+
+  private updateElitePrompt(elite: (typeof ELITES)[number], interactRequested: boolean) {
+    const save = loadGame(localStorage);
+    if (isEliteDefeated(save, elite.id) && !canRebattleElite(save, elite)) {
+      this.promptText.setText(`${elite.name} 冷却中 · 稍后再来挑战`);
+      return;
+    }
+    const tag = isEliteDefeated(save, elite.id) ? "（重战）" : "";
+    this.promptText.setText(`按 E 挑战 ${elite.name} Lv.${elite.level}${tag}`);
+    if (interactRequested) this.challengeElite(elite);
+  }
+
+  private challengeElite(elite: (typeof ELITES)[number]) {
+    const save = loadGame(localStorage);
+    if (isEliteDefeated(save, elite.id) && !canRebattleElite(save, elite)) return;
+    this.encounterLocked = true;
+    this.player.setVelocity(0, 0);
+    void startScene(this, "BattleScene", {
+      playerId: this.leader.id,
+      playerUid: this.leaderUid,
+      enemyId: elite.speciesId,
+      enemyLevel: elite.level,
+      eliteId: elite.id,
+      region: this.region,
+      returnTo: {
+        scene: "WorldScene",
+        data: this.buildReturnData({ autoExplore: { active: false, message: "精英挑战需手动进行" } }),
+      },
+    });
+  }
+
+  private openHiddenChest(chest: (typeof HIDDEN_CHESTS)[number]) {
+    if (!isHiddenChestAvailable(loadGame(localStorage), chest, this.claimedChests)) return;
+    this.claimedChests.add(chest.id);
+    const object = this.hiddenChestObjects.get(chest.id);
+    object?.node.destroy();
+    object?.label.destroy();
+    this.hiddenChestObjects.delete(chest.id);
+    const save = recordSideQuestEvent(loadGame(localStorage), { type: "open-chest" });
+    const resources = { ...save.base.resources };
+    for (const [resource, amount] of Object.entries(chest.rewards.resources ?? {})) {
+      resources[resource as keyof typeof resources] += amount ?? 0;
+    }
+    saveGame(localStorage, {
+      ...save,
+      base: { ...save.base, resources },
+      inventory: {
+        ...save.inventory,
+        coins: save.inventory.coins + (chest.rewards.coins ?? 0),
+        captureOrbs: save.inventory.captureOrbs + (chest.rewards.captureOrbs ?? 0),
+        healingTonics: save.inventory.healingTonics + (chest.rewards.healingTonics ?? 0),
+        equipment: [
+          ...save.inventory.equipment,
+          ...(chest.rewards.equipment ?? []).map((equipmentId) => ({
+            uid: `gate-${chest.id}-${equipmentId}`,
+            equipmentId,
+          })),
+        ],
+      },
+      progress: { ...save.progress, claimedWorldRewardIds: [...this.claimedChests] },
+    });
+    announceGameStatus(`已开启 ${chest.label}`);
+    this.updateResourceText();
+    this.updateExplorationHud();
+  }
+
+  private openNpcDialogue(npc: (typeof SETTLEMENT_NPCS)[number]) {
+    if (this.dialogueOverlay) this.dialogueOverlay.destroy();
+    const save = loadGame(localStorage);
+    const talked = recordNpcTalk(save, npc.id);
+    if (talked !== save) saveGame(localStorage, talked);
+    if (npc.role === "talk") this.discovered.add(`npc-${npc.id}`);
+
+    const overlay = this.add.container(0, 0).setDepth(60).setScrollFactor(0);
+    const backdrop = this.add.rectangle(450, 320, 760, 300, 0x0b1224, 0.92);
+    const title = this.add
+      .text(450, 200, `${npc.name} · ${npc.title}`, {
+        fontFamily: "sans-serif",
+        fontSize: "20px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5);
+    const lines = npc.dialogue.concat(npc.hint ? [npc.hint] : []).map((line, index) =>
+      this.add
+        .text(110, 235 + index * 22, line, {
+          fontFamily: "sans-serif",
+          fontSize: "14px",
+          color: "#d8def8",
+          wordWrap: { width: 680 },
+        })
+        .setOrigin(0, 0)
+    );
+    overlay.add([backdrop, title, ...lines]);
+
+    const buttons: Phaser.GameObjects.Container[] = [];
+    if (npc.role === "shop") {
+      buttons.push(
+        createTextButton(this, {
+          x: 250,
+          y: 430,
+          width: 150,
+          height: 38,
+          label: "进入商店",
+          variant: "accent",
+          onPress: () => {
+            overlay.destroy();
+            void startScene(this, "ShopScene");
+          },
+        })
+      );
+    } else if (npc.role === "healer") {
+      buttons.push(
+        createTextButton(this, {
+          x: 250,
+          y: 430,
+          width: 170,
+          height: 38,
+          label: `治疗队伍（${HEAL_COST} 星币）`,
+          variant: "accent",
+          onPress: () => {
+            this.healTeam(overlay);
+          },
+        })
+      );
+    } else if (npc.role === "quest") {
+      buttons.push(
+        createTextButton(this, {
+          x: 350,
+          y: 430,
+          width: 150,
+          height: 38,
+          label: "查看支线",
+          variant: "accent",
+          onPress: () => {
+            overlay.destroy();
+            void startScene(this, "QuestScene");
+          },
+        })
+      );
+    }
+    buttons.push(
+      createTextButton(this, {
+        x: npc.role === "talk" ? 450 : 570,
+        y: 430,
+        width: 130,
+        height: 38,
+        label: "关闭",
+        variant: "muted",
+        onPress: () => overlay.destroy(),
+      })
+    );
+    overlay.add(buttons);
+    this.dialogueOverlay = overlay;
+    announceGameStatus(`与 ${npc.name} 对话：${npc.dialogue[0]}`);
+  }
+
+  private healTeam(overlay: Phaser.GameObjects.Container) {
+    const save = loadGame(localStorage);
+    if (save.inventory.coins < HEAL_COST) {
+      this.openNpcDialogueMessage(overlay, "星币不足，无法治疗。");
+      return;
+    }
+    if (
+      !save.teamIds.some((uid) => {
+        const pal = save.ownedPals.find((item) => item.uid === uid);
+        return pal && pal.currentHp < pal.level * 100;
+      })
+    ) {
+      this.openNpcDialogueMessage(overlay, "队伍已经满血。");
+      return;
+    }
+    const next = { ...save, inventory: { ...save.inventory, coins: save.inventory.coins - HEAL_COST } };
+    saveGame(localStorage, next);
+    this.openNpcDialogueMessage(overlay, `治疗完成，已消耗 ${HEAL_COST} 星币。`);
+  }
+
+  private openNpcDialogueMessage(overlay: Phaser.GameObjects.Container, message: string) {
+    const existing = overlay.list.find((child) => child.name === "npc-dialogue-message");
+    existing?.destroy();
+    overlay.add(
+      this.add
+        .text(110, 410, message, { fontFamily: "sans-serif", fontSize: "14px", color: "#9ccc65" })
+        .setOrigin(0, 0)
+        .setName("npc-dialogue-message")
+    );
+  }
+
+  private currentSpeciesById() {
+    return new Map(pals.map((pal) => [pal.id, pal]));
+  }
+
   private createSporeOverlay() {
     if (!isStartideRegion(this.region)) return;
     this.sporeOverlay = this.add
@@ -1120,6 +1522,7 @@ export class WorldScene extends Phaser.Scene {
       playerUid: this.leaderUid,
       enemyId,
       enemyLevel,
+      region: this.region,
       autoExplore: { active: this.autoExploreActive, message: this.autoExploreMessage },
       returnTo: {
         scene: "WorldScene",

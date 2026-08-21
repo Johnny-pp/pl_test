@@ -31,6 +31,10 @@ import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { bossesById } from "../battle/bosses";
 import { recordBossVictory, recordQuestEvent } from "../quests/questSystem";
+import { recordSideQuestEvent } from "../quests/sideQuests";
+import { applyBattleRewards } from "../battle/drops";
+import { elitesById, recordEliteDefeat } from "../explore/elites";
+import type { WorldRegion } from "../world/regions";
 import { createBackButton, createTextButton } from "../ui/button";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 import { createInstanceBuildSnapshot } from "../build/buildCombatant";
@@ -48,6 +52,8 @@ interface BattleSceneData {
   enemyLevel?: number;
   playerUid?: string;
   bossId?: string;
+  eliteId?: string;
+  region?: WorldRegion;
   autoExplore?: AutoExploreSession;
   returnTo?: {
     scene: string;
@@ -72,6 +78,8 @@ export class BattleScene extends Phaser.Scene {
   private enemyLevel = 1;
   private progressionMessage = "";
   private bossId?: string;
+  private eliteId?: string;
+  private battleRegion?: WorldRegion;
   private partyUids: string[] = [];
   private participatedUids = new Set<string>();
   private choosingSwitch = false;
@@ -115,6 +123,9 @@ export class BattleScene extends Phaser.Scene {
     this.playerUid = data.playerUid;
     this.enemyLevel = Math.max(1, Math.min(50, Math.floor(data.enemyLevel ?? 1)));
     this.bossId = data.bossId;
+    this.eliteId = data.eliteId;
+    const elite = this.eliteId ? elitesById.get(this.eliteId) : undefined;
+    this.battleRegion = data.region ?? elite?.region;
     const boss = this.bossId ? bossesById.get(this.bossId) : undefined;
     const player = pals.find((pal) => pal.id === data.playerId);
     const enemy = pals.find((pal) => pal.id === data.enemyId);
@@ -539,7 +550,10 @@ export class BattleScene extends Phaser.Scene {
     let save = this.persistPartyHealth(loadGame(localStorage));
     if (this.state.phase === "victory") {
       save = recordBattleWin(save);
-      save = recordQuestEvent(save, { type: "battle-win" });
+      save = recordQuestEvent(save, { type: "battle-win", region: this.battleRegion });
+      save = recordSideQuestEvent(save, { type: "battle-win", region: this.battleRegion });
+      const enemySpecies = pals.find((pal) => pal.id === this.state?.enemy.id);
+      if (enemySpecies) save = applyBattleRewards(save, enemySpecies, this.enemyLevel);
       if (this.bossId) {
         save = recordBossVictory(save, this.bossId);
         const boss = bossesById.get(this.bossId);
@@ -561,7 +575,14 @@ export class BattleScene extends Phaser.Scene {
           this.captureMessage = `掉落装备：${equipmentDefinitions.find((item) => item.id === dropped)?.name.zh ?? dropped}`;
         }
       }
-      const enemySpecies = pals.find((pal) => pal.id === this.state?.enemy.id);
+      const elite = this.eliteId ? elitesById.get(this.eliteId) : undefined;
+      if (elite) {
+        const result = recordEliteDefeat(save, elite);
+        save = result.save;
+        const dropNote = result.firstDefeat && this.captureMessage ? `；${this.captureMessage}` : "";
+        this.captureMessage = `击败训练者 ${elite.name}（${elite.rewardLabel}）${dropNote}`;
+        this.progressionMessage = `精英挑战${result.firstDefeat ? "首胜" : "已重战"} · 经验照常结算`;
+      }
       if (enemySpecies) {
         const messages: string[] = [];
         for (const uid of this.participatedUids) {

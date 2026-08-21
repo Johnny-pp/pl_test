@@ -27,6 +27,8 @@ import {
   getSpeciesSkillTree,
   getAvailableSkillPoints,
 } from "../build/buildSystem";
+import { getTeamExploreAbilityIds } from "../explore/gates";
+import { EXPLORE_ABILITY_LABELS } from "../types/exploreAbility";
 import { clampScroll } from "../ui/scroll";
 import { createBackButton, createTextButton } from "../ui/button";
 
@@ -74,6 +76,22 @@ export class TeamScene extends Phaser.Scene {
       )
       .setOrigin(0.5);
     this.content.add(summary);
+    const teamAbilities = [...getTeamExploreAbilityIds(this.save, new Map(pals.map((pal) => [pal.id, pal])))];
+    const abilitySummary = this.add
+      .text(
+        450,
+        130,
+        teamAbilities.length > 0
+          ? `队伍探索能力：${teamAbilities.map((id) => EXPLORE_ABILITY_LABELS[id] ?? id).join("、")}`
+          : "队伍探索能力：无（部分机关需要对应能力开启）",
+        {
+          fontFamily: "sans-serif",
+          fontSize: "14px",
+          color: teamAbilities.length > 0 ? "#9ccc65" : "#9aa0c0",
+        }
+      )
+      .setOrigin(0.5);
+    this.content.add(abilitySummary);
     if (this.backupMessage) {
       const feedback = this.add
         .text(450, 94, this.backupMessage, {
@@ -254,7 +272,16 @@ export class TeamScene extends Phaser.Scene {
         : "经验 MAX",
       { fontFamily: "sans-serif", fontSize: "11px", color: "#80deea" }
     );
-    this.content.add([passiveText, buildText, experienceText]);
+    const abilities = species.exploreAbilities ?? [];
+    const abilityText = this.add.text(
+      x - 50,
+      y + 52,
+      abilities.length > 0
+        ? `探索 ${abilities.map((id) => EXPLORE_ABILITY_LABELS[id] ?? id).join("、")}`
+        : "",
+      { fontFamily: "sans-serif", fontSize: "10px", color: "#ffe082", wordWrap: { width: 175 } }
+    );
+    this.content.add([passiveText, buildText, experienceText, abilityText]);
     const build = createTextButton(this, {
       x: x + 72,
       y: y + 34,

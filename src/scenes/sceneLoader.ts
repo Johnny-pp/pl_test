@@ -15,6 +15,7 @@ const sceneLoaders: Record<string, SceneLoader> = {
   CompareScene: () => import("./CompareScene").then((module) => module.CompareScene),
   QuestScene: () => import("./QuestScene").then((module) => module.QuestScene),
   BuildScene: () => import("./BuildScene").then((module) => module.BuildScene),
+  ShopScene: () => import("./ShopScene").then((module) => module.ShopScene),
 };
 
 export async function loadScene(key: string): Promise<typeof Phaser.Scene> {

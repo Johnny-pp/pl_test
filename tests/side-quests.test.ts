@@ -98,9 +98,7 @@ test("精英击败、机关与宝箱推进更深层支线", () => {
     "complete"
   );
   const secretReward = claimSideQuestReward(save, "side-shallow-secret");
-  assert.ok(
-    secretReward.inventory.equipment.some((item) => item.equipmentId === "charm-ward-totem")
-  );
+  assert.ok(secretReward.inventory.equipment.some((item) => item.equipmentId === "charm-ward-totem"));
 });
 
 test("不符合地区的采集事件不会推进支线", () => {

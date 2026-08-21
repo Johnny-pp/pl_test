@@ -14,9 +14,7 @@ import {
   openGate,
 } from "../src/explore/gates.ts";
 
-const pals = JSON.parse(
-  readFileSync(new URL("../data/pals.json", import.meta.url), "utf-8")
-) as Pal[];
+const pals = JSON.parse(readFileSync(new URL("../data/pals.json", import.meta.url), "utf-8")) as Pal[];
 const exploreAbilities = JSON.parse(
   readFileSync(new URL("../data/explore-abilities.json", import.meta.url), "utf-8")
 ) as ExploreAbility[];
@@ -66,7 +64,11 @@ test("隐藏宝箱仅在对应机关开启后可见且不会重复领取", () =>
   save.teamIds = ["a"];
   save.ownedPals = [{ uid: "a", speciesId: 1 } as never];
   assert.equal(isHiddenChestAvailable(save, chest, []), false);
-  const opened = openGate(save, EXPLORE_GATES.find((gate) => gate.id === chest.requiredGate)!, speciesById);
+  const opened = openGate(
+    save,
+    EXPLORE_GATES.find((gate) => gate.id === chest.requiredGate)!,
+    speciesById
+  );
   assert.equal(isHiddenChestAvailable(opened, chest, []), true);
   assert.equal(isHiddenChestAvailable(opened, chest, [chest.id]), false);
 });
