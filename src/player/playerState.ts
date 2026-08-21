@@ -2,7 +2,7 @@ import type { Pal } from "../types/pal.ts";
 import type { EquipmentItem, EquipmentSlot } from "../types/skillTree.ts";
 import { isWorldRegion, STARTING_REGION, type WorldRegion } from "../world/regions.ts";
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -45,6 +45,50 @@ export interface GameProgress {
   shopStock: Record<string, number>;
   /** 精英/训练者最近一次被击败的时间戳。 */
   eliteDefeatTimes: Record<string, number>;
+}
+
+export interface NewGamePlusOptions {
+  /** 随机遭遇：野外敌人等级在区域下限附近随机化。 */
+  randomEncounters: boolean;
+  /** 限制捕获：捕获只能消耗高级捕获器。 */
+  restrictedCapture: boolean;
+  /** 永久倒下：战斗中倒下的个体无法再出战。 */
+  permadeath: boolean;
+}
+
+/** 每日/每周委托的周期状态。 */
+export interface PeriodChallengeState {
+  /** 周期标识，例如 "daily-2026-08-21" 或 "weekly-2026-W34"。 */
+  periodKey: string;
+  /** 周期内已记录的事件计数（eventType -> count）。 */
+  events: Record<string, number>;
+  /** 本周期已领取的奖励标识。 */
+  claimedRewardIds: string[];
+}
+
+export interface EndgameProgress {
+  /** 试炼塔已通过的层数。 */
+  towerFloorsCleared: number;
+  /** 试炼塔已领取的阶段奖励（楼层标识）。 */
+  towerRewardsClaimed: string[];
+  /** 各挑战的最佳评分（challengeId -> 最佳分）。 */
+  bestScores: Record<string, number>;
+  /** 每日/每周委托的周期状态。 */
+  periodChallenges: PeriodChallengeState[];
+  /** 已领取的首领强化重战一次性奖励。 */
+  rematchRewardsClaimed: string[];
+  /** 已解锁的成就标识。 */
+  unlockedAchievementIds: string[];
+  /** 已获得的可展示称号。 */
+  unlockedTitles: string[];
+  /** 当前装备的称号标识。 */
+  equippedTitleId: string | null;
+  /** 新周目选项。 */
+  newGamePlus: NewGamePlusOptions;
+  /** 永久倒下移除的个体 uid（用于展示，不参与战斗）。 */
+  permadeathLostUids: string[];
+  /** 累计统计计数（key -> 累计值），用于成就判定，例如孵化数、制造数。 */
+  stats: Record<string, number>;
 }
 
 export interface QuestState {
@@ -151,6 +195,8 @@ export interface GameSave {
   inventory: PlayerInventory;
   base: BaseState;
   breedingEggs: BreedingEgg[];
+  /** 终局挑战与重复游玩进度。 */
+  endgame: EndgameProgress;
 }
 
 export interface StorageLike {
@@ -163,6 +209,66 @@ function createInstanceId(): string {
     return globalThis.crypto.randomUUID();
   }
   return `pal-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function createEmptyEndgameProgress(): EndgameProgress {
+  return {
+    towerFloorsCleared: 0,
+    towerRewardsClaimed: [],
+    bestScores: {},
+    periodChallenges: [],
+    rematchRewardsClaimed: [],
+    unlockedAchievementIds: [],
+    unlockedTitles: [],
+    equippedTitleId: null,
+    newGamePlus: {
+      randomEncounters: false,
+      restrictedCapture: false,
+      permadeath: false,
+    },
+    permadeathLostUids: [],
+    stats: {},
+  };
+}
+
+function normalizeEndgameProgress(value: unknown): EndgameProgress {
+  const raw = value && typeof value === "object" ? (value as Partial<EndgameProgress>) : {};
+  const rawNgp =
+    raw.newGamePlus && typeof raw.newGamePlus === "object"
+      ? (raw.newGamePlus as Partial<NewGamePlusOptions>)
+      : {};
+  const normalizePeriodChallenges = (value: unknown): PeriodChallengeState[] => {
+    const rawList: unknown[] = Array.isArray(value) ? value : [];
+    return rawList
+      .map((entry): PeriodChallengeState | undefined => {
+        if (!entry || typeof entry !== "object") return undefined;
+        const item = entry as Partial<PeriodChallengeState>;
+        if (typeof item.periodKey !== "string" || item.periodKey.length === 0) return undefined;
+        return {
+          periodKey: item.periodKey,
+          events: normalizeStock(item.events),
+          claimedRewardIds: normalizeStringIds(item.claimedRewardIds),
+        };
+      })
+      .filter((entry): entry is PeriodChallengeState => Boolean(entry));
+  };
+  return {
+    towerFloorsCleared: Math.max(0, Math.min(999, finiteCount(raw.towerFloorsCleared))),
+    towerRewardsClaimed: normalizeStringIds(raw.towerRewardsClaimed),
+    bestScores: normalizeStock(raw.bestScores),
+    periodChallenges: normalizePeriodChallenges(raw.periodChallenges),
+    rematchRewardsClaimed: normalizeStringIds(raw.rematchRewardsClaimed),
+    unlockedAchievementIds: normalizeStringIds(raw.unlockedAchievementIds),
+    unlockedTitles: normalizeStringIds(raw.unlockedTitles),
+    equippedTitleId: typeof raw.equippedTitleId === "string" ? raw.equippedTitleId : null,
+    newGamePlus: {
+      randomEncounters: rawNgp.randomEncounters === true,
+      restrictedCapture: rawNgp.restrictedCapture === true,
+      permadeath: rawNgp.permadeath === true,
+    },
+    permadeathLostUids: normalizeStringIds(raw.permadeathLostUids),
+    stats: normalizeStock(raw.stats),
+  };
 }
 
 export function createEmptySave(now = Date.now()): GameSave {
@@ -210,6 +316,7 @@ export function createEmptySave(now = Date.now()): GameSave {
       lastUpdatedAt: now,
     },
     breedingEggs: [],
+    endgame: createEmptyEndgameProgress(),
   };
 }
 
@@ -289,6 +396,15 @@ function normalizeStringIds(value: unknown): string[] {
       )
     ),
   ];
+}
+
+function normalizeStock(value: unknown): Record<string, number> {
+  if (!value || typeof value !== "object") return {};
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => key.length > 0)
+      .map(([key, amount]) => [key, finiteCount(amount)])
+  );
 }
 
 function migrateSave(value: unknown, now = Date.now()): GameSave {
@@ -390,14 +506,6 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
     })
     .filter((item): item is SideQuestState => Boolean(item));
   const normalizeIdList = (value: unknown): string[] => normalizeStringIds(value);
-  const normalizeStock = (value: unknown): Record<string, number> => {
-    if (!value || typeof value !== "object") return {};
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>)
-        .filter(([key]) => key.length > 0)
-        .map(([key, amount]) => [key, finiteCount(amount)])
-    );
-  };
   const validFacilityIds = new Set<FacilityId>(["warehouse", "farm", "workshop", "forge", "assembly"]);
   const normalizePlacedFacilities = (
     value: unknown,
@@ -521,6 +629,7 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
       lastUpdatedAt: Number.isFinite(rawBase.lastUpdatedAt) ? rawBase.lastUpdatedAt! : now,
     },
     breedingEggs,
+    endgame: normalizeEndgameProgress(raw.endgame),
   };
 }
 

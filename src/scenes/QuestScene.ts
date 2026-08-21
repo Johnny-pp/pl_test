@@ -45,6 +45,16 @@ export class QuestScene extends Phaser.Scene {
         this.render();
       },
     });
+    createTextButton(this, {
+      x: 205,
+      y: 68,
+      width: 120,
+      height: 32,
+      label: "终局试炼",
+      variant: "accent",
+      fontSize: "13px",
+      onPress: () => void startScene(this, "EndgameScene"),
+    });
     this.content = this.add.container(0, 0);
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       this.scrollY = Phaser.Math.Clamp(this.scrollY - dy * 0.5, -Math.max(0, this.content.height - 560), 0);

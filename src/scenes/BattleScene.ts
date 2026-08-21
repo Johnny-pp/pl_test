@@ -26,7 +26,7 @@ import {
   updatePalCurrentHp,
 } from "../player/playerState";
 import { applyExperienceAward } from "../progression/progression";
-import { consumeCaptureOrb } from "../base/baseSystem";
+import { consumeCaptureOrbByKind } from "../base/baseSystem";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { startScene } from "./sceneLoader";
 import { bossesById } from "../battle/bosses";
@@ -45,6 +45,13 @@ import { grantEquipment, rollEquipmentDropForBoss, rollEquipmentId } from "../bu
 import { chooseAutoBattleSkill, chooseAutoSwitchIndex } from "../battle/autoBattle";
 import type { AutoExploreSession } from "../world/autoExploration";
 import { announceGameStatus } from "../ui/accessibility";
+import { instancePassesRestrictions, type ChallengeRestrictions } from "../endgame/challengeRules";
+import { claimRematchFirstReward, getRematchForBoss } from "../endgame/bossRematch";
+import { getTowerFloor, getTowerRestrictions, recordTowerVictory } from "../endgame/tower";
+import { computeBattleScore, recordBestScore } from "../endgame/battleScore";
+import { recordEndgameEvent } from "../endgame/dailyChallenges";
+import { refreshAchievements } from "../endgame/achievements";
+import { applyPermadeath, ngpCaptureOrbKind } from "../endgame/newGamePlus";
 
 interface BattleSceneData {
   playerId: number;
@@ -55,6 +62,13 @@ interface BattleSceneData {
   eliteId?: string;
   region?: WorldRegion;
   autoExplore?: AutoExploreSession;
+  /** 终局挑战上下文（试炼塔/首领重战）。 */
+  endgame?: {
+    kind: "tower" | "rematch";
+    challengeId: string;
+    towerFloor?: number;
+    bossId?: string;
+  };
   returnTo?: {
     scene: string;
     data?: Record<string, unknown>;
@@ -92,6 +106,13 @@ export class BattleScene extends Phaser.Scene {
   private autoStatusText?: Phaser.GameObjects.Text;
   private startAutoButton?: Phaser.GameObjects.Container;
   private stopAutoButton?: Phaser.GameObjects.Container;
+  private endgameKind?: "tower" | "rematch";
+  private endgameChallengeId?: string;
+  private endgameTowerFloor?: number;
+  private endgameBossId?: string;
+  private challengeRestrictions?: ChallengeRestrictions;
+  private switchCount = 0;
+  private challengeScoreText = "";
   private readonly visibilityHandler = () => {
     if (document.hidden && this.autoExploreActive) {
       this.setAutoExplore(false, "已因进入后台暂停 · 点击继续挂机");
@@ -124,11 +145,40 @@ export class BattleScene extends Phaser.Scene {
     this.enemyLevel = Math.max(1, Math.min(50, Math.floor(data.enemyLevel ?? 1)));
     this.bossId = data.bossId;
     this.eliteId = data.eliteId;
+    this.endgameKind = data.endgame?.kind;
+    this.endgameChallengeId = data.endgame?.challengeId;
+    this.endgameTowerFloor = data.endgame?.towerFloor;
+    this.endgameBossId = data.endgame?.bossId;
+    this.switchCount = 0;
+    this.challengeScoreText = "";
     const elite = this.eliteId ? elitesById.get(this.eliteId) : undefined;
     this.battleRegion = data.region ?? elite?.region;
     const boss = this.bossId ? bossesById.get(this.bossId) : undefined;
+
+    let enemyPal: (typeof pals)[number] | undefined;
+    let effectiveLevel = Math.max(1, Math.min(50, Math.floor(data.enemyLevel ?? 1)));
+    let bossRules = boss?.rules;
+    this.challengeRestrictions = undefined;
+    if (data.endgame?.kind === "tower" && data.endgame.towerFloor !== undefined) {
+      const floor = getTowerFloor(data.endgame.towerFloor);
+      if (floor) {
+        enemyPal = pals.find((pal) => pal.id === floor.speciesId);
+        effectiveLevel = floor.level;
+        bossRules = floor.bossRules;
+        this.challengeRestrictions = getTowerRestrictions(data.endgame.towerFloor);
+      }
+    } else if (data.endgame?.kind === "rematch" && data.endgame.bossId) {
+      const rematch = getRematchForBoss(data.endgame.bossId);
+      const rematchBoss = rematch ? bossesById.get(rematch.bossId) : undefined;
+      if (rematch && rematchBoss) {
+        enemyPal = pals.find((pal) => pal.id === rematchBoss.speciesId);
+        effectiveLevel = rematch.level;
+        bossRules = rematch.rules;
+        this.challengeRestrictions = rematch.restrictions;
+      }
+    }
     const player = pals.find((pal) => pal.id === data.playerId);
-    const enemy = pals.find((pal) => pal.id === data.enemyId);
+    const enemy = enemyPal ?? pals.find((pal) => pal.id === data.enemyId);
     if (!player || !enemy) {
       this.add.text(450, 300, "战斗数据无效", { fontSize: "24px", color: "#ffffff" }).setOrigin(0.5);
       this.makeNavButton(450, 350, this.returnTo ? "返回地图" : "返回图鉴", () => this.leaveBattle());
@@ -140,11 +190,18 @@ export class BattleScene extends Phaser.Scene {
       ? currentSave.ownedPals.find((pal) => pal.uid === this.playerUid && pal.speciesId === player.id)
       : undefined;
     if (instance) {
-      const orderedUids = [instance.uid, ...currentSave.teamIds.filter((uid) => uid !== instance.uid)];
+      const orderedUids = this.endgameChallengeId
+        ? currentSave.teamIds
+        : [instance.uid, ...currentSave.teamIds.filter((uid) => uid !== instance.uid)];
       const members = orderedUids.flatMap((uid) => {
         const owned = currentSave.ownedPals.find((pal) => pal.uid === uid);
         const species = owned ? pals.find((pal) => pal.id === owned.speciesId) : undefined;
         if (!owned || !species) return [];
+        if (
+          this.challengeRestrictions &&
+          !instancePassesRestrictions(species, owned, this.challengeRestrictions)
+        )
+          return [];
         this.partyUids.push(owned.uid);
         return [
           {
@@ -160,15 +217,28 @@ export class BattleScene extends Phaser.Scene {
           },
         ];
       });
-      this.state = createPartyBattle(members, enemy, this.enemyLevel, boss?.rules);
+      this.state = createPartyBattle(members, enemy, effectiveLevel, bossRules);
       const activeUid = this.partyUids[this.state.activePlayerIndex];
       if (activeUid) this.participatedUids.add(activeUid);
     } else {
-      this.state = createBattle(player, enemy, 1, this.enemyLevel, boss?.rules);
+      this.state = createBattle(player, enemy, 1, effectiveLevel, bossRules);
     }
     if (boss) this.state.enemy.name = boss.name;
+    if (data.endgame?.kind === "rematch") {
+      const rematch = data.endgame.bossId ? getRematchForBoss(data.endgame.bossId) : undefined;
+      if (rematch) this.state.enemy.name = `${this.state.enemy.name}·强化`;
+    }
     createBackButton(this, "退出战斗", () => this.leaveBattle());
-    addSceneTitle(this, boss ? "区域首领战" : "幻兽对决");
+    addSceneTitle(
+      this,
+      this.endgameKind === "tower"
+        ? `试炼塔·第 ${this.endgameTowerFloor ?? 1} 层`
+        : this.endgameKind === "rematch"
+          ? "首领强化重战"
+          : boss
+            ? "区域首领战"
+            : "幻兽对决"
+    );
     this.createAutoExploreControls();
     this.roundText = this.add
       .text(450, 66, "", {
@@ -343,7 +413,7 @@ export class BattleScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
       const progression = this.add
-        .text(450, 570, this.progressionMessage, {
+        .text(450, 570, this.challengeScoreText || this.progressionMessage, {
           fontFamily: "sans-serif",
           fontSize: "14px",
           color: "#80deea",
@@ -357,28 +427,38 @@ export class BattleScene extends Phaser.Scene {
       if (this.state.phase === "victory") {
         const currentSave = loadGame(localStorage);
         const enemyPal = pals.find((pal) => pal.id === this.state?.enemy.id);
-        if (enemyPal && !this.captureAttempted && !this.bossId) {
+        if (enemyPal && !this.captureAttempted && !this.bossId && !this.endgameKind) {
           const chance = calculateCaptureChance({
             hp: this.state.enemy.hp,
             maxHp: this.state.enemy.maxHp,
             rarity: enemyPal.rarity,
             catchRate: enemyPal.catchRate,
           });
-          if (currentSave.inventory.captureOrbs > 0) {
+          const orbKind = ngpCaptureOrbKind(currentSave);
+          const orbCount =
+            orbKind === "advanced"
+              ? currentSave.inventory.advancedCaptureOrbs
+              : currentSave.inventory.captureOrbs;
+          if (orbCount > 0) {
             const capture = this.makeNavButton(
               170,
               602,
-              `捕获 ${chance}% · ${currentSave.inventory.captureOrbs}`,
+              `捕获 ${chance}% · ${orbKind === "advanced" ? "高级捕获器" : "捕获器"} ${orbCount}`,
               () => this.captureEnemy(enemyPal)
             );
             this.actionLayer.add(capture);
           } else {
             const noOrb = this.add
-              .text(170, 602, "捕获器不足，请到基地制造", {
-                fontFamily: "sans-serif",
-                fontSize: "14px",
-                color: "#ff8a80",
-              })
+              .text(
+                170,
+                602,
+                orbKind === "advanced" ? "高级捕获器不足，请到基地制造" : "捕获器不足，请到基地制造",
+                {
+                  fontFamily: "sans-serif",
+                  fontSize: "14px",
+                  color: "#ff8a80",
+                }
+              )
               .setOrigin(0.5);
             this.actionLayer.add(noOrb);
           }
@@ -554,7 +634,31 @@ export class BattleScene extends Phaser.Scene {
       save = recordSideQuestEvent(save, { type: "battle-win", region: this.battleRegion });
       const enemySpecies = pals.find((pal) => pal.id === this.state?.enemy.id);
       if (enemySpecies) save = applyBattleRewards(save, enemySpecies, this.enemyLevel);
-      if (this.bossId) {
+      if (this.endgameKind) {
+        const challengeId =
+          this.endgameKind === "tower"
+            ? `tower-${this.endgameTowerFloor ?? 1}`
+            : `rematch-${this.endgameBossId}`;
+        const totalMaxHp = this.state.playerParty.reduce((sum, fighter) => sum + fighter.maxHp, 0);
+        const totalRemainingHp = this.state.playerParty.reduce((sum, fighter) => sum + fighter.hp, 0);
+        const score = computeBattleScore({
+          victory: true,
+          rounds: this.state.round,
+          totalRemainingHp,
+          totalMaxHp,
+          switchCount: this.switchCount,
+          baseLevel: this.state.enemy.level,
+        });
+        save.endgame.bestScores = recordBestScore(save.endgame.bestScores, challengeId, score);
+        this.challengeScoreText = `挑战评分：${score}（最佳 ${save.endgame.bestScores[challengeId]}）`;
+        if (this.endgameKind === "tower") {
+          save = recordTowerVictory(save, this.endgameTowerFloor ?? 1);
+          save = recordEndgameEvent(save, { type: "tower-floor" });
+        } else if (this.endgameKind === "rematch" && this.endgameBossId) {
+          save = claimRematchFirstReward(save, this.endgameBossId);
+          save = recordEndgameEvent(save, { type: "rematch-win" });
+        }
+      } else if (this.bossId) {
         save = recordBossVictory(save, this.bossId);
         const boss = bossesById.get(this.bossId);
         if (boss) {
@@ -565,14 +669,17 @@ export class BattleScene extends Phaser.Scene {
             this.captureMessage = `首领掉落：${equipmentDefinitions.find((item) => item.id === dropped)?.name.zh ?? dropped}（装备已存入背包）`;
           }
         }
-      } else if (Math.random() < 0.18) {
+      } else {
+        save = recordEndgameEvent(save, { type: "battle-win" });
         const enemyPalForDrop = pals.find((pal) => pal.id === this.state?.enemy.id);
-        const rarity = enemyPalForDrop ? (enemyPalForDrop.rarity >= 4 ? "rare" : "common") : "common";
-        const dropped = rollEquipmentId(equipmentDefinitions, rarity);
-        if (dropped) {
-          const result = grantEquipment(save, dropped);
-          save = result.save;
-          this.captureMessage = `掉落装备：${equipmentDefinitions.find((item) => item.id === dropped)?.name.zh ?? dropped}`;
+        if (Math.random() < 0.18) {
+          const rarity = enemyPalForDrop ? (enemyPalForDrop.rarity >= 4 ? "rare" : "common") : "common";
+          const dropped = rollEquipmentId(equipmentDefinitions, rarity);
+          if (dropped) {
+            const result = grantEquipment(save, dropped);
+            save = result.save;
+            this.captureMessage = `掉落装备：${equipmentDefinitions.find((item) => item.id === dropped)?.name.zh ?? dropped}`;
+          }
         }
       }
       const elite = this.eliteId ? elitesById.get(this.eliteId) : undefined;
@@ -604,10 +711,27 @@ export class BattleScene extends Phaser.Scene {
         }
         this.progressionMessage = messages.length > 0 ? `经验：${messages.join(" · ")}` : "";
       }
+      save = refreshAchievements(save, pals);
     }
+    save = this.applyEndgamePermadeath(save);
     saveGame(localStorage, save);
     this.render();
     this.busy = false;
+  }
+
+  /** 永久倒下：开启新周目模式时，移除本场倒下的个体。 */
+  private applyEndgamePermadeath(save: ReturnType<typeof loadGame>): ReturnType<typeof loadGame> {
+    if (!save.endgame.newGamePlus.permadeath || !this.state) return save;
+    const downedUids = this.state.playerParty
+      .map((fighter, index) => ({ fighter, uid: this.partyUids[index] }))
+      .filter((entry) => entry.fighter.hp <= 0 && entry.uid)
+      .map((entry) => entry.uid!);
+    if (downedUids.length === 0) return save;
+    const removed = applyPermadeath(save, downedUids);
+    if (removed !== save) {
+      this.captureMessage = `永久倒下：${downedUids.length} 只幻兽离队。`;
+    }
+    return removed;
   }
 
   private switchTo(index: number) {
@@ -618,6 +742,7 @@ export class BattleScene extends Phaser.Scene {
     const next = switchPlayer(this.state, index, enemySkill);
     if (next === this.state) return;
     this.state = next;
+    this.switchCount += 1;
     this.choosingSwitch = false;
     const activeUid = this.partyUids[this.state.activePlayerIndex];
     if (activeUid) this.participatedUids.add(activeUid);
@@ -637,9 +762,11 @@ export class BattleScene extends Phaser.Scene {
 
   private captureEnemy(enemyPal: (typeof pals)[number]) {
     if (!this.state || this.captureAttempted) return;
-    const consumed = consumeCaptureOrb(loadGame(localStorage));
+    const currentSave = loadGame(localStorage);
+    const orbKind = ngpCaptureOrbKind(currentSave);
+    const consumed = consumeCaptureOrbByKind(currentSave, orbKind);
     if (!consumed.consumed) {
-      this.captureMessage = "捕获器不足";
+      this.captureMessage = orbKind === "advanced" ? "高级捕获器不足" : "捕获器不足";
       this.render();
       return;
     }

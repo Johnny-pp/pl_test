@@ -216,3 +216,64 @@ test("v9 存档迁移会补齐基地布局、科技、订单与新资源字段",
     true
   );
 });
+
+test("v10 存档迁移会补齐终局进度字段", () => {
+  const old = JSON.stringify({
+    version: 10,
+    ownedPals: [],
+    teamIds: [],
+    progress: { battlesWon: 12, captured: 0 },
+    inventory: { captureOrbs: 2, healingTonics: 1, equipment: [], coins: 30, materials: {} },
+  });
+  const migrated = loadGame(memoryStorage(old));
+  assert.equal(migrated.version, SAVE_VERSION);
+  assert.equal(migrated.endgame.towerFloorsCleared, 0);
+  assert.deepEqual(migrated.endgame.towerRewardsClaimed, []);
+  assert.deepEqual(migrated.endgame.bestScores, {});
+  assert.deepEqual(migrated.endgame.periodChallenges, []);
+  assert.deepEqual(migrated.endgame.rematchRewardsClaimed, []);
+  assert.deepEqual(migrated.endgame.unlockedAchievementIds, []);
+  assert.deepEqual(migrated.endgame.unlockedTitles, []);
+  assert.equal(migrated.endgame.equippedTitleId, null);
+  assert.deepEqual(migrated.endgame.newGamePlus, {
+    randomEncounters: false,
+    restrictedCapture: false,
+    permadeath: false,
+  });
+  assert.deepEqual(migrated.endgame.permadeathLostUids, []);
+  assert.deepEqual(migrated.endgame.stats, {});
+});
+
+test("损坏的终局进度字段会被清理而非崩溃", () => {
+  const old = JSON.stringify({
+    version: 10,
+    ownedPals: [],
+    teamIds: [],
+    endgame: {
+      towerFloorsCleared: "坏数据",
+      towerRewardsClaimed: [1, null, "floor-3"],
+      bestScores: { "tower-1": -5 },
+      periodChallenges: [
+        { periodKey: "daily-2026-08-21", events: { "battle-win": "x" }, claimedRewardIds: [3] },
+        { periodKey: 123 },
+      ],
+      newGamePlus: { randomEncounters: "yes", permadeath: true },
+      equippedTitleId: 42,
+    },
+  });
+  const migrated = loadGame(memoryStorage(old));
+  assert.equal(migrated.endgame.towerFloorsCleared, 0);
+  assert.deepEqual(migrated.endgame.towerRewardsClaimed, ["floor-3"]);
+  assert.deepEqual(migrated.endgame.bestScores, { "tower-1": 0 });
+  assert.deepEqual(migrated.endgame.periodChallenges, [
+    {
+      periodKey: "daily-2026-08-21",
+      events: { "battle-win": 0 },
+      claimedRewardIds: [],
+    },
+  ]);
+  assert.equal(migrated.endgame.newGamePlus.randomEncounters, false);
+  assert.equal(migrated.endgame.newGamePlus.permadeath, true);
+  assert.equal(migrated.endgame.equippedTitleId, null);
+  assert.deepEqual(migrated.endgame.stats, {});
+});

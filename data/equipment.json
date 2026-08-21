@@ -181,5 +181,29 @@
       { "stat": "defensePercent", "value": 12 },
       { "stat": "damageTakenPercent", "value": -8 }
     ]
+  },
+  {
+    "id": "charm-tide-shadow",
+    "name": { "zh": "涛影护符", "en": "Tideshadow Charm" },
+    "description": "以潮影凝成的护符，能减轻水与暗元素的侵蚀并加快行动。",
+    "slot": "charm",
+    "rarity": "rare",
+    "affixes": [
+      { "stat": "elementResistance", "element": "water", "value": 10 },
+      { "stat": "elementResistance", "element": "dark", "value": 10 },
+      { "stat": "speedPercent", "value": 6 }
+    ]
+  },
+  {
+    "id": "armor-abyssal-plate",
+    "name": { "zh": "渊极重铠", "en": "Abyssal Plate" },
+    "description": "由沉星深岩锻铸的重铠，兼具恐怖防护与沉稳体魄。",
+    "slot": "armor",
+    "rarity": "legendary",
+    "affixes": [
+      { "stat": "defensePercent", "value": 18 },
+      { "stat": "maxHpPercent", "value": 12 },
+      { "stat": "damageTakenPercent", "value": -16 }
+    ]
   }
 ]

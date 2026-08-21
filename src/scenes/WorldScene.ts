@@ -42,6 +42,7 @@ import {
   isHiddenChestAvailable,
 } from "../explore/gates";
 import { ELITES, getElitesForRegion, isEliteDefeated, canRebattleElite } from "../explore/elites";
+import { ngpEncounterLevel } from "../endgame/newGamePlus";
 import { SETTLEMENT_NPCS, HEAL_COST } from "../world/settlementContent";
 import {
   STARTIDE_DISCOVERIES,
@@ -1514,7 +1515,10 @@ export class WorldScene extends Phaser.Scene {
     const save = loadGame(localStorage);
     const leaderLevel = save.ownedPals.find((pal) => pal.uid === this.leaderUid)?.level ?? 1;
     const zoneFloor = getEncounterLevelFloor(zone);
-    const enemyLevel = Math.max(zoneFloor, Math.min(50, leaderLevel + Math.floor(Math.random() * 3) - 1));
+    const enemyLevel = ngpEncounterLevel(
+      Math.max(zoneFloor, Math.min(50, leaderLevel + Math.floor(Math.random() * 3) - 1)),
+      save
+    );
     this.encounterLocked = true;
     this.player.setVelocity(0, 0);
     void startScene(this, "BattleScene", {

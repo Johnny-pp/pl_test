@@ -201,6 +201,24 @@ export function consumeCaptureOrb(save: GameSave): { save: GameSave; consumed: b
   };
 }
 
+/** 按捕获器种类消耗一个捕获器（普通或高级）。 */
+export function consumeCaptureOrbByKind(
+  save: GameSave,
+  kind: "advanced" | "normal"
+): { save: GameSave; consumed: boolean } {
+  if (kind === "advanced") {
+    if (save.inventory.advancedCaptureOrbs <= 0) return { save, consumed: false };
+    return {
+      consumed: true,
+      save: {
+        ...save,
+        inventory: { ...save.inventory, advancedCaptureOrbs: save.inventory.advancedCaptureOrbs - 1 },
+      },
+    };
+  }
+  return consumeCaptureOrb(save);
+}
+
 export function useHealingTonic(save: GameSave, palUid: string, maxHp: number): GameSave {
   if (save.inventory.healingTonics <= 0) return save;
   const index = save.ownedPals.findIndex((pal) => pal.uid === palUid);
