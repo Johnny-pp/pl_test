@@ -95,6 +95,7 @@ export class DexScene extends Phaser.Scene {
     this.makeBaseButton();
     this.makeBreedingButton();
     this.makeQuestButton();
+    this.makeSettingsButton();
 
     this.buildSearchInput();
     this.buildSortButtons();
@@ -460,6 +461,10 @@ export class DexScene extends Phaser.Scene {
 
   private makeQuestButton() {
     this.makeNavButton(830, "任务", "QuestScene");
+  }
+
+  private makeSettingsButton() {
+    this.makeNavButton(430, "设置", "SettingsScene");
   }
 
   private makeNavButton(

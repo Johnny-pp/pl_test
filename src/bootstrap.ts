@@ -2,8 +2,11 @@ import Phaser from "phaser";
 import { DexScene } from "./scenes/DexScene";
 import { loadScene } from "./scenes/sceneLoader";
 import { announceScene, prepareGameCanvas } from "./ui/accessibility";
+import { loadSettings } from "./settings/settings";
+import { soundEffects } from "./audio/soundEffects";
 
 export async function startGame(): Promise<Phaser.Game> {
+  soundEffects.setVolumes(loadSettings(localStorage));
   const search = new URLSearchParams(window.location.search);
   const start = search.get("start");
   const firstScene = start === "world" ? await loadScene("WorldScene") : DexScene;

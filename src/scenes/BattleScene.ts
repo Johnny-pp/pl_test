@@ -52,6 +52,7 @@ import { computeBattleScore, recordBestScore } from "../endgame/battleScore";
 import { recordEndgameEvent } from "../endgame/dailyChallenges";
 import { refreshAchievements } from "../endgame/achievements";
 import { applyPermadeath, ngpCaptureOrbKind } from "../endgame/newGamePlus";
+import { soundEffects } from "../audio/soundEffects";
 
 interface BattleSceneData {
   playerId: number;
@@ -627,6 +628,9 @@ export class BattleScene extends Phaser.Scene {
     if (!enemySkill) return;
     this.busy = true;
     this.state = resolveTurn(this.state, playerSkill, enemySkill);
+    if (this.state.log.some((line) => line.includes("造成"))) soundEffects.play("hit");
+    if (this.state.phase === "victory") soundEffects.play("victory");
+    if (this.state.phase === "defeat") soundEffects.play("defeat");
     let save = this.persistPartyHealth(loadGame(localStorage));
     if (this.state.phase === "victory") {
       save = recordBattleWin(save);
@@ -710,6 +714,7 @@ export class BattleScene extends Phaser.Scene {
           );
         }
         this.progressionMessage = messages.length > 0 ? `经验：${messages.join(" · ")}` : "";
+        if (messages.some((message) => message.includes("→"))) soundEffects.play("levelup");
       }
       save = refreshAchievements(save, pals);
     }
@@ -778,6 +783,7 @@ export class BattleScene extends Phaser.Scene {
       catchRate: enemyPal.catchRate,
     });
     if (result.success) {
+      soundEffects.play("capture");
       const rolledPassives = rollWildPassiveSkills(passiveSkills.map((skill) => skill.id));
       const captured = addCapturedPal(
         consumed.save,

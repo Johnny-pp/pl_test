@@ -43,6 +43,7 @@ import {
 } from "../explore/gates";
 import { ELITES, getElitesForRegion, isEliteDefeated, canRebattleElite } from "../explore/elites";
 import { ngpEncounterLevel } from "../endgame/newGamePlus";
+import { soundEffects } from "../audio/soundEffects";
 import { SETTLEMENT_NPCS, HEAL_COST } from "../world/settlementContent";
 import {
   STARTIDE_DISCOVERIES,
@@ -759,6 +760,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private openChest(chest: (typeof STARTIDE_CHESTS)[number]) {
+    soundEffects.play("open");
     this.claimedChests.add(chest.id);
     const object = this.chestObjects.get(chest.id);
     object?.node.destroy();
@@ -854,6 +856,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private gatherResource(resource: ResourceNode) {
+    soundEffects.play("gather");
     this.collected.add(resource.id);
     this.gathered += 1;
     const object = this.resources.get(resource.id);

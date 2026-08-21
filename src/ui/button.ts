@@ -1,6 +1,7 @@
 import type Phaser from "phaser";
 import { UI_ASSETS } from "./assets";
 import { UI_THEME } from "./theme";
+import { soundEffects } from "../audio/soundEffects";
 
 interface TextButtonOptions {
   x: number;
@@ -48,14 +49,16 @@ export function createTextButton(scene: Phaser.Scene, options: TextButtonOptions
   if (!options.disabled) {
     const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (!reducedMotion) {
-      background.on("pointerover", () =>
-        scene.tweens.add({ targets: [background, text], scale: 1.035, duration: 80 })
-      );
+      background.on("pointerover", () => {
+        soundEffects.play("hover");
+        scene.tweens.add({ targets: [background, text], scale: 1.035, duration: 80 });
+      });
       background.on("pointerout", () =>
         scene.tweens.add({ targets: [background, text], scale: 1, duration: 80 })
       );
     }
     background.on("pointerdown", () => {
+      soundEffects.play("click");
       if (!reducedMotion)
         scene.tweens.add({ targets: [background, text], scale: 0.96, yoyo: true, duration: 60 });
       options.onPress();

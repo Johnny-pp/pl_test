@@ -28,6 +28,7 @@ import {
   getAvailableSkillPoints,
 } from "../build/buildSystem";
 import { getTeamExploreAbilityIds } from "../explore/gates";
+import { soundEffects } from "../audio/soundEffects";
 import { EXPLORE_ABILITY_LABELS } from "../types/exploreAbility";
 import { clampScroll } from "../ui/scroll";
 import { createBackButton, createTextButton } from "../ui/button";
@@ -307,6 +308,7 @@ export class TeamScene extends Phaser.Scene {
       heal.on("pointerdown", () => {
         const next = useHealingTonic(this.save, instance.uid, stats.maxHp);
         if (next === this.save) return;
+        soundEffects.play("heal");
         this.save = next;
         saveGame(localStorage, this.save);
         this.render();
