@@ -1,6 +1,8 @@
 import type { Pal } from "../types/pal";
 import type { BaseJob, FacilityId, GameSave } from "../player/playerState";
 import { getBuildBonuses, getSpeciesSkillTree } from "../build/buildSystem.ts";
+import { getPlacedFacility } from "./baseLayout.ts";
+import { getTechBonuses } from "./techTree.ts";
 import type { ActiveSkill } from "../types/activeSkill.ts";
 import type { PassiveSkill } from "../types/passiveSkill.ts";
 import type { EquipmentDefinition } from "../types/skillTree.ts";
@@ -32,10 +34,17 @@ const FACILITY_COSTS: Record<FacilityId, Partial<Record<ResourceId, number>>> = 
   warehouse: { wood: 30, stone: 20 },
   farm: { wood: 25, fiber: 20 },
   workshop: { stone: 30, crystal: 8 },
+  forge: { stone: 40, ore: 15, crystal: 8 },
+  assembly: { metal: 8, stone: 30, crystal: 6 },
 };
 
+export function getFacilityLevel(save: GameSave, facility: FacilityId): number {
+  return getPlacedFacility(save, facility)?.level ?? save.base.facilities[facility] ?? 0;
+}
+
 export function getStorageCapacity(save: GameSave): number {
-  return 100 + save.base.facilities.warehouse * 100;
+  const tech = getTechBonuses(save);
+  return Math.floor((100 + getFacilityLevel(save, "warehouse") * 100) * tech.capacityMultiplier);
 }
 
 function suitabilityLevel(pal: Pal, job: BaseJob): number {
@@ -84,14 +93,24 @@ export function simulateProduction(
   const elapsedMinutes = Math.max(0, Math.min(480, (now - save.base.lastUpdatedAt) / 60_000));
   const resources = { ...save.base.resources };
   const capacity = getStorageCapacity(save);
+  const tech = getTechBonuses(save);
+  const techWork = 1 + tech.workSpeedPercent / 100;
+  const techYield = 1 + tech.resourceYieldPercent / 100;
   for (const assignment of save.base.assignments) {
     const instance = save.ownedPals.find((pal) => pal.uid === assignment.palUid);
     const species = instance ? speciesById.get(instance.speciesId) : undefined;
     if (!instance || !species) continue;
     const level = suitabilityLevel(species, assignment.job);
     if (level <= 0) continue;
-    const facilityLevel =
-      assignment.job === "planting" ? save.base.facilities.farm : save.base.facilities.workshop;
+    const facility =
+      assignment.job === "planting"
+        ? "farm"
+        : assignment.job === "mining"
+          ? "workshop"
+          : assignment.job === "lumbering"
+            ? "workshop"
+            : "workshop";
+    const facilityLevel = getFacilityLevel(save, facility);
     const facilityMultiplier = 1 + (facilityLevel - 1) * 0.15;
     const tree = getSpeciesSkillTree(
       species,
@@ -111,9 +130,15 @@ export function simulateProduction(
       facilityMultiplier *
       passiveMultiplier *
       yieldMultiplier *
+      techWork *
+      techYield *
       0.25;
     const resource = JOB_RESOURCE[assignment.job];
     resources[resource] = Math.min(capacity, resources[resource] + ratePerMinute * elapsedMinutes);
+    if (assignment.job === "mining") {
+      const oreRate = level * 0.08 * facilityMultiplier * yieldMultiplier * techYield;
+      resources.ore = Math.min(capacity, resources.ore + oreRate * elapsedMinutes);
+    }
   }
   for (const resource of Object.keys(resources) as ResourceId[]) {
     resources[resource] = Math.floor(resources[resource] * 10) / 10;
@@ -135,7 +160,7 @@ function pay(resources: GameSave["base"]["resources"], costs: Partial<Record<Res
 }
 
 export function upgradeFacility(save: GameSave, facility: FacilityId): GameSave {
-  const level = save.base.facilities[facility];
+  const level = getFacilityLevel(save, facility);
   if (level >= 5) return save;
   const costs = Object.fromEntries(
     Object.entries(FACILITY_COSTS[facility]).map(([resource, amount]) => [resource, (amount ?? 0) * level])
@@ -147,6 +172,9 @@ export function upgradeFacility(save: GameSave, facility: FacilityId): GameSave 
       ...save.base,
       resources: pay(save.base.resources, costs),
       facilities: { ...save.base.facilities, [facility]: level + 1 },
+      placedFacilities: save.base.placedFacilities.map((entry) =>
+        entry.facilityId === facility ? { ...entry, level: level + 1 } : entry
+      ),
     },
   };
 }

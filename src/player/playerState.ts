@@ -2,7 +2,7 @@ import type { Pal } from "../types/pal.ts";
 import type { EquipmentItem, EquipmentSlot } from "../types/skillTree.ts";
 import { isWorldRegion, STARTING_REGION, type WorldRegion } from "../world/regions.ts";
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -77,11 +77,25 @@ function createInitialQuestStates(battlesWon = 0, captures = 0): QuestState[] {
   });
 }
 export type BaseJob = "planting" | "mining" | "lumbering" | "generating";
-export type FacilityId = "warehouse" | "farm" | "workshop";
+export type FacilityId = "warehouse" | "farm" | "workshop" | "forge" | "assembly";
 
 export interface BaseAssignment {
   palUid: string;
   job: BaseJob;
+}
+
+/** 已放置到基地网格上的设施实例。 */
+export interface PlacedFacility {
+  facilityId: FacilityId;
+  level: number;
+  gridX: number;
+  gridY: number;
+}
+
+/** 基地订单状态（可重复完成的资源消耗目标）。 */
+export interface BaseOrderState {
+  id: string;
+  claimedCount: number;
 }
 
 export interface BaseState {
@@ -91,9 +105,17 @@ export interface BaseState {
     food: number;
     fiber: number;
     crystal: number;
+    ore: number;
+    metal: number;
   };
   assignments: BaseAssignment[];
   facilities: Record<FacilityId, number>;
+  /** 基地网格上已放置的设施（默认布局由旧存档迁移生成）。 */
+  placedFacilities: PlacedFacility[];
+  /** 已解锁的科技节点标识。 */
+  techIds: string[];
+  /** 基地订单进度。 */
+  orders: BaseOrderState[];
   lastUpdatedAt: number;
 }
 
@@ -105,6 +127,8 @@ export interface PlayerInventory {
   coins: number;
   /** 击败幻兽获得的掉落物库存（掉落物名称 -> 数量）。 */
   materials: Record<string, number>;
+  /** 高级捕获器（加工链产物）。 */
+  advancedCaptureOrbs: number;
 }
 
 export type EggQuality = "common" | "fine" | "radiant";
@@ -164,11 +188,18 @@ export function createEmptySave(now = Date.now()): GameSave {
       shopStock: {},
       eliteDefeatTimes: {},
     },
-    inventory: { captureOrbs: 3, healingTonics: 0, equipment: [], coins: 30, materials: {} },
+    inventory: { captureOrbs: 3, healingTonics: 0, equipment: [], coins: 30, materials: {}, advancedCaptureOrbs: 0 },
     base: {
-      resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0 },
+      resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0, ore: 0, metal: 0 },
       assignments: [],
-      facilities: { warehouse: 1, farm: 1, workshop: 1 },
+      facilities: { warehouse: 1, farm: 1, workshop: 1, forge: 0, assembly: 0 },
+      placedFacilities: [
+        { facilityId: "warehouse", level: 1, gridX: 0, gridY: 0 },
+        { facilityId: "farm", level: 1, gridX: 2, gridY: 0 },
+        { facilityId: "workshop", level: 1, gridX: 0, gridY: 2 },
+      ],
+      techIds: [],
+      orders: [],
       lastUpdatedAt: now,
     },
     breedingEggs: [],
@@ -360,6 +391,58 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
         .map(([key, amount]) => [key, finiteCount(amount)])
     );
   };
+  const validFacilityIds = new Set<FacilityId>([
+    "warehouse",
+    "farm",
+    "workshop",
+    "forge",
+    "assembly",
+  ]);
+  const normalizePlacedFacilities = (
+    value: unknown,
+    legacyFacilities?: Partial<BaseState["facilities"]>
+  ): PlacedFacility[] => {
+    const rawList: unknown[] = Array.isArray(value) ? value : [];
+    const placed = rawList
+      .map((entry): PlacedFacility | undefined => {
+        if (!entry || typeof entry !== "object") return undefined;
+        const item = entry as Partial<PlacedFacility>;
+        if (
+          typeof item.facilityId !== "string" ||
+          !validFacilityIds.has(item.facilityId as FacilityId)
+        )
+          return undefined;
+        return {
+          facilityId: item.facilityId as FacilityId,
+          level: Math.max(1, Math.min(5, Math.floor(item.level ?? 1))),
+          gridX: Number.isInteger(item.gridX) ? Math.max(0, item.gridX!) : 0,
+          gridY: Number.isInteger(item.gridY) ? Math.max(0, item.gridY!) : 0,
+        };
+      })
+      .filter((entry): entry is PlacedFacility => Boolean(entry));
+    if (placed.length > 0) return placed;
+    const legacy = legacyFacilities ?? {};
+    const defaults: PlacedFacility[] = [
+      { facilityId: "warehouse", level: Math.max(1, finiteCount(legacy.warehouse, 1)), gridX: 0, gridY: 0 },
+      { facilityId: "farm", level: Math.max(1, finiteCount(legacy.farm, 1)), gridX: 2, gridY: 0 },
+      { facilityId: "workshop", level: Math.max(1, finiteCount(legacy.workshop, 1)), gridX: 0, gridY: 2 },
+    ];
+    if (finiteCount(legacy.forge) > 0) defaults.push({ facilityId: "forge", level: finiteCount(legacy.forge), gridX: 2, gridY: 2 });
+    if (finiteCount(legacy.assembly) > 0)
+      defaults.push({ facilityId: "assembly", level: finiteCount(legacy.assembly), gridX: 4, gridY: 2 });
+    return defaults;
+  };
+  const normalizeBaseOrders = (value: unknown): BaseOrderState[] => {
+    const rawList: unknown[] = Array.isArray(value) ? value : [];
+    return rawList
+      .map((entry): BaseOrderState | undefined => {
+        if (!entry || typeof entry !== "object") return undefined;
+        const item = entry as Partial<BaseOrderState>;
+        if (typeof item.id !== "string" || item.id.length === 0) return undefined;
+        return { id: item.id, claimedCount: Math.max(0, finiteCount(item.claimedCount)) };
+      })
+      .filter((entry): entry is BaseOrderState => Boolean(entry));
+  };
 
   return {
     version: SAVE_VERSION,
@@ -408,6 +491,7 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
       equipment: [...new Map(equipmentItems.map((item) => [item.uid, item])).values()],
       coins: finiteCount(rawInventory.coins, 30),
       materials: normalizeStock(rawInventory.materials),
+      advancedCaptureOrbs: finiteCount(rawInventory.advancedCaptureOrbs),
     },
     base: {
       resources: {
@@ -416,6 +500,8 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
         food: finiteAmount(rawResources.food, 20),
         fiber: finiteAmount(rawResources.fiber, 10),
         crystal: finiteAmount(rawResources.crystal),
+        ore: finiteAmount(rawResources.ore),
+        metal: finiteAmount(rawResources.metal),
       },
       assignments: assignments.filter(
         (item, index) => assignments.findIndex((candidate) => candidate.palUid === item.palUid) === index
@@ -424,7 +510,15 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
         warehouse: Math.max(1, finiteCount(rawFacilities.warehouse, 1)),
         farm: Math.max(1, finiteCount(rawFacilities.farm, 1)),
         workshop: Math.max(1, finiteCount(rawFacilities.workshop, 1)),
+        forge: Math.max(0, finiteCount(rawFacilities.forge)),
+        assembly: Math.max(0, finiteCount(rawFacilities.assembly)),
       },
+      placedFacilities: normalizePlacedFacilities(
+        rawBase.placedFacilities,
+        rawBase.facilities as Partial<BaseState["facilities"]> | undefined
+      ),
+      techIds: normalizeIdList(rawBase.techIds),
+      orders: normalizeBaseOrders(rawBase.orders),
       lastUpdatedAt: Number.isFinite(rawBase.lastUpdatedAt) ? rawBase.lastUpdatedAt! : now,
     },
     breedingEggs,

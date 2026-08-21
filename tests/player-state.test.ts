@@ -188,3 +188,28 @@ test("v8 存档迁移会补齐货币、掉落物、支线、NPC 与机关状态"
   assert.equal(repaired.inventory.materials["柔韧绒丝"], 3);
   assert.equal(repaired.progress.shopStock["shop-equip-reed-plate"], 0);
 });
+
+test("v9 存档迁移会补齐基地布局、科技、订单与新资源字段", () => {
+  const old = JSON.stringify({
+    version: 9,
+    ownedPals: [],
+    teamIds: [],
+    inventory: { captureOrbs: 2, healingTonics: 1, equipment: [], coins: 30, materials: {} },
+    base: {
+      resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0 },
+      assignments: [],
+      facilities: { warehouse: 1, farm: 1, workshop: 1 },
+      lastUpdatedAt: 0,
+    },
+  });
+  const migrated = loadGame(memoryStorage(old));
+  assert.equal(migrated.version, SAVE_VERSION);
+  assert.equal(migrated.inventory.advancedCaptureOrbs, 0);
+  assert.equal(migrated.base.resources.ore, 0);
+  assert.equal(migrated.base.resources.metal, 0);
+  assert.deepEqual(migrated.base.techIds, []);
+  assert.deepEqual(migrated.base.orders, []);
+  const ids = migrated.base.placedFacilities.map((entry) => entry.facilityId);
+  assert.deepEqual([...ids].sort(), ["farm", "warehouse", "workshop"]);
+  assert.equal(migrated.base.placedFacilities.every((entry) => entry.level >= 1), true);
+});

@@ -170,5 +170,16 @@
       { "stat": "maxHpPercent", "value": 10 },
       { "stat": "damageTakenPercent", "value": -14 }
     ]
+  },
+  {
+    "id": "armor-reinforced-mail",
+    "name": { "zh": "强化锻纹甲", "en": "Reinforced Mail" },
+    "description": "在装配台用金属锭层层锻接的护甲，兼顾防护与承伤。",
+    "slot": "armor",
+    "rarity": "rare",
+    "affixes": [
+      { "stat": "defensePercent", "value": 12 },
+      { "stat": "damageTakenPercent", "value": -8 }
+    ]
   }
 ]

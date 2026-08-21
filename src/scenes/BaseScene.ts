@@ -26,13 +26,21 @@ const JOB_LABELS: Record<BaseJob, string> = {
   lumbering: "伐木",
   generating: "发电",
 };
-const FACILITY_LABELS: Record<FacilityId, string> = { warehouse: "仓库", farm: "农圃", workshop: "工坊" };
+const FACILITY_LABELS: Record<FacilityId, string> = {
+  warehouse: "仓库",
+  farm: "农圃",
+  workshop: "工坊",
+  forge: "熔炉",
+  assembly: "装配台",
+};
 const RESOURCE_LABELS = {
   wood: "木材",
   stone: "石料",
   food: "食物",
   fiber: "纤维",
   crystal: "晶体",
+  ore: "矿石",
+  metal: "金属锭",
 } as const;
 
 export class BaseScene extends Phaser.Scene {
