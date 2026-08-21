@@ -25,7 +25,11 @@ if (gameRoot) {
 }
 
 // 生产环境注册基础离线缓存（网络优先）；e2e 测试模式跳过以避免缓存干扰。
-if (import.meta.env.PROD && !new URLSearchParams(window.location.search).has("e2e") && "serviceWorker" in navigator) {
+if (
+  import.meta.env.PROD &&
+  !new URLSearchParams(window.location.search).has("e2e") &&
+  "serviceWorker" in navigator
+) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {
       // Service Worker 不可用时静默降级为普通加载
