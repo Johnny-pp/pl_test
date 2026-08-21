@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/explore-ability.schema.json",
+  "title": "原创探索能力数据模型",
+  "description": "幻兽在野外开启可选路线、机关和隐藏内容时使用的原创探索能力定义。",
+  "type": "object",
+  "required": ["id", "name", "description"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "能力唯一标识"
+    },
+    "name": {
+      "type": "object",
+      "description": "能力名称（多语言）",
+      "required": ["zh", "en"],
+      "additionalProperties": false,
+      "properties": {
+        "zh": { "type": "string" },
+        "en": { "type": "string" }
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "能力描述与使用说明"
+    }
+  }
+}

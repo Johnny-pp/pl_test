@@ -1,362 +1,2293 @@
 [
   {
-    "id": 1, "name": { "zh": "绒芽兽", "en": "Woolbud" },
+    "id": 1,
+    "name": {
+      "zh": "绒芽兽",
+      "en": "Woolbud"
+    },
     "description": "像蒲公英种子般轻盈的温顺幻兽，成群迁徙时会把柔软绒毛留在风里。",
-    "rarity": 1, "size": "small", "elements": ["neutral"], "catchRate": 62, "foodAmount": 2,
-    "stats": { "hp": 78, "attack": 58, "defense": 72, "workSpeed": 92, "moveSpeed": 285, "rideSprintSpeed": 0, "price": 120 },
-    "growth": { "hpPerLevel": 4.2, "attackPerLevel": 2.2, "defensePerLevel": 3.1, "experienceCurve": "fast" },
-    "workSuitability": [{ "type": "handiwork", "level": 1 }, { "type": "transport", "level": 1 }, { "type": "farming", "level": 1 }],
-    "partnerSkill": { "name": "绒风护幕", "description": "抖开蓬松绒毛，为同行者短暂缓冲伤害。", "ranks": [] },
-    "activeSkills": ["quick-strike", "pulse-shot"], "passiveSkills": [],
-    "drops": [{ "item": "柔韧绒丝", "rate": 55 }], "spawnLocations": ["晴风原野"],
-    "breeding": { "power": 18, "parents": [] }
+    "rarity": 1,
+    "size": "small",
+    "elements": [
+      "neutral"
+    ],
+    "catchRate": 62,
+    "foodAmount": 2,
+    "stats": {
+      "hp": 78,
+      "attack": 58,
+      "defense": 72,
+      "workSpeed": 92,
+      "moveSpeed": 285,
+      "rideSprintSpeed": 0,
+      "price": 120
+    },
+    "growth": {
+      "hpPerLevel": 4.2,
+      "attackPerLevel": 2.2,
+      "defensePerLevel": 3.1,
+      "experienceCurve": "fast"
+    },
+    "workSuitability": [
+      {
+        "type": "handiwork",
+        "level": 1
+      },
+      {
+        "type": "transport",
+        "level": 1
+      },
+      {
+        "type": "farming",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "绒风护幕",
+      "description": "抖开蓬松绒毛，为同行者短暂缓冲伤害。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "pulse-shot"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "vine-cut"
+    ],
+    "drops": [
+      {
+        "item": "柔韧绒丝",
+        "rate": 55
+      }
+    ],
+    "spawnLocations": [
+      "晴风原野"
+    ],
+    "breeding": {
+      "power": 18,
+      "parents": []
+    }
   },
   {
-    "id": 2, "name": { "zh": "斑尾灵", "en": "Mottlekin" },
+    "id": 2,
+    "name": {
+      "zh": "斑尾灵",
+      "en": "Mottlekin"
+    },
     "description": "好奇心旺盛的林缘居民，会用带斑纹的尾巴模仿旅人的手势。",
-    "rarity": 1, "size": "small", "elements": ["neutral"], "catchRate": 58, "foodAmount": 2,
-    "stats": { "hp": 70, "attack": 66, "defense": 60, "workSpeed": 104, "moveSpeed": 340, "rideSprintSpeed": 0, "price": 135 },
-    "growth": { "hpPerLevel": 3.6, "attackPerLevel": 2.9, "defensePerLevel": 2.5, "experienceCurve": "fast" },
-    "workSuitability": [{ "type": "handiwork", "level": 1 }, { "type": "gathering", "level": 1 }, { "type": "transport", "level": 1 }],
-    "partnerSkill": { "name": "灵巧尾手", "description": "帮忙整理行囊，小幅提高探索时的采集效率。", "ranks": [] },
-    "activeSkills": ["quick-strike", "pulse-shot"], "passiveSkills": [],
-    "drops": [{ "item": "斑纹软皮", "rate": 42 }], "spawnLocations": ["晴风原野"],
-    "breeding": { "power": 20, "parents": [] }
+    "rarity": 1,
+    "size": "small",
+    "elements": [
+      "neutral"
+    ],
+    "catchRate": 58,
+    "foodAmount": 2,
+    "stats": {
+      "hp": 70,
+      "attack": 66,
+      "defense": 60,
+      "workSpeed": 104,
+      "moveSpeed": 340,
+      "rideSprintSpeed": 0,
+      "price": 135
+    },
+    "growth": {
+      "hpPerLevel": 3.6,
+      "attackPerLevel": 2.9,
+      "defensePerLevel": 2.5,
+      "experienceCurve": "fast"
+    },
+    "workSuitability": [
+      {
+        "type": "handiwork",
+        "level": 1
+      },
+      {
+        "type": "gathering",
+        "level": 1
+      },
+      {
+        "type": "transport",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "灵巧尾手",
+      "description": "帮忙整理行囊，小幅提高探索时的采集效率。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "pulse-shot"
+    ],
+    "passiveSkills": [],
+    "drops": [
+      {
+        "item": "斑纹软皮",
+        "rate": 42
+      }
+    ],
+    "spawnLocations": [
+      "晴风原野"
+    ],
+    "breeding": {
+      "power": 20,
+      "parents": []
+    }
   },
   {
-    "id": 4, "name": { "zh": "苔灯鼠", "en": "Mossgleam" },
+    "id": 4,
+    "name": {
+      "zh": "苔灯鼠",
+      "en": "Mossgleam"
+    },
     "description": "背上的苔叶会储存日光，夜里散发微弱绿芒，为迷路者指引方向。",
-    "rarity": 1, "size": "small", "elements": ["grass"], "catchRate": 54, "foodAmount": 2,
-    "stats": { "hp": 74, "attack": 64, "defense": 63, "workSpeed": 108, "moveSpeed": 325, "rideSprintSpeed": 0, "price": 150 },
-    "growth": { "hpPerLevel": 3.8, "attackPerLevel": 2.7, "defensePerLevel": 2.7, "experienceCurve": "fast" },
-    "workSuitability": [{ "type": "planting", "level": 1 }, { "type": "gathering", "level": 1 }, { "type": "medicine", "level": 1 }],
-    "partnerSkill": { "name": "苔光催生", "description": "以温暖苔光照料幼苗，提高附近植物的生长速度。", "ranks": [] },
-    "activeSkills": ["quick-strike", "leaf-cutter"], "passiveSkills": [],
-    "drops": [{ "item": "荧苔孢子", "rate": 48 }], "spawnLocations": ["晴风原野"],
-    "breeding": { "power": 24, "parents": [] }
+    "rarity": 1,
+    "size": "small",
+    "elements": [
+      "grass"
+    ],
+    "catchRate": 54,
+    "foodAmount": 2,
+    "stats": {
+      "hp": 74,
+      "attack": 64,
+      "defense": 63,
+      "workSpeed": 108,
+      "moveSpeed": 325,
+      "rideSprintSpeed": 0,
+      "price": 150
+    },
+    "growth": {
+      "hpPerLevel": 3.8,
+      "attackPerLevel": 2.7,
+      "defensePerLevel": 2.7,
+      "experienceCurve": "fast"
+    },
+    "workSuitability": [
+      {
+        "type": "planting",
+        "level": 1
+      },
+      {
+        "type": "gathering",
+        "level": 1
+      },
+      {
+        "type": "medicine",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "苔光催生",
+      "description": "以温暖苔光照料幼苗，提高附近植物的生长速度。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "leaf-cutter"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "illuminate"
+    ],
+    "drops": [
+      {
+        "item": "荧苔孢子",
+        "rate": 48
+      }
+    ],
+    "spawnLocations": [
+      "晴风原野"
+    ],
+    "breeding": {
+      "power": 24,
+      "parents": []
+    }
   },
   {
-    "id": 11, "name": { "zh": "泉壶兽", "en": "Brookettle" },
+    "id": 11,
+    "name": {
+      "zh": "泉壶兽",
+      "en": "Brookettle"
+    },
     "description": "圆润甲壳中储着清凉泉水，干旱时会主动为弱小生灵分水。",
-    "rarity": 1, "size": "small", "elements": ["water"], "catchRate": 50, "foodAmount": 3,
-    "stats": { "hp": 88, "attack": 55, "defense": 78, "workSpeed": 96, "moveSpeed": 250, "rideSprintSpeed": 0, "price": 175 },
-    "growth": { "hpPerLevel": 4.7, "attackPerLevel": 2.1, "defensePerLevel": 3.5, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "watering", "level": 1 }, { "type": "transport", "level": 1 }],
-    "partnerSkill": { "name": "活泉补给", "description": "分享壳中清泉，缓慢恢复同行者的体力。", "ranks": [] },
-    "activeSkills": ["quick-strike", "water-jet"], "passiveSkills": [],
-    "drops": [{ "item": "净水囊", "rate": 44 }], "spawnLocations": ["晴风原野", "回声遗迹"],
-    "breeding": { "power": 31, "parents": [] }
+    "rarity": 1,
+    "size": "small",
+    "elements": [
+      "water"
+    ],
+    "catchRate": 50,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 88,
+      "attack": 55,
+      "defense": 78,
+      "workSpeed": 96,
+      "moveSpeed": 250,
+      "rideSprintSpeed": 0,
+      "price": 175
+    },
+    "growth": {
+      "hpPerLevel": 4.7,
+      "attackPerLevel": 2.1,
+      "defensePerLevel": 3.5,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "watering",
+        "level": 1
+      },
+      {
+        "type": "transport",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "活泉补给",
+      "description": "分享壳中清泉，缓慢恢复同行者的体力。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "water-jet"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "wading"
+    ],
+    "drops": [
+      {
+        "item": "净水囊",
+        "rate": 44
+      }
+    ],
+    "spawnLocations": [
+      "晴风原野",
+      "回声遗迹"
+    ],
+    "breeding": {
+      "power": 31,
+      "parents": []
+    }
   },
   {
-    "id": 15, "name": { "zh": "闪针团", "en": "Voltquill" },
+    "id": 15,
+    "name": {
+      "zh": "闪针团",
+      "en": "Voltquill"
+    },
     "description": "紧张时全身尖刺会噼啪放电，熟悉伙伴后则会用静电替人梳理头发。",
-    "rarity": 2, "size": "small", "elements": ["electric"], "catchRate": 42, "foodAmount": 3,
-    "stats": { "hp": 72, "attack": 79, "defense": 61, "workSpeed": 110, "moveSpeed": 375, "rideSprintSpeed": 0, "price": 230 },
-    "growth": { "hpPerLevel": 3.5, "attackPerLevel": 3.8, "defensePerLevel": 2.4, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "electricity", "level": 1 }, { "type": "handiwork", "level": 1 }],
-    "partnerSkill": { "name": "蓄电针阵", "description": "储存移动产生的电荷，为小型设施提供额外电力。", "ranks": [] },
-    "activeSkills": ["quick-strike", "spark-arc"], "passiveSkills": [],
-    "drops": [{ "item": "蓄电尖针", "rate": 38 }], "spawnLocations": ["回声遗迹"],
-    "breeding": { "power": 38, "parents": [] }
+    "rarity": 2,
+    "size": "small",
+    "elements": [
+      "electric"
+    ],
+    "catchRate": 42,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 72,
+      "attack": 79,
+      "defense": 61,
+      "workSpeed": 110,
+      "moveSpeed": 375,
+      "rideSprintSpeed": 0,
+      "price": 230
+    },
+    "growth": {
+      "hpPerLevel": 3.5,
+      "attackPerLevel": 3.8,
+      "defensePerLevel": 2.4,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "electricity",
+        "level": 1
+      },
+      {
+        "type": "handiwork",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "蓄电针阵",
+      "description": "储存移动产生的电荷，为小型设施提供额外电力。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "spark-arc"
+    ],
+    "passiveSkills": [],
+    "drops": [
+      {
+        "item": "蓄电尖针",
+        "rate": 38
+      }
+    ],
+    "spawnLocations": [
+      "回声遗迹"
+    ],
+    "breeding": {
+      "power": 38,
+      "parents": []
+    }
   },
   {
-    "id": 17, "name": { "zh": "冰蹼仔", "en": "Frostfin" },
+    "id": 17,
+    "name": {
+      "zh": "冰蹼仔",
+      "en": "Frostfin"
+    },
     "description": "脚蹼结着薄霜，能在水面留下短暂冰路，却常因回头欣赏而摔倒。",
-    "rarity": 2, "size": "small", "elements": ["water", "ice"], "catchRate": 40, "foodAmount": 3,
-    "stats": { "hp": 80, "attack": 73, "defense": 69, "workSpeed": 98, "moveSpeed": 315, "rideSprintSpeed": 0, "price": 245 },
-    "growth": { "hpPerLevel": 4.1, "attackPerLevel": 3.2, "defensePerLevel": 3.0, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "watering", "level": 1 }, { "type": "cooling", "level": 1 }, { "type": "handiwork", "level": 1 }],
-    "partnerSkill": { "name": "霜径滑行", "description": "在湿润地面铺出冰径，让队伍短时间加速移动。", "ranks": [] },
-    "activeSkills": ["quick-strike", "water-jet", "frost-shard"], "passiveSkills": [],
-    "drops": [{ "item": "清霜结晶", "rate": 36 }], "spawnLocations": ["晴风原野", "回声遗迹"],
-    "breeding": { "power": 42, "parents": [] }
+    "rarity": 2,
+    "size": "small",
+    "elements": [
+      "water",
+      "ice"
+    ],
+    "catchRate": 40,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 80,
+      "attack": 73,
+      "defense": 69,
+      "workSpeed": 98,
+      "moveSpeed": 315,
+      "rideSprintSpeed": 0,
+      "price": 245
+    },
+    "growth": {
+      "hpPerLevel": 4.1,
+      "attackPerLevel": 3.2,
+      "defensePerLevel": 3,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "watering",
+        "level": 1
+      },
+      {
+        "type": "cooling",
+        "level": 1
+      },
+      {
+        "type": "handiwork",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "霜径滑行",
+      "description": "在湿润地面铺出冰径，让队伍短时间加速移动。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "water-jet",
+      "frost-shard"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "wading"
+    ],
+    "drops": [
+      {
+        "item": "清霜结晶",
+        "rate": 36
+      }
+    ],
+    "spawnLocations": [
+      "晴风原野",
+      "回声遗迹"
+    ],
+    "breeding": {
+      "power": 42,
+      "parents": []
+    }
   },
   {
-    "id": 22, "name": { "zh": "暮铃魅", "en": "Duskwisp" },
+    "id": 22,
+    "name": {
+      "zh": "暮铃魅",
+      "en": "Duskwisp"
+    },
     "description": "黄昏后从旧石缝中浮现，尾端铃光会回应远方同伴的低鸣。",
-    "rarity": 2, "size": "small", "elements": ["dark"], "catchRate": 36, "foodAmount": 3,
-    "stats": { "hp": 68, "attack": 84, "defense": 57, "workSpeed": 102, "moveSpeed": 390, "rideSprintSpeed": 0, "price": 280 },
-    "growth": { "hpPerLevel": 3.2, "attackPerLevel": 4.0, "defensePerLevel": 2.2, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "transport", "level": 1 }, { "type": "gathering", "level": 1 }],
-    "partnerSkill": { "name": "暮铃感知", "description": "铃光感应附近隐蔽事物，使夜间采集点更容易被发现。", "ranks": [] },
-    "activeSkills": ["quick-strike", "night-orb"], "passiveSkills": [],
-    "drops": [{ "item": "幽光铃片", "rate": 33 }], "spawnLocations": ["晴风原野（夜）", "回声遗迹（夜）"],
-    "breeding": { "power": 46, "parents": [] }
+    "rarity": 2,
+    "size": "small",
+    "elements": [
+      "dark"
+    ],
+    "catchRate": 36,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 68,
+      "attack": 84,
+      "defense": 57,
+      "workSpeed": 102,
+      "moveSpeed": 390,
+      "rideSprintSpeed": 0,
+      "price": 280
+    },
+    "growth": {
+      "hpPerLevel": 3.2,
+      "attackPerLevel": 4,
+      "defensePerLevel": 2.2,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "transport",
+        "level": 1
+      },
+      {
+        "type": "gathering",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "暮铃感知",
+      "description": "铃光感应附近隐蔽事物，使夜间采集点更容易被发现。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "night-orb"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "illuminate"
+    ],
+    "drops": [
+      {
+        "item": "幽光铃片",
+        "rate": 33
+      }
+    ],
+    "spawnLocations": [
+      "晴风原野（夜）",
+      "回声遗迹（夜）"
+    ],
+    "breeding": {
+      "power": 46,
+      "parents": []
+    }
   },
   {
-    "id": 23, "name": { "zh": "枝冠猿", "en": "Branchape" },
+    "id": 23,
+    "name": {
+      "zh": "枝冠猿",
+      "en": "Branchape"
+    },
     "description": "以弯曲枝冠记录年岁，擅长辨认成熟果实，也会严厉驱赶浪费食物者。",
-    "rarity": 2, "size": "medium", "elements": ["grass"], "catchRate": 34, "foodAmount": 5,
-    "stats": { "hp": 96, "attack": 82, "defense": 76, "workSpeed": 122, "moveSpeed": 305, "rideSprintSpeed": 0, "price": 320 },
-    "growth": { "hpPerLevel": 5.0, "attackPerLevel": 3.7, "defensePerLevel": 3.4, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "planting", "level": 2 }, { "type": "gathering", "level": 2 }, { "type": "lumbering", "level": 1 }],
-    "partnerSkill": { "name": "丰收号令", "description": "辨认作物状态，提升基地种植与采集工作的产量。", "ranks": [] },
-    "activeSkills": ["quick-strike", "leaf-cutter"], "passiveSkills": [],
-    "drops": [{ "item": "韧性枝冠", "rate": 30 }, { "item": "酸甜野果", "rate": 52 }], "spawnLocations": ["回声遗迹"],
-    "breeding": { "power": 52, "parents": [] }
+    "rarity": 2,
+    "size": "medium",
+    "elements": [
+      "grass"
+    ],
+    "catchRate": 34,
+    "foodAmount": 5,
+    "stats": {
+      "hp": 96,
+      "attack": 82,
+      "defense": 76,
+      "workSpeed": 122,
+      "moveSpeed": 305,
+      "rideSprintSpeed": 0,
+      "price": 320
+    },
+    "growth": {
+      "hpPerLevel": 5,
+      "attackPerLevel": 3.7,
+      "defensePerLevel": 3.4,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "planting",
+        "level": 2
+      },
+      {
+        "type": "gathering",
+        "level": 2
+      },
+      {
+        "type": "lumbering",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "丰收号令",
+      "description": "辨认作物状态，提升基地种植与采集工作的产量。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "leaf-cutter"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "vine-cut"
+    ],
+    "drops": [
+      {
+        "item": "韧性枝冠",
+        "rate": 30
+      },
+      {
+        "item": "酸甜野果",
+        "rate": 52
+      }
+    ],
+    "spawnLocations": [
+      "回声遗迹"
+    ],
+    "breeding": {
+      "power": 52,
+      "parents": []
+    }
   },
   {
-    "id": 26, "name": { "zh": "赤角鹿", "en": "Emberhart" },
+    "id": 26,
+    "name": {
+      "zh": "赤角鹿",
+      "en": "Emberhart"
+    },
     "description": "角中流动着温暖余烬，寒夜里会站在幼兽外围，为族群挡住冷风。",
-    "rarity": 3, "size": "medium", "elements": ["fire"], "catchRate": 28, "foodAmount": 6,
-    "stats": { "hp": 105, "attack": 88, "defense": 84, "workSpeed": 112, "moveSpeed": 430, "rideSprintSpeed": 620, "price": 410 },
-    "growth": { "hpPerLevel": 5.4, "attackPerLevel": 4.0, "defensePerLevel": 3.8, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "kindling", "level": 2 }, { "type": "lumbering", "level": 1 }, { "type": "transport", "level": 1 }],
-    "partnerSkill": { "name": "余烬奔途", "description": "允许骑乘，并在冲刺经过时温暖附近的伙伴。", "ranks": [] },
-    "activeSkills": ["quick-strike", "ember-dart", "flame-burst"], "passiveSkills": [],
-    "drops": [{ "item": "温火角屑", "rate": 32 }], "spawnLocations": ["回声遗迹"],
-    "breeding": { "power": 61, "parents": [] }
+    "rarity": 3,
+    "size": "medium",
+    "elements": [
+      "fire"
+    ],
+    "catchRate": 28,
+    "foodAmount": 6,
+    "stats": {
+      "hp": 105,
+      "attack": 88,
+      "defense": 84,
+      "workSpeed": 112,
+      "moveSpeed": 430,
+      "rideSprintSpeed": 620,
+      "price": 410
+    },
+    "growth": {
+      "hpPerLevel": 5.4,
+      "attackPerLevel": 4,
+      "defensePerLevel": 3.8,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "kindling",
+        "level": 2
+      },
+      {
+        "type": "lumbering",
+        "level": 1
+      },
+      {
+        "type": "transport",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "余烬奔途",
+      "description": "允许骑乘，并在冲刺经过时温暖附近的伙伴。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "ember-dart",
+      "flame-burst"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "illuminate"
+    ],
+    "drops": [
+      {
+        "item": "温火角屑",
+        "rate": 32
+      }
+    ],
+    "spawnLocations": [
+      "回声遗迹"
+    ],
+    "breeding": {
+      "power": 61,
+      "parents": []
+    }
   },
   {
-    "id": 28, "name": { "zh": "岩脊豚", "en": "Cragboar" },
+    "id": 28,
+    "name": {
+      "zh": "岩脊豚",
+      "en": "Cragboar"
+    },
     "description": "会用坚硬背脊翻松板结土层，认准方向后几乎没有障碍能让它转弯。",
-    "rarity": 2, "size": "medium", "elements": ["ground"], "catchRate": 33, "foodAmount": 5,
-    "stats": { "hp": 112, "attack": 86, "defense": 91, "workSpeed": 94, "moveSpeed": 330, "rideSprintSpeed": 510, "price": 350 },
-    "growth": { "hpPerLevel": 5.8, "attackPerLevel": 3.8, "defensePerLevel": 4.2, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "mining", "level": 2 }, { "type": "transport", "level": 1 }, { "type": "farming", "level": 1 }],
-    "partnerSkill": { "name": "破土突进", "description": "允许骑乘，撞击矿脉或松土时能够获得额外材料。", "ranks": [] },
-    "activeSkills": ["quick-strike", "earth-hammer", "stone-shard"], "passiveSkills": [],
-    "drops": [{ "item": "岩脊硬片", "rate": 41 }], "spawnLocations": ["回声遗迹"],
-    "breeding": { "power": 56, "parents": [] }
+    "rarity": 2,
+    "size": "medium",
+    "elements": [
+      "ground"
+    ],
+    "catchRate": 33,
+    "foodAmount": 5,
+    "stats": {
+      "hp": 112,
+      "attack": 86,
+      "defense": 91,
+      "workSpeed": 94,
+      "moveSpeed": 330,
+      "rideSprintSpeed": 510,
+      "price": 350
+    },
+    "growth": {
+      "hpPerLevel": 5.8,
+      "attackPerLevel": 3.8,
+      "defensePerLevel": 4.2,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "mining",
+        "level": 2
+      },
+      {
+        "type": "transport",
+        "level": 1
+      },
+      {
+        "type": "farming",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "破土突进",
+      "description": "允许骑乘，撞击矿脉或松土时能够获得额外材料。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "earth-hammer",
+      "stone-shard"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "rock-break"
+    ],
+    "drops": [
+      {
+        "item": "岩脊硬片",
+        "rate": 41
+      }
+    ],
+    "spawnLocations": [
+      "回声遗迹"
+    ],
+    "breeding": {
+      "power": 56,
+      "parents": []
+    }
   },
   {
-    "id": 29, "name": { "zh": "火尾狸", "en": "Cindertail" },
+    "id": 29,
+    "name": {
+      "zh": "火尾狸",
+      "en": "Cindertail"
+    },
     "description": "尾梢火焰会随情绪改变形状，开心时像花朵，警戒时则拉成长针。",
-    "rarity": 2, "size": "small", "elements": ["fire"], "catchRate": 39, "foodAmount": 3,
-    "stats": { "hp": 76, "attack": 81, "defense": 62, "workSpeed": 106, "moveSpeed": 405, "rideSprintSpeed": 0, "price": 270 },
-    "growth": { "hpPerLevel": 3.7, "attackPerLevel": 3.9, "defensePerLevel": 2.5, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "kindling", "level": 1 }, { "type": "handiwork", "level": 1 }],
-    "partnerSkill": { "name": "尾火引燃", "description": "用可控尾焰协助点火，并降低制作时的燃料消耗。", "ranks": [] },
-    "activeSkills": ["quick-strike", "ember-dart", "flame-burst"], "passiveSkills": [],
-    "drops": [{ "item": "暖焰绒", "rate": 43 }], "spawnLocations": ["晴风原野（夜）", "回声遗迹（夜）"],
-    "breeding": { "power": 44, "parents": [] }
+    "rarity": 2,
+    "size": "small",
+    "elements": [
+      "fire"
+    ],
+    "catchRate": 39,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 76,
+      "attack": 81,
+      "defense": 62,
+      "workSpeed": 106,
+      "moveSpeed": 405,
+      "rideSprintSpeed": 0,
+      "price": 270
+    },
+    "growth": {
+      "hpPerLevel": 3.7,
+      "attackPerLevel": 3.9,
+      "defensePerLevel": 2.5,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "kindling",
+        "level": 1
+      },
+      {
+        "type": "handiwork",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "尾火引燃",
+      "description": "用可控尾焰协助点火，并降低制作时的燃料消耗。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "ember-dart",
+      "flame-burst"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "illuminate"
+    ],
+    "drops": [
+      {
+        "item": "暖焰绒",
+        "rate": 43
+      }
+    ],
+    "spawnLocations": [
+      "晴风原野（夜）",
+      "回声遗迹（夜）"
+    ],
+    "breeding": {
+      "power": 44,
+      "parents": []
+    }
   },
   {
-    "id": 30, "name": { "zh": "烬翼龙", "en": "Ashwing" },
+    "id": 30,
+    "name": {
+      "zh": "烬翼龙",
+      "en": "Ashwing"
+    },
     "description": "栖息在风化高塔顶端，翼膜上的余烬纹路会在振翅时连成星图。",
-    "rarity": 4, "size": "large", "elements": ["fire", "dragon"], "catchRate": 16, "foodAmount": 8,
-    "stats": { "hp": 132, "attack": 116, "defense": 94, "workSpeed": 118, "moveSpeed": 520, "rideSprintSpeed": 780, "price": 780 },
-    "growth": { "hpPerLevel": 6.8, "attackPerLevel": 5.4, "defensePerLevel": 4.3, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "kindling", "level": 3 }, { "type": "transport", "level": 2 }],
-    "partnerSkill": { "name": "星烬翔行", "description": "允许空中骑乘，夜间飞行时移动速度进一步提高。", "ranks": [] },
-    "activeSkills": ["quick-strike", "ember-dart", "flame-burst", "dragon-comet"], "passiveSkills": [],
-    "drops": [{ "item": "星烬翼膜", "rate": 22 }, { "item": "龙息晶核", "rate": 12 }], "spawnLocations": ["回声遗迹（夜）"],
-    "breeding": { "power": 88, "parents": [] }
+    "rarity": 4,
+    "size": "large",
+    "elements": [
+      "fire",
+      "dragon"
+    ],
+    "catchRate": 16,
+    "foodAmount": 8,
+    "stats": {
+      "hp": 132,
+      "attack": 116,
+      "defense": 94,
+      "workSpeed": 118,
+      "moveSpeed": 520,
+      "rideSprintSpeed": 780,
+      "price": 780
+    },
+    "growth": {
+      "hpPerLevel": 6.8,
+      "attackPerLevel": 5.4,
+      "defensePerLevel": 4.3,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "kindling",
+        "level": 3
+      },
+      {
+        "type": "transport",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "星烬翔行",
+      "description": "允许空中骑乘，夜间飞行时移动速度进一步提高。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "ember-dart",
+      "flame-burst",
+      "dragon-comet"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "glide"
+    ],
+    "drops": [
+      {
+        "item": "星烬翼膜",
+        "rate": 22
+      },
+      {
+        "item": "龙息晶核",
+        "rate": 12
+      }
+    ],
+    "spawnLocations": [
+      "回声遗迹（夜）"
+    ],
+    "breeding": {
+      "power": 88,
+      "parents": []
+    }
   },
   {
-    "id": 34, "name": { "zh": "云帆獭", "en": "Cloudsail Otter" },
+    "id": 34,
+    "name": {
+      "zh": "云帆獭",
+      "en": "Cloudsail Otter"
+    },
     "description": "耳鳍会像小帆一样捕捉山风，常沿云脊滑行，把迷路旅人的气味送回营地。",
-    "rarity": 2, "size": "small", "elements": ["wind", "water"], "catchRate": 37, "foodAmount": 4,
-    "stats": { "hp": 86, "attack": 78, "defense": 70, "workSpeed": 112, "moveSpeed": 445, "rideSprintSpeed": 0, "price": 310 },
-    "growth": { "hpPerLevel": 4.4, "attackPerLevel": 3.6, "defensePerLevel": 3.0, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "watering", "level": 1 }, { "type": "transport", "level": 2 }, { "type": "gathering", "level": 1 }],
-    "partnerSkill": { "name": "顺风领航", "description": "展开耳帆辨认气流，使队伍在开阔地带移动更轻快。", "ranks": [] },
-    "activeSkills": ["quick-strike", "water-jet", "gale-shear"], "passiveSkills": [],
-    "drops": [{ "item": "浮云软绒", "rate": 44 }, { "item": "轻帆耳膜", "rate": 24 }], "spawnLocations": ["云脊高地（白昼）"],
-    "breeding": { "power": 48, "parents": [["斑尾灵", "冰蹼仔"]] }
+    "rarity": 2,
+    "size": "small",
+    "elements": [
+      "wind",
+      "water"
+    ],
+    "catchRate": 37,
+    "foodAmount": 4,
+    "stats": {
+      "hp": 86,
+      "attack": 78,
+      "defense": 70,
+      "workSpeed": 112,
+      "moveSpeed": 445,
+      "rideSprintSpeed": 0,
+      "price": 310
+    },
+    "growth": {
+      "hpPerLevel": 4.4,
+      "attackPerLevel": 3.6,
+      "defensePerLevel": 3,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "watering",
+        "level": 1
+      },
+      {
+        "type": "transport",
+        "level": 2
+      },
+      {
+        "type": "gathering",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "顺风领航",
+      "description": "展开耳帆辨认气流，使队伍在开阔地带移动更轻快。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "water-jet",
+      "gale-shear"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "glide",
+      "wading"
+    ],
+    "drops": [
+      {
+        "item": "浮云软绒",
+        "rate": 44
+      },
+      {
+        "item": "轻帆耳膜",
+        "rate": 24
+      }
+    ],
+    "spawnLocations": [
+      "云脊高地（白昼）"
+    ],
+    "breeding": {
+      "power": 48,
+      "parents": [
+        [
+          "斑尾灵",
+          "冰蹼仔"
+        ]
+      ]
+    }
   },
   {
-    "id": 35, "name": { "zh": "晶背螈", "en": "Crysteft" },
+    "id": 35,
+    "name": {
+      "zh": "晶背螈",
+      "en": "Crysteft"
+    },
     "description": "背部晶簇会记录地脉震动；暴雨前，它会把晶片贴在洞口提醒邻居搬离低处。",
-    "rarity": 3, "size": "medium", "elements": ["rock", "water"], "catchRate": 29, "foodAmount": 5,
-    "stats": { "hp": 108, "attack": 87, "defense": 96, "workSpeed": 106, "moveSpeed": 300, "rideSprintSpeed": 0, "price": 430 },
-    "growth": { "hpPerLevel": 5.6, "attackPerLevel": 4.0, "defensePerLevel": 4.6, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "mining", "level": 2 }, { "type": "watering", "level": 1 }, { "type": "cooling", "level": 1 }],
-    "partnerSkill": { "name": "晶脉听诊", "description": "感知地下矿脉的细微震动，提高高地采矿时发现晶材的机会。", "ranks": [] },
-    "activeSkills": ["water-jet", "stone-shard", "crystal-bulwark"], "passiveSkills": [],
-    "drops": [{ "item": "鸣振晶片", "rate": 35 }, { "item": "湿润岩膜", "rate": 28 }], "spawnLocations": ["云脊高地·晶谷"],
-    "breeding": { "power": 66, "parents": [["泉壶兽", "岩脊豚"]] }
+    "rarity": 3,
+    "size": "medium",
+    "elements": [
+      "rock",
+      "water"
+    ],
+    "catchRate": 29,
+    "foodAmount": 5,
+    "stats": {
+      "hp": 108,
+      "attack": 87,
+      "defense": 96,
+      "workSpeed": 106,
+      "moveSpeed": 300,
+      "rideSprintSpeed": 0,
+      "price": 430
+    },
+    "growth": {
+      "hpPerLevel": 5.6,
+      "attackPerLevel": 4,
+      "defensePerLevel": 4.6,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "mining",
+        "level": 2
+      },
+      {
+        "type": "watering",
+        "level": 1
+      },
+      {
+        "type": "cooling",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "晶脉听诊",
+      "description": "感知地下矿脉的细微震动，提高高地采矿时发现晶材的机会。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "water-jet",
+      "stone-shard",
+      "crystal-bulwark"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "rock-break",
+      "wading"
+    ],
+    "drops": [
+      {
+        "item": "鸣振晶片",
+        "rate": 35
+      },
+      {
+        "item": "湿润岩膜",
+        "rate": 28
+      }
+    ],
+    "spawnLocations": [
+      "云脊高地·晶谷"
+    ],
+    "breeding": {
+      "power": 66,
+      "parents": [
+        [
+          "泉壶兽",
+          "岩脊豚"
+        ]
+      ]
+    }
   },
   {
-    "id": 36, "name": { "zh": "钟岩犀", "en": "Bellcrag" },
+    "id": 36,
+    "name": {
+      "zh": "钟岩犀",
+      "en": "Bellcrag"
+    },
     "description": "中空角在奔跑时发出低沉钟鸣，雾中商队会循着回声判断悬崖与道路的距离。",
-    "rarity": 3, "size": "large", "elements": ["rock", "ground"], "catchRate": 25, "foodAmount": 7,
-    "stats": { "hp": 126, "attack": 96, "defense": 111, "workSpeed": 92, "moveSpeed": 335, "rideSprintSpeed": 505, "price": 510 },
-    "growth": { "hpPerLevel": 6.4, "attackPerLevel": 4.5, "defensePerLevel": 5.2, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "mining", "level": 3 }, { "type": "transport", "level": 2 }],
-    "partnerSkill": { "name": "回声载行", "description": "允许骑乘；角鸣能标出浓雾中的坚固路径，减少绕行。", "ranks": [] },
-    "activeSkills": ["earth-hammer", "stone-shard", "crystal-bulwark"], "passiveSkills": [],
-    "drops": [{ "item": "钟鸣角环", "rate": 26 }, { "item": "致密黑岩", "rate": 48 }], "spawnLocations": ["云脊高地·鸣钟坡"],
-    "breeding": { "power": 74, "parents": [["岩脊豚", "赤角鹿"]] }
+    "rarity": 3,
+    "size": "large",
+    "elements": [
+      "rock",
+      "ground"
+    ],
+    "catchRate": 25,
+    "foodAmount": 7,
+    "stats": {
+      "hp": 126,
+      "attack": 96,
+      "defense": 111,
+      "workSpeed": 92,
+      "moveSpeed": 335,
+      "rideSprintSpeed": 505,
+      "price": 510
+    },
+    "growth": {
+      "hpPerLevel": 6.4,
+      "attackPerLevel": 4.5,
+      "defensePerLevel": 5.2,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "mining",
+        "level": 3
+      },
+      {
+        "type": "transport",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "回声载行",
+      "description": "允许骑乘；角鸣能标出浓雾中的坚固路径，减少绕行。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "earth-hammer",
+      "stone-shard",
+      "crystal-bulwark"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "rock-break"
+    ],
+    "drops": [
+      {
+        "item": "钟鸣角环",
+        "rate": 26
+      },
+      {
+        "item": "致密黑岩",
+        "rate": 48
+      }
+    ],
+    "spawnLocations": [
+      "云脊高地·鸣钟坡"
+    ],
+    "breeding": {
+      "power": 74,
+      "parents": [
+        [
+          "岩脊豚",
+          "赤角鹿"
+        ]
+      ]
+    }
   },
   {
-    "id": 37, "name": { "zh": "雾绡蛾", "en": "Veilsilk Moth" },
+    "id": 37,
+    "name": {
+      "zh": "雾绡蛾",
+      "en": "Veilsilk Moth"
+    },
     "description": "宽翼会把露水铺成轻薄雾绡，月光穿过翼纹时能显出山间隐藏的安全落脚点。",
-    "rarity": 2, "size": "small", "elements": ["ice", "wind"], "catchRate": 35, "foodAmount": 3,
-    "stats": { "hp": 75, "attack": 84, "defense": 64, "workSpeed": 120, "moveSpeed": 470, "rideSprintSpeed": 0, "price": 335 },
-    "growth": { "hpPerLevel": 3.8, "attackPerLevel": 4.1, "defensePerLevel": 2.7, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "cooling", "level": 2 }, { "type": "medicine", "level": 1 }, { "type": "gathering", "level": 1 }],
-    "partnerSkill": { "name": "月雾显径", "description": "夜间展开雾翼，令附近隐蔽采集物更容易辨认。", "ranks": [] },
-    "activeSkills": ["frost-shard", "gale-shear", "mist-wing"], "passiveSkills": [],
-    "drops": [{ "item": "雾纹翼粉", "rate": 46 }, { "item": "冷光绡丝", "rate": 31 }], "spawnLocations": ["云脊高地（夜晚）"],
-    "breeding": { "power": 54, "parents": [["暮铃魅", "冰蹼仔"]] }
+    "rarity": 2,
+    "size": "small",
+    "elements": [
+      "ice",
+      "wind"
+    ],
+    "catchRate": 35,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 75,
+      "attack": 84,
+      "defense": 64,
+      "workSpeed": 120,
+      "moveSpeed": 470,
+      "rideSprintSpeed": 0,
+      "price": 335
+    },
+    "growth": {
+      "hpPerLevel": 3.8,
+      "attackPerLevel": 4.1,
+      "defensePerLevel": 2.7,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "cooling",
+        "level": 2
+      },
+      {
+        "type": "medicine",
+        "level": 1
+      },
+      {
+        "type": "gathering",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "月雾显径",
+      "description": "夜间展开雾翼，令附近隐蔽采集物更容易辨认。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "frost-shard",
+      "gale-shear",
+      "mist-wing"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "glide"
+    ],
+    "drops": [
+      {
+        "item": "雾纹翼粉",
+        "rate": 46
+      },
+      {
+        "item": "冷光绡丝",
+        "rate": 31
+      }
+    ],
+    "spawnLocations": [
+      "云脊高地（夜晚）"
+    ],
+    "breeding": {
+      "power": 54,
+      "parents": [
+        [
+          "暮铃魅",
+          "冰蹼仔"
+        ]
+      ]
+    }
   },
   {
-    "id": 38, "name": { "zh": "潮镜蟹", "en": "Tideglass Crab" },
+    "id": 38,
+    "name": {
+      "zh": "潮镜蟹",
+      "en": "Tideglass Crab"
+    },
     "description": "圆壳像一面盛水的镜子，会映出数刻后的云影，因此总能赶在骤雨前躲进石隙。",
-    "rarity": 3, "size": "medium", "elements": ["water", "rock"], "catchRate": 27, "foodAmount": 5,
-    "stats": { "hp": 114, "attack": 82, "defense": 108, "workSpeed": 116, "moveSpeed": 275, "rideSprintSpeed": 0, "price": 475 },
-    "growth": { "hpPerLevel": 5.9, "attackPerLevel": 3.7, "defensePerLevel": 5.0, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "watering", "level": 2 }, { "type": "mining", "level": 1 }, { "type": "sorting", "level": 2 }],
-    "partnerSkill": { "name": "潮相预见", "description": "观察镜壳中的云潮变化，使采集队更早避开恶劣天气。", "ranks": [] },
-    "activeSkills": ["water-jet", "stone-shard", "tide-mirror"], "passiveSkills": [],
-    "drops": [{ "item": "潮镜壳片", "rate": 30 }, { "item": "回流水珠", "rate": 42 }], "spawnLocations": ["云脊高地·镜泉台"],
-    "breeding": { "power": 69, "parents": [["泉壶兽", "晶背螈"]] }
+    "rarity": 3,
+    "size": "medium",
+    "elements": [
+      "water",
+      "rock"
+    ],
+    "catchRate": 27,
+    "foodAmount": 5,
+    "stats": {
+      "hp": 114,
+      "attack": 82,
+      "defense": 108,
+      "workSpeed": 116,
+      "moveSpeed": 275,
+      "rideSprintSpeed": 0,
+      "price": 475
+    },
+    "growth": {
+      "hpPerLevel": 5.9,
+      "attackPerLevel": 3.7,
+      "defensePerLevel": 5,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "watering",
+        "level": 2
+      },
+      {
+        "type": "mining",
+        "level": 1
+      },
+      {
+        "type": "sorting",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "潮相预见",
+      "description": "观察镜壳中的云潮变化，使采集队更早避开恶劣天气。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "water-jet",
+      "stone-shard",
+      "tide-mirror"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "wading"
+    ],
+    "drops": [
+      {
+        "item": "潮镜壳片",
+        "rate": 30
+      },
+      {
+        "item": "回流水珠",
+        "rate": 42
+      }
+    ],
+    "spawnLocations": [
+      "云脊高地·镜泉台"
+    ],
+    "breeding": {
+      "power": 69,
+      "parents": [
+        [
+          "泉壶兽",
+          "晶背螈"
+        ]
+      ]
+    }
   },
   {
-    "id": 39, "name": { "zh": "岚角羚", "en": "Galehorn Ibex" },
+    "id": 39,
+    "name": {
+      "zh": "岚角羚",
+      "en": "Galehorn Ibex"
+    },
     "description": "弯角周围终年缠着细小雷云，族群会用角尖电光在山脊之间传递迁徙信号。",
-    "rarity": 4, "size": "large", "elements": ["electric", "wind"], "catchRate": 18, "foodAmount": 7,
-    "stats": { "hp": 118, "attack": 112, "defense": 92, "workSpeed": 124, "moveSpeed": 545, "rideSprintSpeed": 760, "price": 720 },
-    "growth": { "hpPerLevel": 6.0, "attackPerLevel": 5.3, "defensePerLevel": 4.1, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "electricity", "level": 3 }, { "type": "transport", "level": 2 }, { "type": "gathering", "level": 2 }],
-    "partnerSkill": { "name": "岚脊飞驰", "description": "允许骑乘；沿高地风道冲刺时会积蓄雷能并提高速度。", "ranks": [] },
-    "activeSkills": ["spark-arc", "gale-shear", "storm-horn"], "passiveSkills": [],
-    "drops": [{ "item": "岚电角屑", "rate": 25 }, { "item": "云纹硬绒", "rate": 38 }], "spawnLocations": ["云脊高地·风暴脊（夜晚）"],
-    "breeding": { "power": 86, "parents": [["闪针团", "钟岩犀"]] }
+    "rarity": 4,
+    "size": "large",
+    "elements": [
+      "electric",
+      "wind"
+    ],
+    "catchRate": 18,
+    "foodAmount": 7,
+    "stats": {
+      "hp": 118,
+      "attack": 112,
+      "defense": 92,
+      "workSpeed": 124,
+      "moveSpeed": 545,
+      "rideSprintSpeed": 760,
+      "price": 720
+    },
+    "growth": {
+      "hpPerLevel": 6,
+      "attackPerLevel": 5.3,
+      "defensePerLevel": 4.1,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "electricity",
+        "level": 3
+      },
+      {
+        "type": "transport",
+        "level": 2
+      },
+      {
+        "type": "gathering",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "岚脊飞驰",
+      "description": "允许骑乘；沿高地风道冲刺时会积蓄雷能并提高速度。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "spark-arc",
+      "gale-shear",
+      "storm-horn"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "glide"
+    ],
+    "drops": [
+      {
+        "item": "岚电角屑",
+        "rate": 25
+      },
+      {
+        "item": "云纹硬绒",
+        "rate": 38
+      }
+    ],
+    "spawnLocations": [
+      "云脊高地·风暴脊（夜晚）"
+    ],
+    "breeding": {
+      "power": 86,
+      "parents": [
+        [
+          "闪针团",
+          "钟岩犀"
+        ]
+      ]
+    }
   },
   {
-    "id": 40, "name": { "zh": "芦灯鼬", "en": "Reedlight Weasel" },
+    "id": 40,
+    "name": {
+      "zh": "芦灯鼬",
+      "en": "Reedlight Weasel"
+    },
     "description": "尾尖会夹住一粒长明芦籽，入夜后沿栈道奔走，为归港的小舟标出浅滩。",
-    "rarity": 1, "size": "small", "elements": ["grass"], "catchRate": 56, "foodAmount": 2,
-    "stats": { "hp": 82, "attack": 76, "defense": 68, "workSpeed": 118, "moveSpeed": 430, "rideSprintSpeed": 0, "price": 245 },
-    "growth": { "hpPerLevel": 4.1, "attackPerLevel": 3.5, "defensePerLevel": 2.9, "experienceCurve": "fast" },
-    "workSuitability": [{ "type": "gathering", "level": 2 }, { "type": "transport", "level": 1 }, { "type": "planting", "level": 1 }],
-    "partnerSkill": { "name": "芦火引路", "description": "摇动尾端灯籽，在潮雾中标记最近的安全栈道。", "ranks": [] },
-    "activeSkills": ["quick-strike", "leaf-cutter", "reed-lance"], "passiveSkills": [],
-    "drops": [{ "item": "长明芦籽", "rate": 48 }, { "item": "防潮短绒", "rate": 35 }], "spawnLocations": ["星潮群岛·辉沼湿地（白昼）"],
-    "breeding": { "power": 42, "parents": [["斑尾灵", "苔灯鼠"]] }
+    "rarity": 1,
+    "size": "small",
+    "elements": [
+      "grass"
+    ],
+    "catchRate": 56,
+    "foodAmount": 2,
+    "stats": {
+      "hp": 82,
+      "attack": 76,
+      "defense": 68,
+      "workSpeed": 118,
+      "moveSpeed": 430,
+      "rideSprintSpeed": 0,
+      "price": 245
+    },
+    "growth": {
+      "hpPerLevel": 4.1,
+      "attackPerLevel": 3.5,
+      "defensePerLevel": 2.9,
+      "experienceCurve": "fast"
+    },
+    "workSuitability": [
+      {
+        "type": "gathering",
+        "level": 2
+      },
+      {
+        "type": "transport",
+        "level": 1
+      },
+      {
+        "type": "planting",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "芦火引路",
+      "description": "摇动尾端灯籽，在潮雾中标记最近的安全栈道。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "quick-strike",
+      "leaf-cutter",
+      "reed-lance"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "illuminate"
+    ],
+    "drops": [
+      {
+        "item": "长明芦籽",
+        "rate": 48
+      },
+      {
+        "item": "防潮短绒",
+        "rate": 35
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·辉沼湿地（白昼）"
+    ],
+    "breeding": {
+      "power": 42,
+      "parents": [
+        [
+          "斑尾灵",
+          "苔灯鼠"
+        ]
+      ]
+    }
   },
   {
-    "id": 41, "name": { "zh": "泥帆鲵", "en": "Mudsail Newt" },
+    "id": 41,
+    "name": {
+      "zh": "泥帆鲵",
+      "en": "Mudsail Newt"
+    },
     "description": "背鳍能兜住沼泽气泡推动身体滑行，遇到搁浅者时会把气泡分给对方。",
-    "rarity": 1, "size": "small", "elements": ["water", "ground"], "catchRate": 53, "foodAmount": 3,
-    "stats": { "hp": 91, "attack": 69, "defense": 79, "workSpeed": 106, "moveSpeed": 315, "rideSprintSpeed": 0, "price": 260 },
-    "growth": { "hpPerLevel": 4.8, "attackPerLevel": 3.0, "defensePerLevel": 3.6, "experienceCurve": "fast" },
-    "workSuitability": [{ "type": "watering", "level": 2 }, { "type": "farming", "level": 1 }, { "type": "transport", "level": 1 }],
-    "partnerSkill": { "name": "气泡泥帆", "description": "在松软地面铺开气泡泥膜，降低队伍陷入泥沼的阻力。", "ranks": [] },
-    "activeSkills": ["water-jet", "brine-needle", "bog-quake"], "passiveSkills": [],
-    "drops": [{ "item": "浮泥鳍膜", "rate": 46 }, { "item": "沼气泡囊", "rate": 31 }], "spawnLocations": ["星潮群岛·辉沼湿地"],
-    "breeding": { "power": 46, "parents": [["泉壶兽", "岩脊豚"]] }
+    "rarity": 1,
+    "size": "small",
+    "elements": [
+      "water",
+      "ground"
+    ],
+    "catchRate": 53,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 91,
+      "attack": 69,
+      "defense": 79,
+      "workSpeed": 106,
+      "moveSpeed": 315,
+      "rideSprintSpeed": 0,
+      "price": 260
+    },
+    "growth": {
+      "hpPerLevel": 4.8,
+      "attackPerLevel": 3,
+      "defensePerLevel": 3.6,
+      "experienceCurve": "fast"
+    },
+    "workSuitability": [
+      {
+        "type": "watering",
+        "level": 2
+      },
+      {
+        "type": "farming",
+        "level": 1
+      },
+      {
+        "type": "transport",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "气泡泥帆",
+      "description": "在松软地面铺开气泡泥膜，降低队伍陷入泥沼的阻力。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "water-jet",
+      "brine-needle",
+      "bog-quake"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "wading",
+      "glide"
+    ],
+    "drops": [
+      {
+        "item": "浮泥鳍膜",
+        "rate": 46
+      },
+      {
+        "item": "沼气泡囊",
+        "rate": 31
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·辉沼湿地"
+    ],
+    "breeding": {
+      "power": 46,
+      "parents": [
+        [
+          "泉壶兽",
+          "岩脊豚"
+        ]
+      ]
+    }
   },
   {
-    "id": 42, "name": { "zh": "萤冠鹭", "en": "Glowcrest Heron" },
+    "id": 42,
+    "name": {
+      "zh": "萤冠鹭",
+      "en": "Glowcrest Heron"
+    },
     "description": "冠羽寄居着温顺流萤，振翅时会排成弧线，替芦灯港记录每日潮位。",
-    "rarity": 2, "size": "medium", "elements": ["wind", "water"], "catchRate": 38, "foodAmount": 4,
-    "stats": { "hp": 89, "attack": 91, "defense": 73, "workSpeed": 121, "moveSpeed": 490, "rideSprintSpeed": 0, "price": 365 },
-    "growth": { "hpPerLevel": 4.5, "attackPerLevel": 4.2, "defensePerLevel": 3.1, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "gathering", "level": 2 }, { "type": "watering", "level": 1 }, { "type": "sorting", "level": 1 }],
-    "partnerSkill": { "name": "萤阵测潮", "description": "召集冠羽流萤测量水线，使潮间采集点更容易被发现。", "ranks": [] },
-    "activeSkills": ["water-jet", "gale-shear", "lumen-plume"], "passiveSkills": [],
-    "drops": [{ "item": "测潮冠羽", "rate": 38 }, { "item": "温萤粉", "rate": 43 }], "spawnLocations": ["星潮群岛·辉沼湿地（白昼）"],
-    "breeding": { "power": 55, "parents": [["云帆獭", "雾绡蛾"]] }
+    "rarity": 2,
+    "size": "medium",
+    "elements": [
+      "wind",
+      "water"
+    ],
+    "catchRate": 38,
+    "foodAmount": 4,
+    "stats": {
+      "hp": 89,
+      "attack": 91,
+      "defense": 73,
+      "workSpeed": 121,
+      "moveSpeed": 490,
+      "rideSprintSpeed": 0,
+      "price": 365
+    },
+    "growth": {
+      "hpPerLevel": 4.5,
+      "attackPerLevel": 4.2,
+      "defensePerLevel": 3.1,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "gathering",
+        "level": 2
+      },
+      {
+        "type": "watering",
+        "level": 1
+      },
+      {
+        "type": "sorting",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "萤阵测潮",
+      "description": "召集冠羽流萤测量水线，使潮间采集点更容易被发现。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "water-jet",
+      "gale-shear",
+      "lumen-plume"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "illuminate"
+    ],
+    "drops": [
+      {
+        "item": "测潮冠羽",
+        "rate": 38
+      },
+      {
+        "item": "温萤粉",
+        "rate": 43
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·辉沼湿地（白昼）"
+    ],
+    "breeding": {
+      "power": 55,
+      "parents": [
+        [
+          "云帆獭",
+          "雾绡蛾"
+        ]
+      ]
+    }
   },
   {
-    "id": 43, "name": { "zh": "珠须鼹", "en": "Pearlwhisk Mole" },
+    "id": 43,
+    "name": {
+      "zh": "珠须鼹",
+      "en": "Pearlwhisk Mole"
+    },
     "description": "胡须末端凝着细小潮珠，钻过泥层后会依据珠光变化把坚固地段压成地基。",
-    "rarity": 2, "size": "small", "elements": ["ground", "rock"], "catchRate": 40, "foodAmount": 3,
-    "stats": { "hp": 98, "attack": 83, "defense": 94, "workSpeed": 126, "moveSpeed": 300, "rideSprintSpeed": 0, "price": 350 },
-    "growth": { "hpPerLevel": 5.0, "attackPerLevel": 3.7, "defensePerLevel": 4.4, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "mining", "level": 2 }, { "type": "handiwork", "level": 2 }, { "type": "transport", "level": 1 }],
-    "partnerSkill": { "name": "珠须探基", "description": "感知地下空洞，为基地建造标出更稳定的设施落点。", "ranks": [] },
-    "activeSkills": ["stone-shard", "earth-hammer", "bog-quake"], "passiveSkills": [],
-    "drops": [{ "item": "感潮须珠", "rate": 34 }, { "item": "夯实泥核", "rate": 45 }], "spawnLocations": ["星潮群岛·辉沼湿地"],
-    "breeding": { "power": 58, "parents": [["斑尾灵", "钟岩犀"]] }
+    "rarity": 2,
+    "size": "small",
+    "elements": [
+      "ground",
+      "rock"
+    ],
+    "catchRate": 40,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 98,
+      "attack": 83,
+      "defense": 94,
+      "workSpeed": 126,
+      "moveSpeed": 300,
+      "rideSprintSpeed": 0,
+      "price": 350
+    },
+    "growth": {
+      "hpPerLevel": 5,
+      "attackPerLevel": 3.7,
+      "defensePerLevel": 4.4,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "mining",
+        "level": 2
+      },
+      {
+        "type": "handiwork",
+        "level": 2
+      },
+      {
+        "type": "transport",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "珠须探基",
+      "description": "感知地下空洞，为基地建造标出更稳定的设施落点。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "stone-shard",
+      "earth-hammer",
+      "bog-quake"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "rock-break"
+    ],
+    "drops": [
+      {
+        "item": "感潮须珠",
+        "rate": 34
+      },
+      {
+        "item": "夯实泥核",
+        "rate": 45
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·辉沼湿地"
+    ],
+    "breeding": {
+      "power": 58,
+      "parents": [
+        [
+          "斑尾灵",
+          "钟岩犀"
+        ]
+      ]
+    }
   },
   {
-    "id": 44, "name": { "zh": "菌灯鹿", "en": "Sporelamp Deer" },
+    "id": 44,
+    "name": {
+      "zh": "菌灯鹿",
+      "en": "Sporelamp Deer"
+    },
     "description": "鹿角上的菌伞会吸收腐沼气息并转成柔光，族群走过后常留下一条洁净小径。",
-    "rarity": 3, "size": "medium", "elements": ["grass", "dark"], "catchRate": 28, "foodAmount": 5,
-    "stats": { "hp": 107, "attack": 96, "defense": 84, "workSpeed": 128, "moveSpeed": 410, "rideSprintSpeed": 590, "price": 515 },
-    "growth": { "hpPerLevel": 5.5, "attackPerLevel": 4.5, "defensePerLevel": 3.8, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "planting", "level": 2 }, { "type": "medicine", "level": 2 }, { "type": "gathering", "level": 2 }],
-    "partnerSkill": { "name": "净沼菌环", "description": "允许骑乘；角上菌光能够暂时压低附近孢雾浓度。", "ranks": [] },
-    "activeSkills": ["leaf-cutter", "night-orb", "mire-lantern"], "passiveSkills": [],
-    "drops": [{ "item": "净沼菌伞", "rate": 32 }, { "item": "幽光鹿苔", "rate": 39 }], "spawnLocations": ["星潮群岛·辉沼湿地（夜晚）"],
-    "breeding": { "power": 70, "parents": [["枝冠猿", "暮铃魅"]] }
+    "rarity": 3,
+    "size": "medium",
+    "elements": [
+      "grass",
+      "dark"
+    ],
+    "catchRate": 28,
+    "foodAmount": 5,
+    "stats": {
+      "hp": 107,
+      "attack": 96,
+      "defense": 84,
+      "workSpeed": 128,
+      "moveSpeed": 410,
+      "rideSprintSpeed": 590,
+      "price": 515
+    },
+    "growth": {
+      "hpPerLevel": 5.5,
+      "attackPerLevel": 4.5,
+      "defensePerLevel": 3.8,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "planting",
+        "level": 2
+      },
+      {
+        "type": "medicine",
+        "level": 2
+      },
+      {
+        "type": "gathering",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "净沼菌环",
+      "description": "允许骑乘；角上菌光能够暂时压低附近孢雾浓度。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "leaf-cutter",
+      "night-orb",
+      "mire-lantern"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "illuminate",
+      "vine-cut"
+    ],
+    "drops": [
+      {
+        "item": "净沼菌伞",
+        "rate": 32
+      },
+      {
+        "item": "幽光鹿苔",
+        "rate": 39
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·辉沼湿地（夜晚）"
+    ],
+    "breeding": {
+      "power": 70,
+      "parents": [
+        [
+          "枝冠猿",
+          "暮铃魅"
+        ]
+      ]
+    }
   },
   {
-    "id": 45, "name": { "zh": "涡甲龟", "en": "Eddyback Tortoise" },
+    "id": 45,
+    "name": {
+      "zh": "涡甲龟",
+      "en": "Eddyback Tortoise"
+    },
     "description": "甲壳沟槽会把潮水导成缓慢涡流，幼兽常躲在涡心里避开沼泽急流。",
-    "rarity": 3, "size": "large", "elements": ["water", "rock"], "catchRate": 26, "foodAmount": 7,
-    "stats": { "hp": 136, "attack": 86, "defense": 124, "workSpeed": 101, "moveSpeed": 245, "rideSprintSpeed": 390, "price": 560 },
-    "growth": { "hpPerLevel": 7.0, "attackPerLevel": 3.8, "defensePerLevel": 5.8, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "watering", "level": 3 }, { "type": "mining", "level": 2 }, { "type": "transport", "level": 1 }],
-    "partnerSkill": { "name": "缓涡驮航", "description": "允许水上骑乘，以背甲涡流保护同行者免受急潮冲击。", "ranks": [] },
-    "activeSkills": ["tide-mirror", "brine-needle", "star-shell"], "passiveSkills": [],
-    "drops": [{ "item": "导流甲片", "rate": 35 }, { "item": "缓涡水核", "rate": 24 }], "spawnLocations": ["星潮群岛·辉沼湿地"],
-    "breeding": { "power": 76, "parents": [["潮镜蟹", "钟岩犀"]] }
+    "rarity": 3,
+    "size": "large",
+    "elements": [
+      "water",
+      "rock"
+    ],
+    "catchRate": 26,
+    "foodAmount": 7,
+    "stats": {
+      "hp": 136,
+      "attack": 86,
+      "defense": 124,
+      "workSpeed": 101,
+      "moveSpeed": 245,
+      "rideSprintSpeed": 390,
+      "price": 560
+    },
+    "growth": {
+      "hpPerLevel": 7,
+      "attackPerLevel": 3.8,
+      "defensePerLevel": 5.8,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "watering",
+        "level": 3
+      },
+      {
+        "type": "mining",
+        "level": 2
+      },
+      {
+        "type": "transport",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "缓涡驮航",
+      "description": "允许水上骑乘，以背甲涡流保护同行者免受急潮冲击。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "tide-mirror",
+      "brine-needle",
+      "star-shell"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "wading",
+      "rock-break"
+    ],
+    "drops": [
+      {
+        "item": "导流甲片",
+        "rate": 35
+      },
+      {
+        "item": "缓涡水核",
+        "rate": 24
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·辉沼湿地"
+    ],
+    "breeding": {
+      "power": 76,
+      "parents": [
+        [
+          "潮镜蟹",
+          "钟岩犀"
+        ]
+      ]
+    }
   },
   {
-    "id": 46, "name": { "zh": "锈钟鸦", "en": "Rustbell Crow" },
+    "id": 46,
+    "name": {
+      "zh": "锈钟鸦",
+      "en": "Rustbell Crow"
+    },
     "description": "会收集遗迹里的铜环挂在颈羽间，飞越空室时用不同回声判断墙体是否牢固。",
-    "rarity": 2, "size": "small", "elements": ["wind", "dark"], "catchRate": 36, "foodAmount": 3,
-    "stats": { "hp": 80, "attack": 97, "defense": 67, "workSpeed": 116, "moveSpeed": 525, "rideSprintSpeed": 0, "price": 390 },
-    "growth": { "hpPerLevel": 4.0, "attackPerLevel": 4.6, "defensePerLevel": 2.8, "experienceCurve": "medium" },
-    "workSuitability": [{ "type": "transport", "level": 2 }, { "type": "sorting", "level": 2 }, { "type": "gathering", "level": 1 }],
-    "partnerSkill": { "name": "空室钟探", "description": "敲响颈羽铜环，标出沉星遗迹中可能存在暗室的墙面。", "ranks": [] },
-    "activeSkills": ["night-orb", "gale-shear", "lumen-plume"], "passiveSkills": [],
-    "drops": [{ "item": "锈鸣铜环", "rate": 42 }, { "item": "吸音黑羽", "rate": 29 }], "spawnLocations": ["星潮群岛·沉星遗迹"],
-    "breeding": { "power": 60, "parents": [["暮铃魅", "云帆獭"]] }
+    "rarity": 2,
+    "size": "small",
+    "elements": [
+      "wind",
+      "dark"
+    ],
+    "catchRate": 36,
+    "foodAmount": 3,
+    "stats": {
+      "hp": 80,
+      "attack": 97,
+      "defense": 67,
+      "workSpeed": 116,
+      "moveSpeed": 525,
+      "rideSprintSpeed": 0,
+      "price": 390
+    },
+    "growth": {
+      "hpPerLevel": 4,
+      "attackPerLevel": 4.6,
+      "defensePerLevel": 2.8,
+      "experienceCurve": "medium"
+    },
+    "workSuitability": [
+      {
+        "type": "transport",
+        "level": 2
+      },
+      {
+        "type": "sorting",
+        "level": 2
+      },
+      {
+        "type": "gathering",
+        "level": 1
+      }
+    ],
+    "partnerSkill": {
+      "name": "空室钟探",
+      "description": "敲响颈羽铜环，标出沉星遗迹中可能存在暗室的墙面。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "night-orb",
+      "gale-shear",
+      "lumen-plume"
+    ],
+    "passiveSkills": [],
+    "drops": [
+      {
+        "item": "锈鸣铜环",
+        "rate": 42
+      },
+      {
+        "item": "吸音黑羽",
+        "rate": 29
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·沉星遗迹"
+    ],
+    "breeding": {
+      "power": 60,
+      "parents": [
+        [
+          "暮铃魅",
+          "云帆獭"
+        ]
+      ]
+    }
   },
   {
-    "id": 47, "name": { "zh": "璨尾鳐", "en": "Gleamtail Ray" },
+    "id": 47,
+    "name": {
+      "zh": "璨尾鳐",
+      "en": "Gleamtail Ray"
+    },
     "description": "宽尾会在浅水中扫出细碎电光，芦灯港的工匠借它留下的纹路检查导线。",
-    "rarity": 3, "size": "medium", "elements": ["water", "electric"], "catchRate": 27, "foodAmount": 5,
-    "stats": { "hp": 101, "attack": 105, "defense": 78, "workSpeed": 132, "moveSpeed": 455, "rideSprintSpeed": 0, "price": 540 },
-    "growth": { "hpPerLevel": 5.1, "attackPerLevel": 5.0, "defensePerLevel": 3.4, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "electricity", "level": 3 }, { "type": "watering", "level": 2 }, { "type": "generating", "level": 2 }],
-    "partnerSkill": { "name": "尾辉导流", "description": "把水流与余电导向设施，提升潮湿环境中的发电稳定性。", "ranks": [] },
-    "activeSkills": ["water-jet", "spark-arc", "tide-voltage"], "passiveSkills": [],
-    "drops": [{ "item": "璨电尾膜", "rate": 31 }, { "item": "潮导晶丝", "rate": 36 }], "spawnLocations": ["星潮群岛·沉星遗迹（白昼）"],
-    "breeding": { "power": 73, "parents": [["闪针团", "潮镜蟹"]] }
+    "rarity": 3,
+    "size": "medium",
+    "elements": [
+      "water",
+      "electric"
+    ],
+    "catchRate": 27,
+    "foodAmount": 5,
+    "stats": {
+      "hp": 101,
+      "attack": 105,
+      "defense": 78,
+      "workSpeed": 132,
+      "moveSpeed": 455,
+      "rideSprintSpeed": 0,
+      "price": 540
+    },
+    "growth": {
+      "hpPerLevel": 5.1,
+      "attackPerLevel": 5,
+      "defensePerLevel": 3.4,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "electricity",
+        "level": 3
+      },
+      {
+        "type": "watering",
+        "level": 2
+      },
+      {
+        "type": "generating",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "尾辉导流",
+      "description": "把水流与余电导向设施，提升潮湿环境中的发电稳定性。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "water-jet",
+      "spark-arc",
+      "tide-voltage"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "glide",
+      "wading"
+    ],
+    "drops": [
+      {
+        "item": "璨电尾膜",
+        "rate": 31
+      },
+      {
+        "item": "潮导晶丝",
+        "rate": 36
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·沉星遗迹（白昼）"
+    ],
+    "breeding": {
+      "power": 73,
+      "parents": [
+        [
+          "闪针团",
+          "潮镜蟹"
+        ]
+      ]
+    }
   },
   {
-    "id": 48, "name": { "zh": "墨潮狐", "en": "Inktide Fox" },
+    "id": 48,
+    "name": {
+      "zh": "墨潮狐",
+      "en": "Inktide Fox"
+    },
     "description": "脚掌能踏出数息不散的墨色水纹，会故意留下假足迹把捕食者引向回流区。",
-    "rarity": 3, "size": "medium", "elements": ["dark", "water"], "catchRate": 25, "foodAmount": 4,
-    "stats": { "hp": 92, "attack": 109, "defense": 74, "workSpeed": 119, "moveSpeed": 535, "rideSprintSpeed": 0, "price": 555 },
-    "growth": { "hpPerLevel": 4.7, "attackPerLevel": 5.2, "defensePerLevel": 3.2, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "gathering", "level": 2 }, { "type": "medicine", "level": 1 }, { "type": "transport", "level": 2 }],
-    "partnerSkill": { "name": "回流疑踪", "description": "制造墨潮假足迹，降低探索队被普通幻兽察觉的机会。", "ranks": [] },
-    "activeSkills": ["night-orb", "brine-needle", "mire-lantern"], "passiveSkills": [],
-    "drops": [{ "item": "回流墨囊", "rate": 33 }, { "item": "拒水狐毛", "rate": 41 }], "spawnLocations": ["星潮群岛·沉星遗迹（夜晚）"],
-    "breeding": { "power": 72, "parents": [["火尾狸", "雾绡蛾"]] }
+    "rarity": 3,
+    "size": "medium",
+    "elements": [
+      "dark",
+      "water"
+    ],
+    "catchRate": 25,
+    "foodAmount": 4,
+    "stats": {
+      "hp": 92,
+      "attack": 109,
+      "defense": 74,
+      "workSpeed": 119,
+      "moveSpeed": 535,
+      "rideSprintSpeed": 0,
+      "price": 555
+    },
+    "growth": {
+      "hpPerLevel": 4.7,
+      "attackPerLevel": 5.2,
+      "defensePerLevel": 3.2,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "gathering",
+        "level": 2
+      },
+      {
+        "type": "medicine",
+        "level": 1
+      },
+      {
+        "type": "transport",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "回流疑踪",
+      "description": "制造墨潮假足迹，降低探索队被普通幻兽察觉的机会。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "night-orb",
+      "brine-needle",
+      "mire-lantern"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "wading"
+    ],
+    "drops": [
+      {
+        "item": "回流墨囊",
+        "rate": 33
+      },
+      {
+        "item": "拒水狐毛",
+        "rate": 41
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·沉星遗迹（夜晚）"
+    ],
+    "breeding": {
+      "power": 72,
+      "parents": [
+        [
+          "火尾狸",
+          "雾绡蛾"
+        ]
+      ]
+    }
   },
   {
-    "id": 49, "name": { "zh": "苇冠龙", "en": "Reedcrown Drake" },
+    "id": 49,
+    "name": {
+      "zh": "苇冠龙",
+      "en": "Reedcrown Drake"
+    },
     "description": "冠部苇叶会随星潮方向一齐转动，迁徙时以低鸣召集散落在沼泽里的幼兽。",
-    "rarity": 4, "size": "large", "elements": ["grass", "dragon"], "catchRate": 17, "foodAmount": 8,
-    "stats": { "hp": 128, "attack": 118, "defense": 96, "workSpeed": 127, "moveSpeed": 470, "rideSprintSpeed": 690, "price": 820 },
-    "growth": { "hpPerLevel": 6.6, "attackPerLevel": 5.6, "defensePerLevel": 4.4, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "planting", "level": 3 }, { "type": "lumbering", "level": 2 }, { "type": "transport", "level": 2 }],
-    "partnerSkill": { "name": "星潮苇冠", "description": "允许骑乘；苇冠会指向潮位稳定的高地并削弱孢雾影响。", "ranks": [] },
-    "activeSkills": ["reed-lance", "dragon-comet", "abyssal-comet"], "passiveSkills": [],
-    "drops": [{ "item": "星向苇冠", "rate": 24 }, { "item": "潮纹龙鳞", "rate": 20 }], "spawnLocations": ["星潮群岛·辉沼湿地（稀有）"],
-    "breeding": { "power": 89, "parents": [["枝冠猿", "烬翼龙"]] }
+    "rarity": 4,
+    "size": "large",
+    "elements": [
+      "grass",
+      "dragon"
+    ],
+    "catchRate": 17,
+    "foodAmount": 8,
+    "stats": {
+      "hp": 128,
+      "attack": 118,
+      "defense": 96,
+      "workSpeed": 127,
+      "moveSpeed": 470,
+      "rideSprintSpeed": 690,
+      "price": 820
+    },
+    "growth": {
+      "hpPerLevel": 6.6,
+      "attackPerLevel": 5.6,
+      "defensePerLevel": 4.4,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "planting",
+        "level": 3
+      },
+      {
+        "type": "lumbering",
+        "level": 2
+      },
+      {
+        "type": "transport",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "星潮苇冠",
+      "description": "允许骑乘；苇冠会指向潮位稳定的高地并削弱孢雾影响。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "reed-lance",
+      "dragon-comet",
+      "abyssal-comet"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "vine-cut"
+    ],
+    "drops": [
+      {
+        "item": "星向苇冠",
+        "rate": 24
+      },
+      {
+        "item": "潮纹龙鳞",
+        "rate": 20
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·辉沼湿地（稀有）"
+    ],
+    "breeding": {
+      "power": 89,
+      "parents": [
+        [
+          "枝冠猿",
+          "烬翼龙"
+        ]
+      ]
+    }
   },
   {
-    "id": 50, "name": { "zh": "沉星鲲", "en": "Drownstar Leviathan" },
+    "id": 50,
+    "name": {
+      "zh": "沉星鲲",
+      "en": "Drownstar Leviathan"
+    },
     "description": "巨大的翼鳍托着冷光矿尘缓缓游过遗迹上空，远看如同一片倒映在水中的星夜。",
-    "rarity": 4, "size": "large", "elements": ["water", "dragon"], "catchRate": 14, "foodAmount": 9,
-    "stats": { "hp": 142, "attack": 121, "defense": 103, "workSpeed": 110, "moveSpeed": 440, "rideSprintSpeed": 720, "price": 920 },
-    "growth": { "hpPerLevel": 7.3, "attackPerLevel": 5.8, "defensePerLevel": 4.8, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "watering", "level": 4 }, { "type": "transport", "level": 3 }, { "type": "cooling", "level": 2 }],
-    "partnerSkill": { "name": "沉星浮航", "description": "允许水陆浮航；宽阔翼鳍能越过浅水与低矮遗迹断层。", "ranks": [] },
-    "activeSkills": ["tide-mirror", "brine-needle", "abyssal-comet"], "passiveSkills": [],
-    "drops": [{ "item": "沉星翼晶", "rate": 18 }, { "item": "深潮鳞膜", "rate": 27 }], "spawnLocations": ["星潮群岛·沉星遗迹深处（夜晚）"],
-    "breeding": { "power": 94, "parents": [["烬翼龙", "潮镜蟹"]] }
+    "rarity": 4,
+    "size": "large",
+    "elements": [
+      "water",
+      "dragon"
+    ],
+    "catchRate": 14,
+    "foodAmount": 9,
+    "stats": {
+      "hp": 142,
+      "attack": 121,
+      "defense": 103,
+      "workSpeed": 110,
+      "moveSpeed": 440,
+      "rideSprintSpeed": 720,
+      "price": 920
+    },
+    "growth": {
+      "hpPerLevel": 7.3,
+      "attackPerLevel": 5.8,
+      "defensePerLevel": 4.8,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "watering",
+        "level": 4
+      },
+      {
+        "type": "transport",
+        "level": 3
+      },
+      {
+        "type": "cooling",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "沉星浮航",
+      "description": "允许水陆浮航；宽阔翼鳍能越过浅水与低矮遗迹断层。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "tide-mirror",
+      "brine-needle",
+      "abyssal-comet"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "wading",
+      "glide"
+    ],
+    "drops": [
+      {
+        "item": "沉星翼晶",
+        "rate": 18
+      },
+      {
+        "item": "深潮鳞膜",
+        "rate": 27
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·沉星遗迹深处（夜晚）"
+    ],
+    "breeding": {
+      "power": 94,
+      "parents": [
+        [
+          "烬翼龙",
+          "潮镜蟹"
+        ]
+      ]
+    }
   },
   {
-    "id": 51, "name": { "zh": "晦曜巨像", "en": "Duskstone Colossus" },
+    "id": 51,
+    "name": {
+      "zh": "晦曜巨像",
+      "en": "Duskstone Colossus"
+    },
     "description": "由沉星观测者留下的岩壳自行聚合而成，胸口晦光仍按早已失传的星历明灭。",
-    "rarity": 5, "size": "large", "elements": ["rock", "dark"], "catchRate": 9, "foodAmount": 10,
-    "stats": { "hp": 154, "attack": 126, "defense": 132, "workSpeed": 96, "moveSpeed": 265, "rideSprintSpeed": 0, "price": 1250 },
-    "growth": { "hpPerLevel": 7.8, "attackPerLevel": 6.0, "defensePerLevel": 6.2, "experienceCurve": "slow" },
-    "workSuitability": [{ "type": "mining", "level": 4 }, { "type": "handiwork", "level": 3 }, { "type": "generating", "level": 2 }],
-    "partnerSkill": { "name": "晦曜星历", "description": "解析胸口明灭的古老星历，提高沉星材料加工时的成功率。", "ranks": [] },
-    "activeSkills": ["crystal-bulwark", "star-shell", "mire-lantern"], "passiveSkills": [],
-    "drops": [{ "item": "晦曜星核", "rate": 12 }, { "item": "古历岩板", "rate": 23 }], "spawnLocations": ["星潮群岛·沉星遗迹核心"],
-    "breeding": { "power": 100, "parents": [["钟岩犀", "沉星鲲"]] }
+    "rarity": 5,
+    "size": "large",
+    "elements": [
+      "rock",
+      "dark"
+    ],
+    "catchRate": 9,
+    "foodAmount": 10,
+    "stats": {
+      "hp": 154,
+      "attack": 126,
+      "defense": 132,
+      "workSpeed": 96,
+      "moveSpeed": 265,
+      "rideSprintSpeed": 0,
+      "price": 1250
+    },
+    "growth": {
+      "hpPerLevel": 7.8,
+      "attackPerLevel": 6,
+      "defensePerLevel": 6.2,
+      "experienceCurve": "slow"
+    },
+    "workSuitability": [
+      {
+        "type": "mining",
+        "level": 4
+      },
+      {
+        "type": "handiwork",
+        "level": 3
+      },
+      {
+        "type": "generating",
+        "level": 2
+      }
+    ],
+    "partnerSkill": {
+      "name": "晦曜星历",
+      "description": "解析胸口明灭的古老星历，提高沉星材料加工时的成功率。",
+      "ranks": []
+    },
+    "activeSkills": [
+      "crystal-bulwark",
+      "star-shell",
+      "mire-lantern"
+    ],
+    "passiveSkills": [],
+    "exploreAbilities": [
+      "rock-break"
+    ],
+    "drops": [
+      {
+        "item": "晦曜星核",
+        "rate": 12
+      },
+      {
+        "item": "古历岩板",
+        "rate": 23
+      }
+    ],
+    "spawnLocations": [
+      "星潮群岛·沉星遗迹核心"
+    ],
+    "breeding": {
+      "power": 100,
+      "parents": [
+        [
+          "钟岩犀",
+          "沉星鲲"
+        ]
+      ]
+    }
   }
 ]

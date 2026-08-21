@@ -1,8 +1,8 @@
-import type { Pal } from "../types/pal";
-import type { EquipmentItem, EquipmentSlot } from "../types/skillTree";
+import type { Pal } from "../types/pal.ts";
+import type { EquipmentItem, EquipmentSlot } from "../types/skillTree.ts";
 import { isWorldRegion, STARTING_REGION, type WorldRegion } from "../world/regions.ts";
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
 
@@ -33,9 +33,27 @@ export interface GameProgress {
   claimedWorldRewardIds: string[];
   activatedWaypointIds: string[];
   revealedSectorIds: string[];
+  /** 支线任务进度。 */
+  sideQuests: SideQuestState[];
+  /** 已对话过的 NPC 标识，用于持久化对话与支线激活。 */
+  talkedNpcIds: string[];
+  /** 已首次击败的精英/训练者标识。 */
+  defeatedEliteIds: string[];
+  /** 已开启的探索机关门标识。 */
+  openedGateIds: string[];
+  /** 商店限量商品的已售罄库存记录（shopStockId -> 剩余数量）。 */
+  shopStock: Record<string, number>;
+  /** 精英/训练者最近一次被击败的时间戳。 */
+  eliteDefeatTimes: Record<string, number>;
 }
 
 export interface QuestState {
+  id: string;
+  progress: Record<string, number>;
+  rewardClaimed: boolean;
+}
+
+export interface SideQuestState {
   id: string;
   progress: Record<string, number>;
   rewardClaimed: boolean;
@@ -57,9 +75,7 @@ function createInitialQuestStates(battlesWon = 0, captures = 0): QuestState[] {
         : {};
     return { id, progress, rewardClaimed: false };
   });
-}
-
-export type BaseJob = "planting" | "mining" | "lumbering" | "generating";
+}export type BaseJob = "planting" | "mining" | "lumbering" | "generating";
 export type FacilityId = "warehouse" | "farm" | "workshop";
 
 export interface BaseAssignment {
@@ -84,6 +100,10 @@ export interface PlayerInventory {
   captureOrbs: number;
   healingTonics: number;
   equipment: EquipmentItem[];
+  /** 通用货币“星币”。 */
+  coins: number;
+  /** 击败幻兽获得的掉落物库存（掉落物名称 -> 数量）。 */
+  materials: Record<string, number>;
 }
 
 export type EggQuality = "common" | "fine" | "radiant";
@@ -136,8 +156,14 @@ export function createEmptySave(now = Date.now()): GameSave {
       claimedWorldRewardIds: [],
       activatedWaypointIds: [],
       revealedSectorIds: [],
+      sideQuests: [],
+      talkedNpcIds: [],
+      defeatedEliteIds: [],
+      openedGateIds: [],
+      shopStock: {},
+      eliteDefeatTimes: {},
     },
-    inventory: { captureOrbs: 3, healingTonics: 0, equipment: [] },
+    inventory: { captureOrbs: 3, healingTonics: 0, equipment: [], coins: 30, materials: {} },
     base: {
       resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0 },
       assignments: [],
@@ -308,6 +334,31 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
         );
       })
     : [];
+  const rawSideQuests: unknown[] = Array.isArray(progress.sideQuests) ? progress.sideQuests : [];
+  const sideQuests = rawSideQuests
+    .map((value) => {
+      if (!value || typeof value !== "object") return undefined;
+      const item = value as Partial<SideQuestState>;
+      if (typeof item.id !== "string" || item.id.length === 0) return undefined;
+      const rawProgress = item.progress && typeof item.progress === "object" ? item.progress : {};
+      return {
+        id: item.id,
+        progress: Object.fromEntries(
+          Object.entries(rawProgress).map(([key, amount]) => [key, finiteCount(amount)])
+        ),
+        rewardClaimed: item.rewardClaimed === true,
+      };
+    })
+    .filter((item): item is SideQuestState => Boolean(item));
+  const normalizeIdList = (value: unknown): string[] => normalizeStringIds(value);
+  const normalizeStock = (value: unknown): Record<string, number> => {
+    if (!value || typeof value !== "object") return {};
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([key]) => key.length > 0)
+        .map(([key, amount]) => [key, finiteCount(amount)])
+    );
+  };
 
   return {
     version: SAVE_VERSION,
@@ -343,11 +394,19 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
       claimedWorldRewardIds: normalizeStringIds(progress.claimedWorldRewardIds),
       activatedWaypointIds: normalizeStringIds(progress.activatedWaypointIds),
       revealedSectorIds: normalizeStringIds(progress.revealedSectorIds),
+      sideQuests,
+      talkedNpcIds: normalizeIdList(progress.talkedNpcIds),
+      defeatedEliteIds: normalizeIdList(progress.defeatedEliteIds),
+      openedGateIds: normalizeIdList(progress.openedGateIds),
+      shopStock: normalizeStock(progress.shopStock),
+      eliteDefeatTimes: normalizeStock(progress.eliteDefeatTimes),
     },
     inventory: {
       captureOrbs: finiteCount(rawInventory.captureOrbs, 3),
       healingTonics: finiteCount(rawInventory.healingTonics),
       equipment: [...new Map(equipmentItems.map((item) => [item.uid, item])).values()],
+      coins: finiteCount(rawInventory.coins, 30),
+      materials: normalizeStock(rawInventory.materials),
     },
     base: {
       resources: {
@@ -440,5 +499,26 @@ export function updatePalCurrentHp(save: GameSave, uid: string, hp: number): Gam
     ownedPals: save.ownedPals.map((pal) =>
       pal.uid === uid ? { ...pal, currentHp: Math.max(0, Math.floor(hp)) } : pal
     ),
+  };
+}
+
+export function addCoins(save: GameSave, amount: number): GameSave {
+  const coins = Math.max(0, Math.floor(amount));
+  if (coins === 0) return save;
+  return { ...save, inventory: { ...save.inventory, coins: save.inventory.coins + coins } };
+}
+
+export function addMaterial(save: GameSave, material: string, amount = 1): GameSave {
+  const count = Math.max(0, Math.floor(amount));
+  if (count === 0 || !material) return save;
+  return {
+    ...save,
+    inventory: {
+      ...save.inventory,
+      materials: {
+        ...save.inventory.materials,
+        [material]: (save.inventory.materials[material] ?? 0) + count,
+      },
+    },
   };
 }

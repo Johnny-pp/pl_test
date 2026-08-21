@@ -1,0 +1,27 @@
+[
+  {
+    "id": "vine-cut",
+    "name": { "zh": "砍藤", "en": "Vine Cut" },
+    "description": "斩断纠缠的藤蔓，打开被植物封住的通道。"
+  },
+  {
+    "id": "rock-break",
+    "name": { "zh": "碎岩", "en": "Rock Break" },
+    "description": "击碎松动的岩壁，开辟被巨石堵住的洞口。"
+  },
+  {
+    "id": "wading",
+    "name": { "zh": "涉水", "en": "Wading" },
+    "description": "蹚过浅水与潮滩，抵达退潮后才露出的暗滩。"
+  },
+  {
+    "id": "glide",
+    "name": { "zh": "滑翔", "en": "Glide" },
+    "description": "乘着风从高处滑翔而下，降落到常人难以到达的岩台。"
+  },
+  {
+    "id": "illuminate",
+    "name": { "zh": "照明", "en": "Illuminate" },
+    "description": "发出柔和的光芒，照亮黑暗洞窟中隐藏的角落。"
+  }
+]

@@ -87,6 +87,8 @@ export interface Pal {
   /** References data/active-skills.json by id. */
   activeSkills?: string[];
   passiveSkills?: string[];
+  /** References data/explore-abilities.json by id. */
+  exploreAbilities?: string[];
   drops?: Drop[];
   spawnLocations?: string[];
   breeding?: Breeding;
