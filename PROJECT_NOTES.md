@@ -140,6 +140,16 @@
 - 场景：新增按需加载的 `EndgameScene`（试炼塔/首领重战/周期委托/成就称号/新周目五页签），任务页提供“终局试炼”入口；BattleScene 支持 `endgame` 上下文结算评分、塔进度、重战首胜与永久倒下。
 - 终局基线：`BALANCE_BASELINE.endgame` 记录至少两种构筑（强攻/坚守）在推荐等级 40 下通过试炼塔前 3 层的验收目标；存档升级至 v11 并补齐全部终局字段与损坏回退。
 
+## 阶段二十：表现完善与正式发布准备
+- 设置：`src/settings/settings.ts` 提供主/音乐/音效音量、动画与文字速度、减少动态效果、高对比度、键位与存档槽，独立持久化到 `pl_test_settings`；`SettingsScene` 按需加载，图鉴「设置」入口。
+- 音频：`src/audio/soundEffects.ts` 用 Web Audio 实时合成原创音效与环境音乐（首次交互后解锁），按钮点击/悬停、战斗命中/胜负、捕获、升级、采集、开箱、治疗等关键操作已接入音效反馈。
+- 引导：`src/onboarding/onboarding.ts` 定义 7 个按进度激活的步骤，`ui/onboardingBanner.ts` 在首屏场景顶部渲染横幅，支持前往/确认/跳过；动画与文字速度分别作用于按钮动画与挂机战斗推进。
+- 存档：3 个槽位（槽位 0 复用旧键 `pl_test_game_save` 保持兼容），保存前自动备份，支持命名恢复点；队伍页「存档槽」覆盖层完成切换/复制/删除/恢复。
+- 键位与辅助：探索移动/交互键位可重绑定；高对比度模式在 `theme.ts` 中保留深色高对比配色以支持色盲辅助。
+- 数据工具：`scripts/data-tools.mjs`（`npm run data:report`）输出内容统计与终局引用一致性报告，辅助扩充内容时维护跨表引用。
+- 合规与发布：`LICENSE`(MIT)、`PRIVACY.md`、`THIRD_PARTY_NOTICES.md`；基础 PWA（`manifest.webmanifest`、SVG 图标、网络优先离线缓存 `sw.js`，e2e 模式跳过注册）。
+- 回归：浏览器流程新增阶段二十用例（设置持久化、高对比、存档槽切换、恢复点、引导横幅）；Chromium 自动化需另行配置 chromedriver，当前 Firefox 覆盖桌面与移动端。
+
 ## 被动技能全局表
 - 文件：`data/passive-skills.json`，对应 Schema：`schema/passive-skill.schema.json`（draft 2020-12）。
 - 字段：`id`(slug)、`name{zh,en}`、`category`(attack/defense/work/move/element/resource/other)、`description`(效果描述)、`tier`(common/rare/legendary)。
