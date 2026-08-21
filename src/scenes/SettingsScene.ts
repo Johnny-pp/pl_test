@@ -208,18 +208,16 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   private resetKeyBindings() {
+    const defaults: Record<string, string> = {
+      up: "W",
+      down: "S",
+      left: "A",
+      right: "D",
+      interact: "E",
+      back: "ESC",
+    };
     const keyBindings = Object.fromEntries(
-      Object.entries(this.settings.keyBindings).map(([action]) => {
-        const defaults: Record<string, string> = {
-          up: "ArrowUp",
-          down: "ArrowDown",
-          left: "ArrowLeft",
-          right: "ArrowRight",
-          interact: "KeyE",
-          back: "Escape",
-        };
-        return [action, defaults[action] ?? ""];
-      })
+      Object.entries(this.settings.keyBindings).map(([action]) => [action, defaults[action] ?? ""])
     );
     this.persist({ ...this.settings, keyBindings });
     soundEffects.play("click");

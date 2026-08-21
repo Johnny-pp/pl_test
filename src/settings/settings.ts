@@ -32,12 +32,12 @@ export const ACTION_LABELS: Record<string, string> = {
 };
 
 export const DEFAULT_KEY_BINDINGS: Record<string, string> = {
-  up: "ArrowUp",
-  down: "ArrowDown",
-  left: "ArrowLeft",
-  right: "ArrowRight",
-  interact: "KeyE",
-  back: "Escape",
+  up: "W",
+  down: "S",
+  left: "A",
+  right: "D",
+  interact: "E",
+  back: "ESC",
 };
 
 export function createDefaultSettings(): GameSettings {

@@ -54,6 +54,7 @@ import { refreshAchievements } from "../endgame/achievements";
 import { applyPermadeath, ngpCaptureOrbKind } from "../endgame/newGamePlus";
 import { soundEffects } from "../audio/soundEffects";
 import { triggerOnboardingStep } from "../onboarding/onboarding";
+import { loadSettings } from "../settings/settings";
 
 interface BattleSceneData {
   playerId: number;
@@ -538,7 +539,9 @@ export class BattleScene extends Phaser.Scene {
   private queueAutoAction() {
     if (!this.autoExploreActive || !this.state || this.autoActionTimer) return;
     const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    this.autoActionTimer = this.time.delayedCall(reducedMotion ? 240 : 620, () => {
+    const textSpeed = loadSettings(localStorage).textSpeed;
+    const delay = reducedMotion ? 240 : textSpeed === "fast" ? 320 : 620;
+    this.autoActionTimer = this.time.delayedCall(delay, () => {
       this.autoActionTimer = undefined;
       this.runAutoAction();
     });

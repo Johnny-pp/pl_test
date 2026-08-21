@@ -44,6 +44,7 @@ import {
 import { ELITES, getElitesForRegion, isEliteDefeated, canRebattleElite } from "../explore/elites";
 import { ngpEncounterLevel } from "../endgame/newGamePlus";
 import { soundEffects } from "../audio/soundEffects";
+import { getActionKey, loadSettings } from "../settings/settings";
 import { SETTLEMENT_NPCS, HEAL_COST } from "../world/settlementContent";
 import {
   STARTIDE_DISCOVERIES,
@@ -276,13 +277,14 @@ export class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.layer);
 
     this.cursors = this.input.keyboard!.createCursorKeys();
+    const bindings = loadSettings(localStorage);
     this.wasd = this.input.keyboard!.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
+      up: getActionKey(bindings, "up"),
+      down: getActionKey(bindings, "down"),
+      left: getActionKey(bindings, "left"),
+      right: getActionKey(bindings, "right"),
     }) as typeof this.wasd;
-    this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    this.interactKey = this.input.keyboard!.addKey(getActionKey(bindings, "interact"));
 
     this.cameras.main.setBounds(0, 0, WORLD_COLS * TILE_SIZE, WORLD_ROWS * TILE_SIZE);
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);

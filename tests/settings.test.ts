@@ -24,8 +24,8 @@ test("默认设置使用正常音量、动画与默认键位", () => {
   assert.equal(settings.masterVolume, 0.8);
   assert.equal(settings.animationSpeed, "normal");
   assert.equal(settings.saveSlot, 0);
-  assert.equal(getActionKey(settings, "interact"), "KeyE");
-  assert.equal(getActionKey(settings, "up"), "ArrowUp");
+  assert.equal(getActionKey(settings, "interact"), "E");
+  assert.equal(getActionKey(settings, "up"), "W");
 });
 
 test("设置可写入读取往返", () => {
@@ -52,11 +52,11 @@ test("损坏设置回退到默认值", () => {
 
 test("键位可重绑定并回退到默认", () => {
   let settings = createDefaultSettings();
-  settings = setActionKey(settings, "interact", "KeyF");
-  assert.equal(getActionKey(settings, "interact"), "KeyF");
-  assert.equal(getActionKey(settings, "up"), "ArrowUp");
+  settings = setActionKey(settings, "interact", "F");
+  assert.equal(getActionKey(settings, "interact"), "F");
+  assert.equal(getActionKey(settings, "up"), "W");
   settings = setActionKey(settings, "interact", "");
-  assert.equal(getActionKey(settings, "interact"), "KeyE");
+  assert.equal(getActionKey(settings, "interact"), "E");
 });
 
 test("存档槽位限制在合法范围内", () => {

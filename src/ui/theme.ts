@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { loadSettings } from "../settings/settings";
 
 export const UI_THEME = {
   colors: {
@@ -78,24 +79,31 @@ const THEMED_OBJECT = Symbol("themed-object");
 type ThemedGameObject = Phaser.GameObjects.GameObject & { [THEMED_OBJECT]?: boolean };
 
 export function installSceneTheme(scene: Phaser.Scene): void {
-  scene.cameras.main.setBackgroundColor(UI_THEME.colors.skyBottom);
+  const highContrast = loadSettings(localStorage).highContrast;
+  scene.cameras.main.setBackgroundColor(highContrast ? 0x0b1d33 : UI_THEME.colors.skyBottom);
   const backdrop = scene.add.graphics().setDepth(-1000).setScrollFactor(0).setName("ui-theme-backdrop");
-  backdrop.fillGradientStyle(
-    UI_THEME.colors.skyTop,
-    UI_THEME.colors.skyTop,
-    UI_THEME.colors.skyBottom,
-    UI_THEME.colors.skyBottom,
-    1
-  );
-  backdrop.fillRect(0, 0, scene.scale.width, scene.scale.height);
-  backdrop.fillStyle(0xffffff, 0.28);
-  backdrop.fillCircle(70, 78, 68);
-  backdrop.fillCircle(126, 56, 42);
-  backdrop.fillCircle(scene.scale.width - 42, scene.scale.height - 35, 94);
-  backdrop.lineStyle(3, 0xffffff, 0.18);
-  backdrop.strokeCircle(scene.scale.width - 100, 92, 54);
+  if (highContrast) {
+    backdrop.fillStyle(0x0b1d33, 1);
+    backdrop.fillRect(0, 0, scene.scale.width, scene.scale.height);
+  } else {
+    backdrop.fillGradientStyle(
+      UI_THEME.colors.skyTop,
+      UI_THEME.colors.skyTop,
+      UI_THEME.colors.skyBottom,
+      UI_THEME.colors.skyBottom,
+      1
+    );
+    backdrop.fillRect(0, 0, scene.scale.width, scene.scale.height);
+    backdrop.fillStyle(0xffffff, 0.28);
+    backdrop.fillCircle(70, 78, 68);
+    backdrop.fillCircle(126, 56, 42);
+    backdrop.fillCircle(scene.scale.width - 42, scene.scale.height - 35, 94);
+    backdrop.lineStyle(3, 0xffffff, 0.18);
+    backdrop.strokeCircle(scene.scale.width - 100, 92, 54);
+  }
 
-  const apply = () => scene.children.list.forEach((child) => themeObject(child as ThemedGameObject));
+  const apply = () =>
+    scene.children.list.forEach((child) => themeObject(child as ThemedGameObject, highContrast));
   scene.events.on(Phaser.Scenes.Events.POST_UPDATE, apply);
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () =>
     scene.events.off(Phaser.Scenes.Events.POST_UPDATE, apply)
@@ -103,14 +111,27 @@ export function installSceneTheme(scene: Phaser.Scene): void {
   apply();
 }
 
-function themeObject(object: ThemedGameObject): void {
+function themeObject(object: ThemedGameObject, highContrast: boolean): void {
   if (object.name.startsWith("ui-theme-")) return;
   if (object instanceof Phaser.GameObjects.Container) {
-    object.list.forEach((child) => themeObject(child as ThemedGameObject));
+    object.list.forEach((child) => themeObject(child as ThemedGameObject, highContrast));
     return;
   }
   if (object[THEMED_OBJECT]) return;
   object[THEMED_OBJECT] = true;
+
+  if (highContrast) {
+    if (object instanceof Phaser.GameObjects.Text) {
+      object.setFontFamily(UI_THEME.fontFamily);
+      if (object.style.color === "#567184" || object.style.color === "#71838c") object.setColor("#c7d6e6");
+      return;
+    }
+    if (object instanceof Phaser.GameObjects.Rectangle || object instanceof Phaser.GameObjects.Arc) {
+      if (object.fillColor === 0x0f1830 || object.fillColor === 0x151b2e) object.setFillStyle(0x14263f, 1);
+      if (object.strokeColor !== 0) object.setStrokeStyle(object.lineWidth || 1, 0x4fc3f7, 1);
+    }
+    return;
+  }
 
   if (object instanceof Phaser.GameObjects.Text) {
     object.setFontFamily(UI_THEME.fontFamily);
