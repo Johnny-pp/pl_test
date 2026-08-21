@@ -5,6 +5,7 @@ import { claimSideQuestReward, getSideQuestViews, type SideQuestView } from "../
 import { startScene } from "./sceneLoader";
 import { createBackButton, createTextButton } from "../ui/button";
 import { addSceneTitle, installSceneTheme } from "../ui/theme";
+import { triggerOnboardingStep } from "../onboarding/onboarding";
 
 const STATUS_LABELS = {
   locked: "未激活",
@@ -229,6 +230,7 @@ export class QuestScene extends Phaser.Scene {
       return this.render();
     }
     this.save = next;
+    triggerOnboardingStep(localStorage, "quest");
     this.message = "任务奖励已领取，下一任务已自动激活";
     this.render();
   }

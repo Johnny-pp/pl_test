@@ -53,6 +53,7 @@ import { recordEndgameEvent } from "../endgame/dailyChallenges";
 import { refreshAchievements } from "../endgame/achievements";
 import { applyPermadeath, ngpCaptureOrbKind } from "../endgame/newGamePlus";
 import { soundEffects } from "../audio/soundEffects";
+import { triggerOnboardingStep } from "../onboarding/onboarding";
 
 interface BattleSceneData {
   playerId: number;
@@ -784,6 +785,7 @@ export class BattleScene extends Phaser.Scene {
     });
     if (result.success) {
       soundEffects.play("capture");
+      triggerOnboardingStep(localStorage, "capture");
       const rolledPassives = rollWildPassiveSkills(passiveSkills.map((skill) => skill.id));
       const captured = addCapturedPal(
         consumed.save,

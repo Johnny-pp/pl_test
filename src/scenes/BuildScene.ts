@@ -29,6 +29,7 @@ import { addSceneTitle, installSceneTheme } from "../ui/theme";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
 import { preloadUiAssets } from "../ui/assets";
 import { clampScroll } from "../ui/scroll";
+import { triggerOnboardingStep } from "../onboarding/onboarding";
 
 const NODE_COLORS = {
   attribute: 0x66bb6a,
@@ -58,6 +59,7 @@ export class BuildScene extends Phaser.Scene {
 
   create(data: BuildSceneData) {
     installSceneTheme(this);
+    triggerOnboardingStep(localStorage, "build");
     this.save = loadGame(localStorage);
     this.instance = this.save.ownedPals.find((pal) => pal.uid === data.uid);
     this.equipmentSlot = undefined;

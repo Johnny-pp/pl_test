@@ -19,6 +19,7 @@ import { startScene } from "./sceneLoader";
 import { recordQuestEvent } from "../quests/questSystem";
 import { clampScroll } from "../ui/scroll";
 import { createBackButton, createTextButton } from "../ui/button";
+import { triggerOnboardingStep } from "../onboarding/onboarding";
 import {
   FACILITY_DEFS,
   GRID_COLS,
@@ -93,6 +94,7 @@ export class BaseScene extends Phaser.Scene {
 
   create() {
     installSceneTheme(this);
+    triggerOnboardingStep(localStorage, "base");
     this.save = simulateProduction(loadGame(localStorage), speciesById, Date.now(), {
       activeSkills: activeSkillsById,
       passiveSkills: passiveSkillsById,

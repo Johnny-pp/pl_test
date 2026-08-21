@@ -6,6 +6,7 @@ import { passiveSkills, passiveSkillsById } from "../data/loadPassiveSkills";
 import { BREEDING_FOOD_COST, breed, hatchEgg, previewOffspring } from "../breeding/breedingSystem";
 import { loadGame, saveGame, type EggQuality, type GameSave, type PalInstance } from "../player/playerState";
 import { addPalPortrait, preloadPalPortraits } from "../ui/palPortraits";
+import { triggerOnboardingStep } from "../onboarding/onboarding";
 import { startScene } from "./sceneLoader";
 import { describePassiveBonuses } from "../passives/passiveEffects";
 import { activeSkillsById } from "../data/loadActiveSkills";
@@ -35,6 +36,7 @@ export class BreedingScene extends Phaser.Scene {
 
   create() {
     installSceneTheme(this);
+    triggerOnboardingStep(localStorage, "breeding");
     this.save = loadGame(localStorage);
     createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
     addSceneTitle(this, "共鸣孵化所");

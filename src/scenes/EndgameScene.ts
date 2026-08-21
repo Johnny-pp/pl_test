@@ -25,6 +25,7 @@ import {
 } from "../endgame/achievements";
 import { toggleNgpOption, type NgpOptionKey } from "../endgame/newGamePlus";
 import { describeRestrictions, validateChallengeTeam } from "../endgame/challengeRules";
+import { triggerOnboardingStep } from "../onboarding/onboarding";
 
 type EndgameTab = "tower" | "rematch" | "challenges" | "achievements" | "ngp";
 
@@ -68,6 +69,7 @@ export class EndgameScene extends Phaser.Scene {
     this.scrollY = 0;
     this.tab = "tower";
     this.save = loadGame(localStorage);
+    if (isEndgameUnlocked(this.save)) triggerOnboardingStep(localStorage, "endgame");
     createBackButton(this, "返回任务", () => void startScene(this, "QuestScene"));
     addSceneTitle(this, "终局试炼");
     for (const tab of TAB_LABELS) {

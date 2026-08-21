@@ -36,6 +36,7 @@ import {
 } from "../build/buildSystem";
 import { getTeamExploreAbilityIds } from "../explore/gates";
 import { soundEffects } from "../audio/soundEffects";
+import { triggerOnboardingStep } from "../onboarding/onboarding";
 import { EXPLORE_ABILITY_LABELS } from "../types/exploreAbility";
 import { clampScroll } from "../ui/scroll";
 import { createBackButton, createTextButton } from "../ui/button";
@@ -59,6 +60,7 @@ export class TeamScene extends Phaser.Scene {
   create() {
     installSceneTheme(this);
     this.save = loadGame(localStorage);
+    triggerOnboardingStep(localStorage, "team");
     createBackButton(this, "返回图鉴", () => void startScene(this, "DexScene"));
     addSceneTitle(this, "我的幻兽队伍");
 

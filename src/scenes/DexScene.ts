@@ -9,6 +9,7 @@ import { clampScroll, getMinScroll } from "../ui/scroll";
 import { preloadUiAssets, UI_ASSETS } from "../ui/assets";
 import { createTextButton } from "../ui/button";
 import { addSceneTitle, installSceneTheme } from "../ui/theme";
+import { renderOnboardingBanner } from "../ui/onboardingBanner";
 
 const CARD_W = 200;
 const CARD_H = 96;
@@ -103,6 +104,8 @@ export class DexScene extends Phaser.Scene {
     this.buildClearButton(width);
 
     this.applyStateToUI();
+
+    renderOnboardingBanner(this);
 
     this.countText = this.add
       .text(280, 108, "", {
