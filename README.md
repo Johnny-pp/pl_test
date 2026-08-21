@@ -27,6 +27,10 @@
 - 终局试炼：10 层试炼塔（逐层增强、层间元素/人数限制与阶段奖励）、主线首领强化重战、按日历种子生成的每日/每周委托与战斗评分最佳纪录
 - 成就与称号：图鉴/探索/配种/基地/战斗/挑战六类成就与可装备展示称号
 - 新周目模式：随机遭遇、限制捕获、永久倒下三项可选规则可组合开关
+- 游戏设置：主/音乐/音效音量、动画与文字速度、减少动态效果、高对比度色盲辅助与键位重置
+- 原创音效与轻量环境音乐：使用 Web Audio API 实时合成，覆盖点击、命中、捕获、升级、胜利与采集反馈
+- 新手引导：按实际进度逐步介绍捕获、队伍、基地、配种、构筑、任务与终局，可跳过
+- 多存档槽与恢复点：3 个独立槽位、自动备份、命名恢复点，旧版备份继续可迁移
 - 响应式画面、移动端触屏方向键、键盘焦点、场景状态播报和场景按需加载
 
 ## 本地开发
@@ -63,10 +67,11 @@ npm run lint
 npm run typecheck
 npm test
 npm run validate
+npm run data:report
 npm run build
 ```
 
-安装 Firefox 与 Geckodriver 后，还可运行真实浏览器关键流程验收：
+`npm run data:report` 输出内容统计与终局引用一致性报告，便于在扩充物种/技能后检查跨表引用。安装 Firefox 与 Geckodriver 后，还可运行真实浏览器关键流程验收：
 
 ```bash
 npm run test:browser
@@ -84,18 +89,23 @@ npx serve dist -l 4173
 
 ## 存档
 
-进度保存在浏览器 `localStorage`，当前存档版本为 v11，并会自动迁移旧版等级、经验、生命值、区域、任务、首领、世界探索进度、个体构筑（技能树节点、装备技能与装备槽）、货币/掉落物/支线/NPC/机关/精英/商店库存状态、基地格子布局、科技、订单与矿石/金属等新资源，以及终局试炼塔进度、挑战评分、周期委托、成就称号与新周目选项。进入“我的队伍”可导出 JSON 备份或导入旧备份；导入前会验证基本结构，无效文件不会覆盖当前进度。清除网站数据或更换浏览器前请先导出备份。
+进度保存在浏览器 `localStorage`，当前存档版本为 v11，并会自动迁移旧版等级、经验、生命值、区域、任务、首领、世界探索进度、个体构筑（技能树节点、装备技能与装备槽）、货币/掉落物/支线/NPC/机关/精英/商店库存状态、基地格子布局、科技、订单与矿石/金属等新资源，以及终局试炼塔进度、挑战评分、周期委托、成就称号与新周目选项。支持 3 个独立存档槽（队伍页「存档槽」切换/复制/删除），每次保存前自动保留一份备份，并可为关键时刻创建命名恢复点；「我的队伍」还提供 JSON 导出与导入备份，导入前会验证基本结构，无效文件不会覆盖当前进度。清除网站数据或更换浏览器前请先导出备份。
+
+## 隐私与授权
+
+本游戏为单机网页应用，进度只保存在本机浏览器，不请求任何外部 API，也不会收集或上传个人信息（详见 `PRIVACY.md`）。游戏代码采用 MIT 协议（`LICENSE`），第三方依赖与素材授权见 `THIRD_PARTY_NOTICES.md`（Phaser/Vite/ajv 为 MIT，Kenney UI 素材为 CC0）。生产构建附带基础 PWA：`manifest.webmanifest` 支持安装提示，`sw.js` 采用网络优先、离线缓存兜底策略缓存静态资源；存档始终保存在 `localStorage`，不承诺跨版本离线数据同步。
 
 ## 目录
 
 - `data/`、`schema/`：原创内容数据及 JSON Schema
-- `src/battle/`、`capture/`、`base/`、`breeding/`、`progression/`、`quests/`、`build/`、`shop/`、`explore/`、`endgame/`：独立于 Phaser 的核心规则（含基地布局/科技树/加工/订单与终局试炼）
+- `src/battle/`、`capture/`、`base/`、`breeding/`、`progression/`、`quests/`、`build/`、`shop/`、`explore/`、`endgame/`、`settings/`、`audio/`、`onboarding/`：独立于 Phaser 的核心规则（含基地布局/科技树/加工/订单、终局试炼、设置、音效与引导）
 - `src/world/`：地图生成、区域、遭遇与聚落 NPC 规则
 - `src/player/`：个体、队伍与存档迁移
 - `src/scenes/`：Phaser 游戏场景与懒加载导航
 - `src/ui/`、`src/dex/`：共享按钮、滚动、无障碍反馈和图鉴筛选分页规则
 - `tests/`：核心规则、长期循环与规模测试
-- `scripts/validate-pals.mjs`、`scripts/browser-smoke.mjs`：数据校验与真实浏览器流程验收
+- `scripts/validate-pals.mjs`、`scripts/data-tools.mjs`、`scripts/browser-smoke.mjs`：数据校验、内容统计与真实浏览器流程验收
+- `LICENSE`、`PRIVACY.md`、`THIRD_PARTY_NOTICES.md`：开源、隐私与第三方授权声明
 - `PLAN.md`：完整阶段计划与验收标准
 - `PROJECT_NOTES.md`：背景、数据字段和参考资料说明
 

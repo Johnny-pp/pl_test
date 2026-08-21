@@ -1,0 +1,18 @@
+{
+  "name": "幻兽远征",
+  "short_name": "幻兽远征",
+  "description": "原创网页幻兽养成游戏：探索、战斗、捕获、基地与配种",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#79cbd1",
+  "theme_color": "#178f91",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

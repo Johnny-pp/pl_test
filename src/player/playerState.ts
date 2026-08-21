@@ -12,7 +12,9 @@ export const AUTO_BACKUP_KEY = "pl_test_game_save_auto_backup";
 export const RESTORE_PREFIX = "pl_test_game_restore_";
 
 export function getSaveSlotStorageKey(slot: number): string {
-  return `${SAVE_SLOT_KEY_PREFIX}${Math.max(0, Math.min(SAVE_SLOT_COUNT - 1, slot))}`;
+  const safeSlot = Math.max(0, Math.min(SAVE_SLOT_COUNT - 1, Math.floor(slot)));
+  // 槽位 0 复用旧存档键，保证旧浏览器测试与既有 localStorage 无缝兼容。
+  return safeSlot === 0 ? LEGACY_SAVE_KEY : `${SAVE_SLOT_KEY_PREFIX}${safeSlot}`;
 }
 
 export interface PalInstance {

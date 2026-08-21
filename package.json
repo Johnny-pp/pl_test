@@ -4,6 +4,7 @@
   "description": "基于 Phaser 4 的原创网页幻兽养成游戏",
   "scripts": {
     "validate": "node scripts/validate-pals.mjs",
+    "data:report": "node scripts/data-tools.mjs",
     "dev": "vite",
     "build": "vite build",
     "test": "node --test --experimental-strip-types tests/*.test.ts",
