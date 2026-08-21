@@ -1,10 +1,19 @@
 import type { Pal } from "../types/pal.ts";
 import type { EquipmentItem, EquipmentSlot } from "../types/skillTree.ts";
 import { isWorldRegion, STARTING_REGION, type WorldRegion } from "../world/regions.ts";
+import { loadSettings, SAVE_SLOT_COUNT } from "../settings/settings.ts";
 
 export const SAVE_VERSION = 11;
 export const TEAM_LIMIT = 6;
 export const SAVE_STORAGE_KEY = "pl_test_game_save";
+export const LEGACY_SAVE_KEY = "pl_test_game_save";
+export const SAVE_SLOT_KEY_PREFIX = "pl_test_game_save_slot_";
+export const AUTO_BACKUP_KEY = "pl_test_game_save_auto_backup";
+export const RESTORE_PREFIX = "pl_test_game_restore_";
+
+export function getSaveSlotStorageKey(slot: number): string {
+  return `${SAVE_SLOT_KEY_PREFIX}${Math.max(0, Math.min(SAVE_SLOT_COUNT - 1, slot))}`;
+}
 
 export interface PalInstance {
   uid: string;
@@ -202,6 +211,9 @@ export interface GameSave {
 export interface StorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem?(key: string): void;
+  length?: number;
+  key?(index: number): string | null;
 }
 
 function createInstanceId(): string {
@@ -634,8 +646,11 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
 }
 
 export function loadGame(storage: StorageLike): GameSave {
+  const slot = loadSettings(storage).saveSlot;
+  const key = getSaveSlotStorageKey(slot);
   try {
-    const raw = storage.getItem(SAVE_STORAGE_KEY);
+    let raw = storage.getItem(key);
+    if (raw === null && slot === 0) raw = storage.getItem(LEGACY_SAVE_KEY);
     if (!raw) return createEmptySave();
     return migrateSave(JSON.parse(raw));
   } catch {
@@ -645,10 +660,119 @@ export function loadGame(storage: StorageLike): GameSave {
 
 export function saveGame(storage: StorageLike, save: GameSave): boolean {
   try {
-    storage.setItem(SAVE_STORAGE_KEY, JSON.stringify(migrateSave(save)));
+    const slot = loadSettings(storage).saveSlot;
+    const key = getSaveSlotStorageKey(slot);
+    const previous = storage.getItem(key);
+    if (previous !== null) storage.setItem(AUTO_BACKUP_KEY, previous);
+    storage.setItem(key, JSON.stringify(migrateSave(save)));
     return true;
   } catch {
     return false;
+  }
+}
+
+/** 读取最近一次保存前的自动备份。 */
+export function loadAutoBackup(storage: StorageLike): GameSave | undefined {
+  try {
+    const raw = storage.getItem(AUTO_BACKUP_KEY);
+    if (!raw) return undefined;
+    return migrateSave(JSON.parse(raw));
+  } catch {
+    return undefined;
+  }
+}
+
+export interface SaveSlotInfo {
+  slot: number;
+  hasSave: boolean;
+  ownedCount: number;
+  highestLevel: number;
+}
+
+/** 列出全部存档槽位的基本信息。 */
+export function listSaveSlots(storage: StorageLike): SaveSlotInfo[] {
+  return Array.from({ length: SAVE_SLOT_COUNT }, (_, slot) => {
+    const key = getSaveSlotStorageKey(slot);
+    let raw = storage.getItem(key);
+    if (raw === null && slot === 0) raw = storage.getItem(LEGACY_SAVE_KEY);
+    if (!raw) return { slot, hasSave: false, ownedCount: 0, highestLevel: 0 };
+    try {
+      const save = migrateSave(JSON.parse(raw));
+      return {
+        slot,
+        hasSave: true,
+        ownedCount: save.ownedPals.length,
+        highestLevel: save.ownedPals.reduce((max, pal) => Math.max(max, pal.level), 0),
+      };
+    } catch {
+      return { slot, hasSave: false, ownedCount: 0, highestLevel: 0 };
+    }
+  });
+}
+
+/** 删除指定槽位的存档（不会删除恢复点）。 */
+export function deleteSaveSlot(storage: StorageLike, slot: number): boolean {
+  try {
+    storage.setItem(getSaveSlotStorageKey(slot), "");
+    if (slot === 0) storage.setItem(LEGACY_SAVE_KEY, "");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** 把一个槽位的存档复制到另一个槽位（目标已有内容时保留并覆盖）。 */
+export function copySaveSlot(storage: StorageLike, from: number, to: number): boolean {
+  if (from === to) return false;
+  try {
+    const source = storage.getItem(getSaveSlotStorageKey(from));
+    let raw = source;
+    if (raw === null && from === 0) raw = storage.getItem(LEGACY_SAVE_KEY);
+    if (raw === null) return false;
+    storage.setItem(getSaveSlotStorageKey(to), raw);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** 创建命名恢复点，保存当前槽位存档的副本。 */
+export function createRestorePoint(storage: StorageLike, label: string): boolean {
+  const cleanLabel = label.trim();
+  if (cleanLabel.length === 0) return false;
+  try {
+    const slot = loadSettings(storage).saveSlot;
+    const raw = storage.getItem(getSaveSlotStorageKey(slot));
+    if (raw === null && slot === 0) storage.getItem(LEGACY_SAVE_KEY);
+    storage.setItem(`${RESTORE_PREFIX}${cleanLabel}`, raw ?? JSON.stringify(createEmptySave()));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** 列出全部命名恢复点。 */
+export function listRestorePoints(storage: StorageLike): string[] {
+  const points: string[] = [];
+  const length = storage.length ?? 0;
+  for (let index = 0; index < length; index += 1) {
+    const key = storage.key?.(index) ?? "";
+    if (key.startsWith(RESTORE_PREFIX)) points.push(key.slice(RESTORE_PREFIX.length));
+  }
+  return points.sort();
+}
+
+/** 从命名恢复点覆盖当前槽位（不会删除恢复点）。 */
+export function restoreFromPoint(storage: StorageLike, label: string): GameSave | undefined {
+  try {
+    const raw = storage.getItem(`${RESTORE_PREFIX}${label}`);
+    if (!raw) return undefined;
+    const save = migrateSave(JSON.parse(raw));
+    const slot = loadSettings(storage).saveSlot;
+    storage.setItem(getSaveSlotStorageKey(slot), JSON.stringify(save));
+    return save;
+  } catch {
+    return undefined;
   }
 }
 

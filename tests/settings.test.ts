@@ -61,7 +61,7 @@ test("键位可重绑定并回退到默认", () => {
 
 test("存档槽位限制在合法范围内", () => {
   const storage = memoryStorage();
-  let settings = createDefaultSettings();
+  const settings = createDefaultSettings();
   settings.saveSlot = 5;
   const saved = saveSettings(storage, settings);
   assert.equal(saved, true);
