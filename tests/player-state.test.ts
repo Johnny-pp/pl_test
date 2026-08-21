@@ -211,5 +211,8 @@ test("v9 存档迁移会补齐基地布局、科技、订单与新资源字段",
   assert.deepEqual(migrated.base.orders, []);
   const ids = migrated.base.placedFacilities.map((entry) => entry.facilityId);
   assert.deepEqual([...ids].sort(), ["farm", "warehouse", "workshop"]);
-  assert.equal(migrated.base.placedFacilities.every((entry) => entry.level >= 1), true);
+  assert.equal(
+    migrated.base.placedFacilities.every((entry) => entry.level >= 1),
+    true
+  );
 });

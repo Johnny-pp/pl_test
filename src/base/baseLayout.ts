@@ -81,7 +81,16 @@ export function canPlaceFacility(
   if (gridX < 0 || gridY < 0 || gridX + def.width > gridCols || gridY + def.height > gridRows) return false;
   if (getPlacedFacility(save, facilityId)) return false;
   return !save.base.placedFacilities.some((entry) =>
-    rectsOverlap(gridX, gridY, def.width, def.height, entry.gridX, entry.gridY, FACILITY_DEFS[entry.facilityId].width, FACILITY_DEFS[entry.facilityId].height)
+    rectsOverlap(
+      gridX,
+      gridY,
+      def.width,
+      def.height,
+      entry.gridX,
+      entry.gridY,
+      FACILITY_DEFS[entry.facilityId].width,
+      FACILITY_DEFS[entry.facilityId].height
+    )
   );
 }
 
@@ -104,10 +113,14 @@ export interface PlacementResult {
   reason?: string;
 }
 
-export function placeFacility(save: GameSave, facilityId: FacilityId, gridX: number, gridY: number): PlacementResult {
+export function placeFacility(
+  save: GameSave,
+  facilityId: FacilityId,
+  gridX: number,
+  gridY: number
+): PlacementResult {
   const def = FACILITY_DEFS[facilityId];
-  if (getPlacedFacility(save, facilityId))
-    return { save, ok: false, reason: "该设施已经放置" };
+  if (getPlacedFacility(save, facilityId)) return { save, ok: false, reason: "该设施已经放置" };
   if (!canPlaceFacility(save, facilityId, gridX, gridY))
     return { save, ok: false, reason: "位置被占用或超出网格/未解锁" };
   if (!canPayResources(save.base.resources, def.buildCost))
@@ -125,7 +138,12 @@ export function placeFacility(save: GameSave, facilityId: FacilityId, gridX: num
   };
 }
 
-export function moveFacility(save: GameSave, facilityId: FacilityId, gridX: number, gridY: number): PlacementResult {
+export function moveFacility(
+  save: GameSave,
+  facilityId: FacilityId,
+  gridX: number,
+  gridY: number
+): PlacementResult {
   const current = getPlacedFacility(save, facilityId);
   if (!current) return { save, ok: false, reason: "设施不存在" };
   if (current.gridX === gridX && current.gridY === gridY) return { save, ok: false, reason: "位置未变化" };
@@ -203,7 +221,9 @@ export function canPayResources(
   resources: GameSave["base"]["resources"],
   costs: Partial<GameSave["base"]["resources"]>
 ): boolean {
-  return Object.entries(costs).every(([resource, cost]) => resources[resource as keyof typeof resources] >= (cost ?? 0));
+  return Object.entries(costs).every(
+    ([resource, cost]) => resources[resource as keyof typeof resources] >= (cost ?? 0)
+  );
 }
 
 export function payResources(
@@ -211,7 +231,6 @@ export function payResources(
   costs: Partial<GameSave["base"]["resources"]>
 ): GameSave["base"]["resources"] {
   const next = { ...resources };
-  for (const [resource, cost] of Object.entries(costs))
-    next[resource as keyof typeof resources] -= cost ?? 0;
+  for (const [resource, cost] of Object.entries(costs)) next[resource as keyof typeof resources] -= cost ?? 0;
   return next;
 }

@@ -188,7 +188,14 @@ export function createEmptySave(now = Date.now()): GameSave {
       shopStock: {},
       eliteDefeatTimes: {},
     },
-    inventory: { captureOrbs: 3, healingTonics: 0, equipment: [], coins: 30, materials: {}, advancedCaptureOrbs: 0 },
+    inventory: {
+      captureOrbs: 3,
+      healingTonics: 0,
+      equipment: [],
+      coins: 30,
+      materials: {},
+      advancedCaptureOrbs: 0,
+    },
     base: {
       resources: { wood: 20, stone: 10, food: 20, fiber: 10, crystal: 0, ore: 0, metal: 0 },
       assignments: [],
@@ -391,13 +398,7 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
         .map(([key, amount]) => [key, finiteCount(amount)])
     );
   };
-  const validFacilityIds = new Set<FacilityId>([
-    "warehouse",
-    "farm",
-    "workshop",
-    "forge",
-    "assembly",
-  ]);
+  const validFacilityIds = new Set<FacilityId>(["warehouse", "farm", "workshop", "forge", "assembly"]);
   const normalizePlacedFacilities = (
     value: unknown,
     legacyFacilities?: Partial<BaseState["facilities"]>
@@ -407,10 +408,7 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
       .map((entry): PlacedFacility | undefined => {
         if (!entry || typeof entry !== "object") return undefined;
         const item = entry as Partial<PlacedFacility>;
-        if (
-          typeof item.facilityId !== "string" ||
-          !validFacilityIds.has(item.facilityId as FacilityId)
-        )
+        if (typeof item.facilityId !== "string" || !validFacilityIds.has(item.facilityId as FacilityId))
           return undefined;
         return {
           facilityId: item.facilityId as FacilityId,
@@ -427,7 +425,8 @@ function migrateSave(value: unknown, now = Date.now()): GameSave {
       { facilityId: "farm", level: Math.max(1, finiteCount(legacy.farm, 1)), gridX: 2, gridY: 0 },
       { facilityId: "workshop", level: Math.max(1, finiteCount(legacy.workshop, 1)), gridX: 0, gridY: 2 },
     ];
-    if (finiteCount(legacy.forge) > 0) defaults.push({ facilityId: "forge", level: finiteCount(legacy.forge), gridX: 2, gridY: 2 });
+    if (finiteCount(legacy.forge) > 0)
+      defaults.push({ facilityId: "forge", level: finiteCount(legacy.forge), gridX: 2, gridY: 2 });
     if (finiteCount(legacy.assembly) > 0)
       defaults.push({ facilityId: "assembly", level: finiteCount(legacy.assembly), gridX: 4, gridY: 2 });
     return defaults;

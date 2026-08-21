@@ -9,7 +9,6 @@ import {
   removeFacility,
 } from "../src/base/baseLayout.ts";
 
-
 function richSave() {
   const save = createEmptySave();
   save.base.resources.stone = 200;
@@ -37,13 +36,16 @@ test("未解锁科技时无法放置熔炉/装配台", () => {
 });
 
 test("解锁科技后可放置、移动与移除设施且资源结算正确", () => {
-  let save = richSave();
+  const save = richSave();
   save.base.techIds = ["tech-smelting"];
   const before = save.base.resources.stone;
   const placed = placeFacility(save, "forge", 4, 0);
   assert.equal(placed.ok, true);
   assert.equal(placed.save.base.resources.stone, before - 30);
-  assert.equal(placed.save.base.placedFacilities.some((entry) => entry.facilityId === "forge"), true);
+  assert.equal(
+    placed.save.base.placedFacilities.some((entry) => entry.facilityId === "forge"),
+    true
+  );
 
   const moved = moveFacility(placed.save, "forge", 4, 2);
   assert.equal(moved.ok, true);
@@ -52,7 +54,10 @@ test("解锁科技后可放置、移动与移除设施且资源结算正确", ()
   assert.equal(forge.gridY, 2);
 
   const removed = removeFacility(moved.save, "forge");
-  assert.equal(removed.base.placedFacilities.some((entry) => entry.facilityId === "forge"), false);
+  assert.equal(
+    removed.base.placedFacilities.some((entry) => entry.facilityId === "forge"),
+    false
+  );
 });
 
 test("设施重叠或越界时不可放置", () => {

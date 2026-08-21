@@ -1,12 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createEmptySave } from "../src/player/playerState.ts";
-import {
-  canUnlockTech,
-  getTechBonuses,
-  TECH_TREE,
-  unlockTech,
-} from "../src/base/techTree.ts";
+import { canUnlockTech, getTechBonuses, TECH_TREE, unlockTech } from "../src/base/techTree.ts";
 import {
   assembleAdvancedOrb,
   assembleEquipment,
@@ -15,11 +10,7 @@ import {
   canSmelt,
   smeltMetal,
 } from "../src/base/processing.ts";
-import {
-  BASE_ORDERS,
-  completeOrder,
-  getOrderClaimed,
-} from "../src/base/baseOrders.ts";
+import { BASE_ORDERS, completeOrder, getOrderClaimed } from "../src/base/baseOrders.ts";
 
 function richSave() {
   const save = createEmptySave();

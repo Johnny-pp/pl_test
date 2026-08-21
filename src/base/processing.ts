@@ -47,7 +47,10 @@ export function smeltMetal(save: GameSave): GameSave {
     ...save,
     base: {
       ...save.base,
-      resources: { ...payResources(save.base.resources, smeltCost(save)), metal: save.base.resources.metal + 1 },
+      resources: {
+        ...payResources(save.base.resources, smeltCost(save)),
+        metal: save.base.resources.metal + 1,
+      },
     },
   };
 }
