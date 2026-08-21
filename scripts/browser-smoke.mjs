@@ -1118,15 +1118,18 @@ try {
     `const scene = window.__PL_TEST__.game.scene.getScene('BattleScene'); return Boolean(scene && scene.state && scene.state.phase === 'choosing');`,
     10_000
   );
-  for (let turn = 0; turn < 60; turn += 1) {
+  for (let turn = 0; turn < 120; turn += 1) {
     const phase = await execute(
       sessionId,
       `const s = window.__PL_TEST__.game.scene.getScene('BattleScene'); return s && s.state ? s.state.phase : null;`
     );
-    if (phase === "victory") break;
+    if (phase === "victory" || phase === "defeat") break;
+    if (phase !== "choosing" && phase !== "switching") {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      continue;
+    }
     await clickCanvas(sessionId, 520, 594);
-    await clickCanvas(sessionId, 335, 594);
-    await new Promise((resolve) => setTimeout(resolve, 150));
+    await new Promise((resolve) => setTimeout(resolve, 160));
   }
   const rematchAfter = await execute(
     sessionId,
@@ -1174,6 +1177,110 @@ try {
   assert.ok(persisted.cleared >= 1, "刷新后试炼塔进度应保留");
   assert.equal(persisted.ngp, true, "刷新后新周目选项应保留");
   console.log("✓ 阶段十九：周期委托、成就与新周目的界面与持久化均通过");
+
+  // ---- 阶段二十：设置/多存档槽/新手引导 浏览器流程 ----
+  await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [
+    endgameSave,
+  ]);
+  await navigate(sessionId, appUrl);
+  await waitUntil(sessionId, "return Boolean(window.__PL_TEST__) && document.querySelector('#game canvas')");
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('SettingsScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('游戏设置')"
+  );
+  const settingsScene = () => `window.__PL_TEST__.game.scene.getScene('SettingsScene')`;
+  await execute(sessionId, `${settingsScene()}.doAdjustVolume('masterVolume', -0.1);`);
+  await execute(sessionId, `${settingsScene()}.doToggle('highContrast');`);
+  await execute(sessionId, `${settingsScene()}.doCycle('animationSpeed', ['normal','fast','off']);`);
+  const settingsState = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_settings'));
+     return { master: s.masterVolume, contrast: s.highContrast, speed: s.animationSpeed };`
+  );
+  assert.ok(settingsState.master < 0.8, "调节主音量应生效");
+  assert.equal(settingsState.contrast, true, "高对比度应可开启");
+  assert.equal(settingsState.speed, "fast", "动画速度应可切换");
+  await captureScreenshot(sessionId, "settings-stage20");
+
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('TeamScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('我的队伍')"
+  );
+  const teamScene = () => `window.__PL_TEST__.game.scene.getScene('TeamScene')`;
+  await execute(sessionId, `${teamScene()}.doShowSlots();`);
+  await waitUntil(
+    sessionId,
+    `return Boolean(${teamScene()}.slotOverlay && ${teamScene()}.slotOverlay.list.length > 5);`
+  );
+  await execute(sessionId, `${teamScene()}.doCreateRestorePoint();`);
+  const restorePointCreated = await execute(
+    sessionId,
+    `return localStorage.getItem('pl_test_game_restore_恢复点-2026-08-21 00:00') !== null ||
+       Object.keys(localStorage).some((key) => key.startsWith('pl_test_game_restore_'));`
+  );
+  assert.equal(restorePointCreated, true, "应能创建命名恢复点");
+  await execute(sessionId, `${teamScene()}.doSwitchSlot(1);`);
+  const slotOne = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_settings')); return s.saveSlot;`
+  );
+  assert.equal(slotOne, 1, "切换存档槽应更新设置");
+  const emptySlot = await execute(
+    sessionId,
+    `const raw = localStorage.getItem('pl_test_game_save_slot_1'); return raw === null || raw === '';`
+  );
+  assert.equal(emptySlot, true, "新槽位应为空");
+  await execute(sessionId, `${teamScene()}.doSwitchSlot(0);`);
+  console.log("✓ 阶段二十：设置项持久化、高对比度、存档槽切换与恢复点创建均通过");
+
+  await execute(
+    sessionId,
+    `localStorage.setItem('pl_test_onboarding', JSON.stringify({ skipped: false, triggeredIds: ['capture'], completedIds: [] }));`
+  );
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('DexScene').then(() => done(true), e => done(String(e)));`
+  );
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  const bannerPresent = await execute(
+    sessionId,
+    `const scene = window.__PL_TEST__.game.scene.getScene('DexScene');
+     return scene.children.list.some((child) => child.name === 'onboarding-banner');`
+  );
+  assert.equal(bannerPresent, true, "捕获后图鉴页应显示新手引导横幅");
+  await captureScreenshot(sessionId, "onboarding-stage20");
+  await execute(
+    sessionId,
+    `const scene = window.__PL_TEST__.game.scene.getScene('DexScene');
+     const banner = scene.children.list.find((child) => child.name === 'onboarding-banner');
+     const buttons = banner.list.filter((child) => child.list && child.list[0] && child.list[0].input);
+     buttons[1].list[0].emit('pointerdown');
+     true;`
+  );
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  const afterClick = await execute(
+    sessionId,
+    `const scene = window.__PL_TEST__.game.scene.getScene('DexScene');
+     const state = JSON.parse(localStorage.getItem('pl_test_onboarding'));
+     return { completed: state.completedIds.includes('capture'),
+       banner: scene.children.list.some((child) => child.name === 'onboarding-banner'),
+       active: scene.scene.isActive() };`
+  );
+  assert.equal(afterClick.completed, true, "点击知道了应标记引导完成");
+  await waitUntil(
+    sessionId,
+    `const scene = window.__PL_TEST__.game.scene.getScene('DexScene');
+     return !scene.children.list.some((child) => child.name === 'onboarding-banner');`
+  );
+  console.log("✓ 阶段二十：新手引导横幅展示、确认与持久化均通过");
 } finally {
   if (sessionId) {
     try {

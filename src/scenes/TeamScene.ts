@@ -535,4 +535,17 @@ export class TeamScene extends Phaser.Scene {
     this.backupMessage = `恢复点「${label}」已删除`;
     this.showSlots();
   }
+
+  // 浏览器验收辅助入口
+  doShowSlots() {
+    this.showSlots();
+  }
+
+  doSwitchSlot(slot: number) {
+    this.switchSlot(slot);
+  }
+
+  doCreateRestorePoint() {
+    this.createPoint();
+  }
 }

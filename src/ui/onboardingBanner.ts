@@ -10,7 +10,7 @@ import { startScene } from "../scenes/sceneLoader";
 export function renderOnboardingBanner(scene: Phaser.Scene): Phaser.GameObjects.Container | undefined {
   const step = getPendingOnboardingStep(localStorage);
   if (!step) return undefined;
-  const banner = scene.add.container(0, 0).setDepth(40);
+  const banner = scene.add.container(0, 0).setDepth(40).setName("onboarding-banner");
   banner.add(
     scene.add
       .rectangle(450, 196, 820, 54, 0x0f3460, 0.97)

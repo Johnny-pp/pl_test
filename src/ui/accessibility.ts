@@ -13,6 +13,7 @@ const SCENE_LABELS: Record<string, string> = {
   BuildScene: "个体构筑。可解锁技能树、配置主动技能并穿戴装备。",
   ShopScene: "芦灯港商店。可购买用品与装备，并出售掉落物与制造品换取星币。",
   EndgameScene: "终局试炼。可挑战试炼塔、首领重战、周期委托，查看成就称号与新周目模式。",
+  SettingsScene: "游戏设置。可调节音量、动画与文字速度、减少动态效果、高对比度与键位。",
 };
 
 export function announceGameStatus(message: string): void {
