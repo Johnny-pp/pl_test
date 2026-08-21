@@ -16,6 +16,7 @@ import { getProgressionStats } from "../src/progression/progression.ts";
 import { TOWER_FLOORS } from "../src/endgame/tower.ts";
 import { getRematchForBoss } from "../src/endgame/bossRematch.ts";
 import { bossesById } from "../src/battle/bosses.ts";
+import { BALANCE_BASELINE } from "../src/balance/balanceBaseline.ts";
 import type { Pal } from "../src/types/pal.ts";
 import type { ActiveSkill } from "../src/types/activeSkill.ts";
 import type { PassiveSkill } from "../src/types/passiveSkill.ts";
@@ -169,8 +170,9 @@ function makeTankBuild(): Combatant[] {
 test("至少两种不同构筑能够通过试炼塔基线", () => {
   const attackRun = runTowerFloors(makeAttackBuild(), () => 0.5);
   const tankRun = runTowerFloors(makeTankBuild(), () => 0.5);
-  assert.ok(attackRun.cleared >= 3, `强攻构筑应通过至少 3 层（实际 ${attackRun.cleared}）`);
-  assert.ok(tankRun.cleared >= 3, `坚守构筑应通过至少 3 层（实际 ${tankRun.cleared}）`);
+  const baseline = BALANCE_BASELINE.endgame.towerFloors;
+  assert.ok(attackRun.cleared >= baseline, `强攻构筑应通过至少 ${baseline} 层（实际 ${attackRun.cleared}）`);
+  assert.ok(tankRun.cleared >= baseline, `坚守构筑应通过至少 ${baseline} 层（实际 ${tankRun.cleared}）`);
 });
 
 test("两种构筑属性方向不同，避免唯一解垄断", () => {

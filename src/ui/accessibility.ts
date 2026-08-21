@@ -12,6 +12,7 @@ const SCENE_LABELS: Record<string, string> = {
   QuestScene: "远征任务。查看目标并领取已完成任务的奖励。",
   BuildScene: "个体构筑。可解锁技能树、配置主动技能并穿戴装备。",
   ShopScene: "芦灯港商店。可购买用品与装备，并出售掉落物与制造品换取星币。",
+  EndgameScene: "终局试炼。可挑战试炼塔、首领重战、周期委托，查看成就称号与新周目模式。",
 };
 
 export function announceGameStatus(message: string): void {

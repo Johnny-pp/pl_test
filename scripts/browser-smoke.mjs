@@ -944,6 +944,236 @@ try {
   assert.ok(orderState.coins >= stage18Save.inventory.coins + 180, "订单奖励应发放星币");
   await captureScreenshot(sessionId, "base-stage18");
   console.log("✓ 阶段十八：基地布局、科技解锁、加工链与订单均通过");
+
+  // ---- 阶段十九：终局试炼（塔/重战/委托/成就/新周目）浏览器流程 ----
+  const endgameSave = {
+    version: 11,
+    ownedPals: [
+      {
+        uid: "eg-strong",
+        speciesId: 30,
+        level: 40,
+        experience: 0,
+        currentHp: 1200,
+        passiveSkillIds: ["sharp_focus", "overcharge", "flame_attuned"],
+        capturedAt: "2026-08-21T00:00:00.000Z",
+        unlockedNodeIds: ["attr-power", "skill-flame-burst"],
+        equippedSkillIds: ["quick-strike", "ember-dart", "flame-burst", "dragon-comet"],
+        equipment: { core: "eg-core", charm: "eg-charm" },
+      },
+    ],
+    teamIds: ["eg-strong"],
+    progress: {
+      battlesWon: 60,
+      captures: 30,
+      unlockedRegions: ["frontier", "cloudridge-highlands", "startide-archipelago"],
+      quests: [
+        { id: "frontier-preparation", progress: {}, rewardClaimed: true },
+        { id: "highland-survey", progress: {}, rewardClaimed: true },
+        { id: "storm-lord-challenge", progress: {}, rewardClaimed: true },
+        { id: "startide-voyage", progress: {}, rewardClaimed: true },
+        { id: "abyssal-colossus-challenge", progress: {}, rewardClaimed: true },
+      ],
+      defeatedBossIds: ["storm-lord", "tidewarden", "mire-sovereign", "abyssal-colossus"],
+      defeatedEliteIds: ["elite-plumage-sentinel", "elite-deep-diver"],
+      unlockedAbilities: ["storm-forging", "tide-navigation"],
+      discoveredLocationIds: ["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9", "l10"],
+      claimedWorldRewardIds: ["c1", "c2", "c3"],
+      sideQuests: [],
+      talkedNpcIds: [],
+      openedGateIds: [],
+      shopStock: {},
+      eliteDefeatTimes: {},
+    },
+    inventory: {
+      captureOrbs: 5,
+      healingTonics: 2,
+      coins: 500,
+      equipment: [
+        { uid: "eg-core", equipmentId: "core-star-mineral" },
+        { uid: "eg-charm", equipmentId: "charm-ember-guard" },
+      ],
+      materials: {},
+      advancedCaptureOrbs: 1,
+    },
+    base: {
+      resources: { wood: 200, stone: 200, food: 200, fiber: 200, crystal: 80, ore: 20, metal: 10 },
+      assignments: [],
+      facilities: { warehouse: 2, farm: 1, workshop: 2, forge: 1, assembly: 1 },
+      placedFacilities: [
+        { facilityId: "warehouse", level: 3, gridX: 0, gridY: 0 },
+        { facilityId: "farm", level: 1, gridX: 2, gridY: 0 },
+        { facilityId: "workshop", level: 2, gridX: 0, gridY: 2 },
+        { facilityId: "forge", level: 2, gridX: 2, gridY: 2 },
+      ],
+      techIds: ["tech-smelting", "tech-assembly", "tech-refine", "tech-logistics", "tech-foundation"],
+      orders: [],
+      lastUpdatedAt: 0,
+    },
+    breedingEggs: [],
+    endgame: {
+      towerFloorsCleared: 0,
+      towerRewardsClaimed: [],
+      bestScores: {},
+      periodChallenges: [],
+      rematchRewardsClaimed: [],
+      unlockedAchievementIds: [],
+      unlockedTitles: [],
+      equippedTitleId: null,
+      newGamePlus: { randomEncounters: false, restrictedCapture: false, permadeath: false },
+      permadeathLostUids: [],
+      stats: {},
+    },
+  };
+  await execute(sessionId, "localStorage.setItem('pl_test_game_save', JSON.stringify(arguments[0]))", [
+    endgameSave,
+  ]);
+  await navigate(sessionId, appUrl);
+  await waitUntil(sessionId, "return Boolean(window.__PL_TEST__) && document.querySelector('#game canvas')");
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('EndgameScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('终局试炼')"
+  );
+  const eg = () => `window.__PL_TEST__.game.scene.getScene('EndgameScene')`;
+  const towerInit = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save')); return { version: s.version, cleared: s.endgame.towerFloorsCleared };`
+  );
+  assert.equal(towerInit.version, 11, "终局存档应使用 v11");
+  assert.equal(towerInit.cleared, 0, "初始试炼塔进度应为 0");
+  await captureScreenshot(sessionId, "endgame-tower");
+
+  await execute(sessionId, `${eg()}.doStartChallenge('tower', 'tower-1', { towerFloor: 1 });`);
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('回合战斗')"
+  );
+  for (let turn = 0; turn < 24; turn += 1) {
+    await clickCanvas(sessionId, 520, 594);
+    await new Promise((resolve) => setTimeout(resolve, 140));
+    const cleared = await execute(
+      sessionId,
+      `return JSON.parse(localStorage.getItem('pl_test_game_save')).endgame.towerFloorsCleared;`
+    );
+    if (cleared >= 1) break;
+  }
+  const towerAfterBattle = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     return { cleared: s.endgame.towerFloorsCleared, best: s.endgame.bestScores['tower-1'] ?? 0 };`
+  );
+  assert.ok(towerAfterBattle.cleared >= 1, "击败塔层后应推进试炼塔进度");
+  assert.ok(towerAfterBattle.best >= 1, "塔战胜利应记录最佳评分");
+  console.log("✓ 阶段十九：试炼塔战斗与评分持久化通过");
+
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('EndgameScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('终局试炼')"
+  );
+  await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     s.endgame.towerFloorsCleared = 3;
+     localStorage.setItem('pl_test_game_save', JSON.stringify(s));`
+  );
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('EndgameScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('终局试炼')"
+  );
+  const coinsBeforeTowerReward = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).inventory.coins;`
+  );
+  await execute(sessionId, `${eg()}.doClaimTower(3);`);
+  const coinsAfterTowerReward = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).inventory.coins;`
+  );
+  assert.ok(coinsAfterTowerReward > coinsBeforeTowerReward, "试炼塔阶段奖励应发放星币");
+  console.log("✓ 阶段十九：试炼塔阶段奖励领取通过");
+
+  await execute(sessionId, `${eg()}.doTab('rematch'); ${eg()}.render();`);
+  await execute(
+    sessionId,
+    `${eg()}.doStartChallenge('rematch', 'rematch-storm-lord', { bossId: 'storm-lord' });`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('回合战斗')"
+  );
+  await waitUntil(
+    sessionId,
+    `const scene = window.__PL_TEST__.game.scene.getScene('BattleScene'); return Boolean(scene && scene.state && scene.state.phase === 'choosing');`,
+    10_000
+  );
+  for (let turn = 0; turn < 60; turn += 1) {
+    const phase = await execute(
+      sessionId,
+      `const s = window.__PL_TEST__.game.scene.getScene('BattleScene'); return s && s.state ? s.state.phase : null;`
+    );
+    if (phase === "victory") break;
+    await clickCanvas(sessionId, 520, 594);
+    await clickCanvas(sessionId, 335, 594);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  const rematchAfter = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     return { claimed: s.endgame.rematchRewardsClaimed.includes('rematch-storm-lord'), best: s.endgame.bestScores['rematch-storm-lord'] ?? 0 };`
+  );
+  assert.equal(rematchAfter.claimed, true, "首领重战首胜应记录一次性奖励");
+  assert.ok(rematchAfter.best >= 1, "重战胜利应记录最佳评分");
+  await captureScreenshot(sessionId, "endgame-rematch");
+  console.log("✓ 阶段十九：首领强化重战与首胜奖励通过");
+
+  await executeAsync(
+    sessionId,
+    `const done = arguments[arguments.length - 1]; window.__PL_TEST__.startScene('EndgameScene').then(() => done(true), e => done(String(e)));`
+  );
+  await waitUntil(
+    sessionId,
+    "return document.querySelector('#game-status').textContent.includes('终局试炼')"
+  );
+  await execute(sessionId, `${eg()}.doTab('challenges'); ${eg()}.render();`);
+  await waitUntil(sessionId, `return ${eg()}.content.list.length > 5;`);
+  await execute(sessionId, `${eg()}.doTab('achievements'); ${eg()}.render();`);
+  const achievementScene = await execute(
+    sessionId,
+    `const scene = ${eg()}; return { hasEquip: scene.content.list.length > 8 };`
+  );
+  assert.equal(achievementScene.hasEquip, true, "成就页应渲染成就列表");
+
+  await execute(sessionId, `${eg()}.doTab('ngp'); ${eg()}.render();`);
+  await execute(sessionId, `${eg()}.doToggleNgp('restrictedCapture');`);
+  const ngpState = await execute(
+    sessionId,
+    `return JSON.parse(localStorage.getItem('pl_test_game_save')).endgame.newGamePlus;`
+  );
+  assert.equal(ngpState.restrictedCapture, true, "新周目选项应可开启并保存");
+  await captureScreenshot(sessionId, "endgame-ngp");
+
+  await navigate(sessionId, appUrl);
+  await waitUntil(sessionId, "return Boolean(window.__PL_TEST__) && document.querySelector('#game canvas')");
+  const persisted = await execute(
+    sessionId,
+    `const s = JSON.parse(localStorage.getItem('pl_test_game_save'));
+     return { cleared: s.endgame.towerFloorsCleared, ngp: s.endgame.newGamePlus.restrictedCapture };`
+  );
+  assert.ok(persisted.cleared >= 1, "刷新后试炼塔进度应保留");
+  assert.equal(persisted.ngp, true, "刷新后新周目选项应保留");
+  console.log("✓ 阶段十九：周期委托、成就与新周目的界面与持久化均通过");
 } finally {
   if (sessionId) {
     try {

@@ -79,12 +79,7 @@ export class EndgameScene extends Phaser.Scene {
         label: tab.label,
         variant: this.tab === tab.key ? "accent" : "muted",
         fontSize: "13px",
-        onPress: () => {
-          this.tab = tab.key;
-          this.scrollY = 0;
-          this.message = "";
-          this.render();
-        },
+        onPress: () => this.doTab(tab.key),
       });
     }
     this.content = this.add.container(0, 0);
@@ -95,7 +90,7 @@ export class EndgameScene extends Phaser.Scene {
     this.render();
   }
 
-  private render() {
+  render() {
     this.content.removeAll(true);
     this.content.y = this.scrollY;
     if (!isEndgameUnlocked(this.save)) {
@@ -128,7 +123,14 @@ export class EndgameScene extends Phaser.Scene {
     else this.renderNgp();
   }
 
-  private startChallenge(
+  doTab(tab: EndgameTab) {
+    this.tab = tab;
+    this.scrollY = 0;
+    this.message = "";
+    this.render();
+  }
+
+  doStartChallenge(
     kind: "tower" | "rematch",
     challengeId: string,
     extra: { towerFloor?: number; bossId?: string }
@@ -179,7 +181,7 @@ export class EndgameScene extends Phaser.Scene {
           label,
           variant: check.valid ? "accent" : "muted",
           disabled: !check.valid,
-          onPress: () => this.startChallenge("tower", `tower-${nextFloor}`, { towerFloor: nextFloor }),
+          onPress: () => this.doStartChallenge("tower", `tower-${nextFloor}`, { towerFloor: nextFloor }),
         })
       );
       if (restrictions) {
@@ -234,7 +236,7 @@ export class EndgameScene extends Phaser.Scene {
             label: "领取奖励",
             variant: "accent",
             fontSize: "13px",
-            onPress: () => this.claimTower(floor),
+            onPress: () => this.doClaimTower(floor),
           })
         );
       });
@@ -255,7 +257,7 @@ export class EndgameScene extends Phaser.Scene {
     });
   }
 
-  private claimTower(floor: number) {
+  doClaimTower(floor: number) {
     const next = claimTowerReward(this.save, floor);
     if (next === this.save) return;
     if (!saveGame(localStorage, next)) {
@@ -329,7 +331,9 @@ export class EndgameScene extends Phaser.Scene {
           disabled: !unlocked || !check.valid,
           fontSize: "13px",
           onPress: () =>
-            this.startChallenge("rematch", `rematch-${view.rematch.bossId}`, { bossId: view.rematch.bossId }),
+            this.doStartChallenge("rematch", `rematch-${view.rematch.bossId}`, {
+              bossId: view.rematch.bossId,
+            }),
         })
       );
     });
@@ -404,13 +408,13 @@ export class EndgameScene extends Phaser.Scene {
           label: "领取奖励",
           variant: "accent",
           fontSize: "13px",
-          onPress: () => this.claimPeriod(challenge.id),
+          onPress: () => this.doClaimPeriod(challenge.id),
         })
       );
     }
   }
 
-  private claimPeriod(challengeId: string) {
+  doClaimPeriod(challengeId: string) {
     const next = claimPeriodChallengeReward(this.save, challengeId);
     if (next === this.save) return;
     if (!saveGame(localStorage, next)) {
@@ -493,14 +497,14 @@ export class EndgameScene extends Phaser.Scene {
             variant: this.save.endgame.equippedTitleId === achievement.titles[0] ? "accent" : "muted",
             disabled: this.save.endgame.equippedTitleId === achievement.titles[0],
             fontSize: "12px",
-            onPress: () => this.equip(achievement.titles![0]),
+            onPress: () => this.doEquipTitle(achievement.titles![0]),
           })
         );
       }
     });
   }
 
-  private equip(titleId: string) {
+  doEquipTitle(titleId: string) {
     const next = equipTitle(this.save, titleId);
     if (next === this.save) return;
     if (!saveGame(localStorage, next)) {
@@ -562,13 +566,13 @@ export class EndgameScene extends Phaser.Scene {
           label: enabled ? "关闭" : "开启",
           variant: enabled ? "danger" : "accent",
           fontSize: "14px",
-          onPress: () => this.toggleNgp(option.key),
+          onPress: () => this.doToggleNgp(option.key),
         })
       );
     });
   }
 
-  private toggleNgp(option: NgpOptionKey) {
+  doToggleNgp(option: NgpOptionKey) {
     const next = toggleNgpOption(this.save, option);
     if (!saveGame(localStorage, next)) {
       this.message = "选项保存失败：浏览器无法写入存档";
