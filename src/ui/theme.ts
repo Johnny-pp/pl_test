@@ -78,8 +78,27 @@ const THEMED_OBJECT = Symbol("themed-object");
 
 type ThemedGameObject = Phaser.GameObjects.GameObject & { [THEMED_OBJECT]?: boolean };
 
+// 目标文字渲染分辨率：游戏固定以 900×640 绘制，再按 Scale.FIT 放大到窗口。
+// 若不提升文字自身分辨率，放大后的位图会被浏览器拉伸而变模糊。这里按
+// “画布放大倍率 × devicePixelRatio”计算目标分辨率（限制在 2..4，避免过高内存）。
+let targetTextResolution = 2;
+
+function updateTextResolutionTarget(scene: Phaser.Scene): void {
+  const scale = scene.scale;
+  const base = scale.gameSize.width || scale.baseSize.width || 900;
+  const upscale = base > 0 ? scale.displaySize.width / base : 1;
+  targetTextResolution = Math.max(2, Math.min(4, Math.ceil((window.devicePixelRatio || 1) * upscale)));
+}
+
+function ensureTextResolution(object: ThemedGameObject): void {
+  if (!(object instanceof Phaser.GameObjects.Text)) return;
+  const current = object.style.resolution || 1;
+  if (current !== targetTextResolution) object.setResolution(targetTextResolution);
+}
+
 export function installSceneTheme(scene: Phaser.Scene): void {
   const highContrast = loadSettings(localStorage).highContrast;
+  updateTextResolutionTarget(scene);
   scene.cameras.main.setBackgroundColor(highContrast ? 0x0b1d33 : UI_THEME.colors.skyBottom);
   const backdrop = scene.add.graphics().setDepth(-1000).setScrollFactor(0).setName("ui-theme-backdrop");
   if (highContrast) {
@@ -105,13 +124,17 @@ export function installSceneTheme(scene: Phaser.Scene): void {
   const apply = () =>
     scene.children.list.forEach((child) => themeObject(child as ThemedGameObject, highContrast));
   scene.events.on(Phaser.Scenes.Events.POST_UPDATE, apply);
-  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () =>
-    scene.events.off(Phaser.Scenes.Events.POST_UPDATE, apply)
-  );
+  const onResize = () => updateTextResolutionTarget(scene);
+  scene.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+    scene.events.off(Phaser.Scenes.Events.POST_UPDATE, apply);
+    scene.scale.off(Phaser.Scale.Events.RESIZE, onResize);
+  });
+  scene.scale.on(Phaser.Scale.Events.RESIZE, onResize);
   apply();
 }
 
 function themeObject(object: ThemedGameObject, highContrast: boolean): void {
+  ensureTextResolution(object);
   if (object.name.startsWith("ui-theme-")) return;
   if (object instanceof Phaser.GameObjects.Container) {
     object.list.forEach((child) => themeObject(child as ThemedGameObject, highContrast));
