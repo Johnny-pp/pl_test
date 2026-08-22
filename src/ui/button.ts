@@ -48,11 +48,18 @@ export function createTextButton(scene: Phaser.Scene, options: TextButtonOptions
     .setName("ui-theme-native-label");
   if (!options.disabled) {
     const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    // 先终止该目标上仍在进行的缩放补间，避免多个补间竞争同一 scale 属性导致
-    // 划走后按钮停留在放大状态无法缩回。
-    const tweenScale = (value: number, duration: number, yoyo = false) => {
-      scene.tweens.killTweensOf([background, text]);
-      scene.tweens.add({ targets: [background, text], scale: value, duration, yoyo });
+    const baseScales = [background, text].map((t) => ({ x: t.scaleX, y: t.scaleY }));
+    const tweenScale = (factor: number, duration: number, yoyo = false) => {
+      [background, text].forEach((target, i) => {
+        scene.tweens.killTweensOf(target);
+        scene.tweens.add({
+          targets: target,
+          scaleX: baseScales[i].x * factor,
+          scaleY: baseScales[i].y * factor,
+          duration,
+          yoyo,
+        });
+      });
     };
     if (!reducedMotion) {
       background.on("pointerover", () => {
