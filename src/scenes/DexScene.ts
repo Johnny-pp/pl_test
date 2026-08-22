@@ -160,15 +160,17 @@ export class DexScene extends Phaser.Scene {
   }
 
   // ---- 搜索框（DOM，支持中文输入法） ----
+  // 说明：不使用 Phaser 的 DOM 容器（add.dom），因为 Scale FIT + 自动居中时
+  //       Phaser 4 的 DOM 元素会整体偏移到画布中央；改为以画布坐标定位的
+  //       覆盖层输入框，并在窗口缩放时同步。
   private buildSearchInput() {
     const input = document.createElement("input");
     input.type = "text";
     input.placeholder = "搜索 名称/编号/属性/工作/地点";
     Object.assign(input.style, {
-      width: "240px",
-      height: "30px",
+      position: "fixed",
+      boxSizing: "border-box",
       padding: "0 8px",
-      fontSize: "14px",
       color: "#17334d",
       backgroundColor: "#fffbeb",
       border: "2px solid #71b5aa",
@@ -177,15 +179,39 @@ export class DexScene extends Phaser.Scene {
       outline: "none",
       fontFamily: '"Trebuchet MS", "Microsoft YaHei", sans-serif',
       pointerEvents: "auto",
+      zIndex: "50",
     });
-    this.add.dom(16, 108, input).setOrigin(0, 0.5);
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.positionSearchInput, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.RESIZE, this.positionSearchInput, this);
+      input.remove();
+      this.searchInput = undefined;
+    });
     input.addEventListener("input", () => {
       this.searchText = input.value;
       this.page = 0;
       this.renderGrid();
     });
+    document.body.appendChild(input);
     this.searchInput = input;
+    this.positionSearchInput();
   }
+
+  private positionSearchInput = () => {
+    const input = this.searchInput;
+    const canvas = document.querySelector<HTMLCanvasElement>("#game canvas");
+    if (!input || !canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = rect.width / this.scale.width;
+    const scaleY = rect.height / this.scale.height;
+    const width = 240 * scaleX;
+    const height = 30 * scaleY;
+    input.style.width = `${width}px`;
+    input.style.height = `${height}px`;
+    input.style.fontSize = `${14 * Math.min(scaleX, scaleY)}px`;
+    input.style.left = `${rect.left + 16 * scaleX}px`;
+    input.style.top = `${rect.top + 108 * scaleY - height / 2}px`;
+  };
 
   // ---- 排序按钮 ----
   private buildSortButtons() {
